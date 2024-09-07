@@ -66,6 +66,8 @@ void GraphicsNode::mousePressEvent(QGraphicsSceneMouseEvent *event)
       this->has_connection_started = true;
       this->setFlag(QGraphicsItem::ItemIsMovable, false);
       this->port_index_from = hovered_port_index;
+      this->data_type_connecting = this->get_proxy_ref()->get_data_type(
+          hovered_port_index);
       Q_EMIT connection_started(this, hovered_port_index);
       event->accept();
     }
@@ -124,6 +126,17 @@ void GraphicsNode::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
       }
 
       this->has_connection_started = false;
+
+      // clean-up port color state
+      for (QGraphicsItem *item : this->scene()->items())
+        if (GraphicsNode *node = dynamic_cast<GraphicsNode *>(item))
+        {
+          node->data_type_connecting = "";
+          node->update();
+        }
+
+      this->data_type_connecting = "";
+
       this->setFlag(QGraphicsItem::ItemIsMovable, true);
     }
   }
@@ -196,9 +209,15 @@ void GraphicsNode::paint(QPainter                       *painter,
     else
       painter->setBrush(style.node.color_port_data_default);
 
-    painter->drawEllipse(this->geometry.port_rects[k].center(),
-                         0.5f * this->geometry.port_rects[k].width(),
-                         0.5f * this->geometry.port_rects[k].height());
+    float pradius = style.node.port_radius;
+
+    if (this->data_type_connecting != "" && data_type != this->data_type_connecting)
+    {
+      painter->setBrush(style.node.color_port_not_selectable);
+      pradius = style.node.port_radius_not_selectable;
+    }
+
+    painter->drawEllipse(this->geometry.port_rects[k].center(), pradius, pradius);
   }
 }
 
@@ -211,18 +230,25 @@ bool GraphicsNode::sceneEventFilter(QGraphicsItem *watched, QEvent *event)
 {
   if (GraphicsNode *node = dynamic_cast<GraphicsNode *>(watched))
   {
+
     // LOOKING FOR A PORT TO CONNECT: mouse move + connection started
     // (from node) (watched is the node at beginning of the link and
     // this the node currently being hovered and possibly the end of
     // the link)
 
-    if (event->type() == QEvent::GraphicsSceneMouseMove &&
-        node->get_has_connection_started())
+    if (event->type() == QEvent::GraphicsSceneMouseMove && node->has_connection_started)
     {
       QGraphicsSceneMouseEvent *mouse_event = static_cast<QGraphicsSceneMouseEvent *>(
           event);
 
       QPointF item_pos = mouse_event->scenePos() - this->scenePos();
+
+      // update current data type of the building connection
+      if (this->data_type_connecting != node->data_type_connecting)
+      {
+        this->data_type_connecting = node->data_type_connecting;
+        this->update();
+      }
 
       // update hovering port status
       if (this->update_is_port_hovered(item_pos))

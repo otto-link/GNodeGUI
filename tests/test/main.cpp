@@ -90,9 +90,11 @@ int main(int argc, char *argv[])
 
   MyNode   node1("node1");
   LongNode node2("node2");
+  MyNode   node3("node3");
 
   ed.add_node(node1.get_proxy_ref(), QPointF(300, 300));
   ed.add_node(node2.get_proxy_ref(), QPointF(500, 450));
+  ed.add_node(node3.get_proxy_ref(), QPointF(700, 450));
 
   ed.resize(800, 600);
   ed.show();

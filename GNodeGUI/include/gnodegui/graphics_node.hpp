@@ -33,7 +33,7 @@ public:
 
   GraphicsNodeGeometry *get_geometry_ref() { return &(this->geometry); };
 
-  bool get_has_connection_started() const { return this->has_connection_started; }
+  // bool get_has_connection_started() const { return this->has_connection_started; }
 
   NodeProxy *get_proxy_ref() { return this->p_node_proxy; }
 
@@ -66,8 +66,10 @@ private:
   NodeProxy           *p_node_proxy;
   GraphicsNodeGeometry geometry;
   std::vector<bool>    is_port_hovered;
-  bool                 has_connection_started = false;
-  int                  port_index_from;
+
+  bool        has_connection_started = false;
+  int         port_index_from;
+  std::string data_type_connecting = "";
 
   int get_hovered_port_index() const;
 

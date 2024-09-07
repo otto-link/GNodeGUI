@@ -30,6 +30,7 @@ struct Style
     float padding = 6.f;
     float rounding_radius = 8.f;
     float port_radius = 7.f;
+    float port_radius_not_selectable = 6.f;
     float vertical_stretching = 1.3f;
 
     QColor color_bg = QColor(102, 102, 102, 255);
@@ -45,6 +46,7 @@ struct Style
     int thickness_selected = 3;
 
     QColor color_port_data_default = Qt::lightGray;
+    QColor color_port_not_selectable = QColor(102, 102, 102, 255);
 
     std::map<std::string, QColor> color_port_data = {
         {"float", QColor(139, 233, 253, 255)},
