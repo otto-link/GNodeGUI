@@ -156,7 +156,7 @@ void GraphicsNode::paint(QPainter                       *painter,
     painter->setPen(style.node.color_caption);
 
   painter->drawText(this->geometry.caption_pos,
-                    this->get_proxy_ref()->get_label().c_str());
+                    this->get_proxy_ref()->get_caption().c_str());
 
   // --- rectangle border
 
@@ -183,14 +183,19 @@ void GraphicsNode::paint(QPainter                       *painter,
 
     painter->drawText(this->geometry.port_label_rects[k],
                       align_flag,
-                      this->get_proxy_ref()->get_port_label(k).c_str());
+                      this->get_proxy_ref()->get_port_caption(k).c_str());
 
     if (this->is_port_hovered[k])
       painter->setPen(QPen(style.node.color_port_hovered, style.node.thickness_selected));
     else
       painter->setPen(QPen(style.node.color_border, style.node.thickness_border));
 
-    painter->setBrush(QColor(139, 233, 253, 255)); // TODO
+    std::string data_type = this->get_proxy_ref()->get_data_type(k);
+    if (style.node.color_port_data.contains(data_type))
+      painter->setBrush(style.node.color_port_data.at(data_type));
+    else
+      painter->setBrush(style.node.color_port_data_default);
+
     painter->drawEllipse(this->geometry.port_rects[k].center(),
                          0.5f * this->geometry.port_rects[k].width(),
                          0.5f * this->geometry.port_rects[k].height());
@@ -204,15 +209,8 @@ void GraphicsNode::reset_is_port_hovered()
 
 bool GraphicsNode::sceneEventFilter(QGraphicsItem *watched, QEvent *event)
 {
-  // SPDLOG->trace("GraphicsNode::sceneEventFilter");
-
   if (GraphicsNode *node = dynamic_cast<GraphicsNode *>(watched))
   {
-    // SPDLOG->trace("node id watched [{}], this [{}]",
-    //               node->get_proxy_ref()->get_label(),
-    //               this->get_proxy_ref()->get_label());
-    // qDebug() << event->type();
-
     // LOOKING FOR A PORT TO CONNECT: mouse move + connection started
     // (from node) (watched is the node at beginning of the link and
     // this the node currently being hovered and possibly the end of
@@ -225,29 +223,30 @@ bool GraphicsNode::sceneEventFilter(QGraphicsItem *watched, QEvent *event)
           event);
 
       QPointF item_pos = mouse_event->scenePos() - this->scenePos();
+
+      // update hovering port status
       if (this->update_is_port_hovered(item_pos))
+      {
+        // if a port is hovered, check that the port type (in/out)
+        // and data type are compatible with the incoming link,
+        // deactivate hovering for this port
+        for (int k = 0; k < this->get_proxy_ref()->get_nports(); k++)
+          if (this->is_port_hovered[k])
+          {
+            int from_pidx = node->port_index_from;
+
+            PortType from_ptype = node->get_proxy_ref()->get_port_type(from_pidx);
+            PortType to_ptype = this->get_proxy_ref()->get_port_type(k);
+
+            std::string from_pdata = node->get_proxy_ref()->get_data_type(from_pidx);
+            std::string to_pdata = this->get_proxy_ref()->get_data_type(k);
+
+            if (from_ptype == to_ptype || from_pdata != to_pdata)
+              this->is_port_hovered[k] = false;
+          }
         this->update();
+      }
     }
-
-    // // DESTINATION PORT HAS BEEN CHOSEN: mouse left release +
-    // // connection started (from node) + a port is hovered (to node)
-
-    // int hovered_port_index = this->get_hovered_port_index();
-
-    // if (event->type() == QEvent::GraphicsSceneMouseRelease &&
-    //     node->get_has_connection_started() && hovered_port_index >= 0)
-    // {
-    //   SPDLOG->trace("connect end");
-
-    //   QGraphicsSceneMouseEvent *mouse_event = static_cast<QGraphicsSceneMouseEvent *>(
-    //       event);
-
-    //   if (mouse_event->button() == Qt::LeftButton)
-    //   {
-    //     SPDLOG->trace("left release");
-    //     // node->port_index_to = hovered_port_index;
-    //   }
-    // }
   }
 
   return QGraphicsRectItem::sceneEventFilter(watched, event);
@@ -260,9 +259,6 @@ bool GraphicsNode::update_is_port_hovered(QPointF item_pos)
     if (this->geometry.port_rects[k].contains(item_pos))
     {
       this->is_port_hovered[k] = true;
-      // SPDLOG->trace("{}:{} hovered",
-      //               this->get_proxy_ref()->get_label(),
-      //               this->get_proxy_ref()->get_port_label(k));
       return true;
     }
 

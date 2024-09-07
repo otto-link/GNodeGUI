@@ -183,10 +183,10 @@ void GraphEditor::on_connection_dropped(GraphicsNode *from,
 
     SPDLOG->trace("GraphEditor::on_connection_dropped connection_dropped {}:{}",
                   from->get_proxy_ref()->get_id(),
-                  from->get_proxy_ref()->get_port_label(port_index));
+                  from->get_proxy_ref()->get_port_id(port_index));
 
     Q_EMIT this->connection_dropped(from->get_proxy_ref()->get_id(),
-                                    from->get_proxy_ref()->get_port_label(port_index),
+                                    from->get_proxy_ref()->get_port_id(port_index),
                                     scene_pos);
   }
 }
@@ -204,10 +204,10 @@ void GraphEditor::on_connection_finished(GraphicsNode *from_node,
     if (from_node != to_node && from_type != to_type)
     {
       SPDLOG->trace("GraphEditor::on_connection_finished, {}:{} -> {}:{}",
-                    from_node->get_proxy_ref()->get_label(),
-                    from_node->get_proxy_ref()->get_port_label(port_from_index),
-                    to_node->get_proxy_ref()->get_label(),
-                    to_node->get_proxy_ref()->get_port_label(port_to_index));
+                    from_node->get_proxy_ref()->get_caption(),
+                    from_node->get_proxy_ref()->get_port_id(port_from_index),
+                    to_node->get_proxy_ref()->get_caption(),
+                    to_node->get_proxy_ref()->get_port_id(port_to_index));
 
       // Finalize the connection
       QPointF port_from_pos = from_node->scenePos() + from_node->get_geometry_ref()
@@ -224,9 +224,9 @@ void GraphEditor::on_connection_finished(GraphicsNode *from_node,
 
       Q_EMIT this->connection_finished(
           from_node->get_proxy_ref()->get_id(),
-          from_node->get_proxy_ref()->get_port_label(port_from_index),
+          from_node->get_proxy_ref()->get_port_id(port_from_index),
           to_node->get_proxy_ref()->get_id(),
-          to_node->get_proxy_ref()->get_port_label(port_to_index));
+          to_node->get_proxy_ref()->get_port_id(port_to_index));
     }
     else
     {
@@ -254,7 +254,7 @@ void GraphEditor::on_connection_started(GraphicsNode *from_node, int port_index)
   this->scene()->addItem(this->temp_link);
 
   Q_EMIT this->connection_started(from_node->get_proxy_ref()->get_id(),
-                                  from_node->get_proxy_ref()->get_port_label(port_index));
+                                  from_node->get_proxy_ref()->get_port_id(port_index));
 }
 
 void GraphEditor::on_node_right_clicked(const std::string &id, QPointF scene_pos)

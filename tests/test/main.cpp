@@ -13,13 +13,19 @@ class MyNode : public gngui::NodeProxy
 public:
   MyNode(std::string id) : gngui::NodeProxy(id) {}
 
+  std::string get_caption() const override { return "NoiseFbm"; }
+
   std::string get_category() const override { return "Noise/Coherent"; }
 
-  std::string get_label() const override { return "NoiseFbm"; }
+  std::string get_data_type(int port_index) const override
+  {
+    std::vector<std::string> vec = {"float", "float", "float", "int", "int"};
+    return vec[port_index];
+  }
 
   int get_nports() const override { return 5; }
 
-  std::string get_port_label(int port_index) const override
+  std::string get_port_caption(int port_index) const override
   {
     std::vector<std::string> vec = {"in1", "in2", "out1", "in3", "out2"};
     return vec[port_index];
@@ -41,13 +47,19 @@ class LongNode : public gngui::NodeProxy
 public:
   LongNode(std::string id) : gngui::NodeProxy(id) {}
 
+  std::string get_caption() const override { return "Clamp very very long long caption"; }
+
   std::string get_category() const override { return "Math/Range/Bound"; }
 
-  std::string get_label() const override { return "Clamp very very long long caption"; }
+  std::string get_data_type(int port_index) const override
+  {
+    std::vector<std::string> vec = {"float", "image", "int"};
+    return vec[port_index];
+  }
 
   int get_nports() const override { return 3; }
 
-  std::string get_port_label(int port_index) const override
+  std::string get_port_caption(int port_index) const override
   {
     std::vector<std::string> vec = {"in1", "out1", "in2"};
     return vec[port_index];

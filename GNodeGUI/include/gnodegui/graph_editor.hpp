@@ -44,15 +44,15 @@ Q_SIGNALS:
   void node_right_clicked(const std::string &id, QPointF scene_pos);
 
   void connection_dropped(const std::string &id,
-                          const std::string &port_label,
+                          const std::string &port_id,
                           QPointF            scene_pos);
 
   void connection_finished(const std::string &id_from,
-                           const std::string &port_label_from,
+                           const std::string &port_id_from,
                            const std::string &to_from,
-                           const std::string &port_label_to);
+                           const std::string &port_id_to);
 
-  void connection_started(const std::string &id_from, const std::string &port_label_from);
+  void connection_started(const std::string &id_from, const std::string &port_id_from);
 
 protected:
   void delete_selected_items();

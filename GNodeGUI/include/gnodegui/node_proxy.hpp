@@ -69,6 +69,15 @@ struct NodeProxy
   virtual ~NodeProxy() = default;
 
   /**
+   * @brief Get the caption (not the ID) of the node.
+   *
+   * This function is pure virtual and must be implemented by derived classes.
+   *
+   * @return A string representing the caption of the node.
+   */
+  virtual std::string get_caption() const = 0;
+
+  /**
    * @brief Get the category of the node.
    *
    * This function is pure virtual and must be implemented by derived classes.
@@ -78,13 +87,14 @@ struct NodeProxy
   virtual std::string get_category() const = 0;
 
   /**
-   * @brief Get the label of the node.
+   * @brief Get the data type of a specific port (input or output).
    *
    * This function is pure virtual and must be implemented by derived classes.
    *
-   * @return A string representing the label of the node.
+   * @param port_index The index of the port.
+   * @return A string representing the data type of the node (e.g float, int, image...).
    */
-  virtual std::string get_label() const = 0;
+  virtual std::string get_data_type(int port_index) const = 0;
 
   /**
    * @brief Get the number of ports in the node.
@@ -96,14 +106,30 @@ struct NodeProxy
   virtual int get_nports() const = 0;
 
   /**
-   * @brief Get the label of a specific port.
+   * @brief Get the caption (not the ID) of a specific port.
    *
    * This function is pure virtual and must be implemented by derived classes.
    *
    * @param port_index The index of the port.
-   * @return A string representing the label of the specified port.
+   * @return A string representing the caption of the specified port.
    */
-  virtual std::string get_port_label(int port_index) const = 0;
+  virtual std::string get_port_caption(int port_index) const = 0;
+
+  /**
+   * @brief Get the unique ID of a specific port.
+   *
+   * This function returns the unique identifier (ID) of a port at the specified index.
+   * It can be overridden by derived classes to provide a custom ID. By default, this
+   * method returns the port caption as the unique ID, as it is generally unique enough.
+   *
+   * @param port_index The index of the port.
+   * @return A string representing the unique ID of the specified port.
+   */
+  virtual std::string get_port_id(int port_index) const
+  {
+    // Generally, the port caption is unique enough to use it as a unique port ID.
+    return this->get_port_caption(port_index);
+  }
 
   /**
    * @brief Get the type of a specific port (input or output).

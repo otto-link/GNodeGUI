@@ -10,6 +10,8 @@
  * GNU General Public License. See the file LICENSE for the full license.
  */
 #pragma once
+#include <map>
+
 #include <QColor>
 
 namespace gngui
@@ -41,6 +43,12 @@ struct Style
 
     int thickness_border = 2;
     int thickness_selected = 3;
+
+    QColor color_port_data_default = Qt::lightGray;
+
+    std::map<std::string, QColor> color_port_data = {
+        {"float", QColor(139, 233, 253, 255)},
+        {"int", QColor(189, 147, 249, 255)}};
   } node;
 
   struct Link

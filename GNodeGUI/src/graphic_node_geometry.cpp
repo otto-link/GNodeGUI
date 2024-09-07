@@ -26,7 +26,7 @@ GraphicsNodeGeometry::GraphicsNodeGeometry(NodeProxy *p_node_proxy)
 
   // node caption
   this->caption_size = font_metrics.size(Qt::TextSingleLine,
-                                         this->p_node_proxy->get_label().c_str());
+                                         this->p_node_proxy->get_caption().c_str());
 
   this->caption_pos = QPointF(margin + style.node.padding, dy);
 
