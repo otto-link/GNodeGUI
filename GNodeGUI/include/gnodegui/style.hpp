@@ -24,7 +24,7 @@ struct Style
     QColor color_bg = QColor(42, 42, 42, 255);
   } editor;
 
-  struct Node // TODO hover mode => increased thickness
+  struct Node
   {
     float width = 128.f;
     float padding = 6.f;
@@ -36,16 +36,16 @@ struct Style
     QColor color_bg = QColor(102, 102, 102, 255);
     QColor color_bg_light = QColor(108, 108, 108, 255);
     QColor color_border = Qt::black;
-    QColor color_border_hovered = QColor(68, 71, 90, 255); // Qt::black;
+    QColor color_border_hovered = QColor(70, 70, 70, 255); // Qt::black;
     QColor color_caption = Qt::white;
     QColor color_selected = QColor(80, 250, 123, 255);
 
     QColor color_port_hovered = Qt::white; // QColor(180, 180, 180, 255);
     QColor color_port_selected = QColor(80, 250, 123, 255);
 
-    int thickness_border = 2;
-    int thickness_hovered = 2;
-    int thickness_selected = 3;
+    int pen_width = 2;
+    int pen_width_hovered = 2;
+    int pen_width_selected = 3;
 
     QColor color_port_data_default = Qt::lightGray;
     QColor color_port_not_selectable = QColor(102, 102, 102, 255);
@@ -58,6 +58,7 @@ struct Style
   struct Link
   {
     float  pen_width = 1.f;
+    float  pen_width_hovered = 2.f;
     float  pen_width_selected = 3.f;
     float  port_tip_radius = 2.f;
     float  control_point_dx = 50.f;

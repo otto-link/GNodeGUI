@@ -43,13 +43,22 @@ protected:
   // add some margin to take into account additional items painted around the link
   QRectF boundingRect() const override;
 
+  void hoverEnterEvent(QGraphicsSceneHoverEvent *event) override;
+
+  void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) override;
+
   void paint(QPainter                       *painter,
              const QStyleOptionGraphicsItem *option,
              QWidget                        *widget) override;
 
+  // Override shape() to enlarge the clickable area around the path
+  QPainterPath shape() const override;
+
 private:
   QColor   color;
   LinkType link_type;
+
+  bool is_link_hovered = false;
 };
 
 } // namespace gngui

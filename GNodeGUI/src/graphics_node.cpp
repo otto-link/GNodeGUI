@@ -183,11 +183,11 @@ void GraphicsNode::paint(QPainter                       *painter,
   // --- Border ---
   painter->setBrush(Qt::NoBrush);
   if (this->isSelected())
-    painter->setPen(QPen(style.node.color_selected, style.node.thickness_selected));
+    painter->setPen(QPen(style.node.color_selected, style.node.pen_width_selected));
   else if (this->is_node_hovered)
-    painter->setPen(QPen(style.node.color_border_hovered, style.node.thickness_hovered));
+    painter->setPen(QPen(style.node.color_border_hovered, style.node.pen_width_hovered));
   else
-    painter->setPen(QPen(style.node.color_border, style.node.thickness_border));
+    painter->setPen(QPen(style.node.color_border, style.node.pen_width));
 
   painter->drawRoundedRect(this->geometry.body_rect,
                            style.node.rounding_radius,
@@ -209,12 +209,12 @@ void GraphicsNode::paint(QPainter                       *painter,
 
     // Port appearance when hovered or not
     if (this->is_port_hovered[k])
-      painter->setPen(QPen(style.node.color_port_hovered, style.node.thickness_selected));
+      painter->setPen(QPen(style.node.color_port_hovered, style.node.pen_width_selected));
     else if (this->is_node_hovered)
       painter->setPen(
-          QPen(style.node.color_border_hovered, style.node.thickness_hovered));
+          QPen(style.node.color_border_hovered, style.node.pen_width_hovered));
     else
-      painter->setPen(QPen(style.node.color_border, style.node.thickness_border));
+      painter->setPen(QPen(style.node.color_border, style.node.pen_width));
 
     // Set port brush based on data type compatibility
     std::string data_type = this->get_proxy_ref()->get_data_type(k);

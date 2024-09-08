@@ -17,6 +17,7 @@ GraphicsLink::GraphicsLink(QColor color, LinkType link_type, QGraphicsItem *pare
 {
   this->setFlag(QGraphicsItem::ItemIsSelectable, true);
   this->setFlag(QGraphicsItem::ItemIsMovable, false);
+  this->setAcceptHoverEvents(true);
 
   if (this->color == QColor(0, 0, 0, 0))
     this->color = style.link.color_default;
@@ -35,6 +36,22 @@ QRectF GraphicsLink::boundingRect() const
   return bbox;
 }
 
+void GraphicsLink::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
+{
+  this->is_link_hovered = true;
+  this->update();
+
+  QGraphicsPathItem::hoverEnterEvent(event);
+}
+
+void GraphicsLink::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
+{
+  this->is_link_hovered = false;
+  this->update();
+
+  QGraphicsPathItem::hoverLeaveEvent(event);
+}
+
 void GraphicsLink::paint(QPainter                       *painter,
                          const QStyleOptionGraphicsItem *option,
                          QWidget                        *widget)
@@ -43,8 +60,10 @@ void GraphicsLink::paint(QPainter                       *painter,
   Q_UNUSED(widget);
 
   QColor pcolor = this->isSelected() ? style.link.color_selected : this->color;
-  float  pwidth = this->isSelected() ? style.link.pen_width_selected
-                                     : style.link.pen_width;
+  float  pwidth = this->is_link_hovered
+                      ? style.link.pen_width_hovered
+                      : (this->isSelected() ? style.link.pen_width_selected
+                                            : style.link.pen_width);
 
   // link
   painter->setBrush(Qt::NoBrush);
@@ -86,6 +105,14 @@ void GraphicsLink::set_link_type(const LinkType &new_link_type)
 {
   this->link_type = new_link_type;
   this->update();
+}
+
+QPainterPath GraphicsLink::shape() const
+{
+  QPainterPathStroker stroker;
+  stroker.setWidth(40);
+  QPainterPath widened_path = stroker.createStroke(path());
+  return widened_path.united(path());
 }
 
 } // namespace gngui
