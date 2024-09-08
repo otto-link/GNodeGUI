@@ -36,6 +36,7 @@ struct Style
     QColor color_bg = QColor(102, 102, 102, 255);
     QColor color_bg_light = QColor(108, 108, 108, 255);
     QColor color_border = Qt::black;
+    QColor color_border_hovered = QColor(68, 71, 90, 255); // Qt::black;
     QColor color_caption = Qt::white;
     QColor color_selected = QColor(80, 250, 123, 255);
 
@@ -43,6 +44,7 @@ struct Style
     QColor color_port_selected = QColor(80, 250, 123, 255);
 
     int thickness_border = 2;
+    int thickness_hovered = 2;
     int thickness_selected = 3;
 
     QColor color_port_data_default = Qt::lightGray;

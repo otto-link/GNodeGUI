@@ -13,7 +13,7 @@ namespace gngui
 {
 
 GraphicsLink::GraphicsLink(QColor color, LinkType link_type, QGraphicsItem *parent)
-    : color(color), link_type(link_type), QGraphicsPathItem(parent)
+    : QGraphicsPathItem(parent), color(color), link_type(link_type)
 {
   this->setFlag(QGraphicsItem::ItemIsSelectable, true);
   this->setFlag(QGraphicsItem::ItemIsMovable, false);

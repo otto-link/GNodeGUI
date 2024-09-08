@@ -39,6 +39,22 @@ int GraphicsNode::get_hovered_port_index() const
              : -1;
 }
 
+void GraphicsNode::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
+{
+  this->is_node_hovered = true;
+  this->update();
+
+  QGraphicsRectItem::hoverEnterEvent(event);
+}
+
+void GraphicsNode::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
+{
+  this->is_node_hovered = false;
+  this->update();
+
+  QGraphicsRectItem::hoverLeaveEvent(event);
+}
+
 void GraphicsNode::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
 {
   QPointF pos = event->pos();
@@ -150,33 +166,26 @@ void GraphicsNode::paint(QPainter                       *painter,
   Q_UNUSED(option);
   Q_UNUSED(widget);
 
-  // painter->setPen(Qt::red);
-  // painter->drawRoundedRect(this->rect(), 8.f, 8.f);
-
-  // --- background rectangle
-
+  // --- Background rectangle ---
   painter->setBrush(QBrush(style.node.color_bg));
   painter->setPen(Qt::NoPen);
   painter->drawRoundedRect(this->geometry.body_rect,
                            style.node.rounding_radius,
                            style.node.rounding_radius);
 
-  // ---caption
-
-  if (this->isSelected())
-    painter->setPen(style.node.color_selected);
-  else
-    painter->setPen(style.node.color_caption);
-
+  // --- Caption ---
+  // Set pen based on whether the node is selected or not
+  painter->setPen(this->isSelected() ? style.node.color_selected
+                                     : style.node.color_caption);
   painter->drawText(this->geometry.caption_pos,
                     this->get_proxy_ref()->get_caption().c_str());
 
-  // --- rectangle border
-
+  // --- Border ---
   painter->setBrush(Qt::NoBrush);
-
   if (this->isSelected())
     painter->setPen(QPen(style.node.color_selected, style.node.thickness_selected));
+  else if (this->is_node_hovered)
+    painter->setPen(QPen(style.node.color_border_hovered, style.node.thickness_hovered));
   else
     painter->setPen(QPen(style.node.color_border, style.node.thickness_border));
 
@@ -184,38 +193,45 @@ void GraphicsNode::paint(QPainter                       *painter,
                            style.node.rounding_radius,
                            style.node.rounding_radius);
 
-  // --- ports
-
+  // --- Ports ---
   for (int k = 0; k < this->p_node_proxy->get_nports(); k++)
   {
-    // k is port index
-    painter->setPen(Qt::white);
-
-    int align_flag = this->get_proxy_ref()->get_port_type(k) == PortType::IN
+    // Set alignment based on port type (IN/OUT)
+    int align_flag = (this->get_proxy_ref()->get_port_type(k) == PortType::IN)
                          ? Qt::AlignLeft
                          : Qt::AlignRight;
 
+    // Draw port labels
+    painter->setPen(Qt::white); // Assuming labels are always white
     painter->drawText(this->geometry.port_label_rects[k],
                       align_flag,
                       this->get_proxy_ref()->get_port_caption(k).c_str());
 
+    // Port appearance when hovered or not
     if (this->is_port_hovered[k])
       painter->setPen(QPen(style.node.color_port_hovered, style.node.thickness_selected));
+    else if (this->is_node_hovered)
+      painter->setPen(
+          QPen(style.node.color_border_hovered, style.node.thickness_hovered));
     else
       painter->setPen(QPen(style.node.color_border, style.node.thickness_border));
 
+    // Set port brush based on data type compatibility
     std::string data_type = this->get_proxy_ref()->get_data_type(k);
-    painter->setBrush(get_color_from_data_type(data_type));
+    float       port_radius = style.node.port_radius;
 
-    float pradius = style.node.port_radius;
-
-    if (this->data_type_connecting != "" && data_type != this->data_type_connecting)
+    if (!this->data_type_connecting.empty() && data_type != this->data_type_connecting)
     {
       painter->setBrush(style.node.color_port_not_selectable);
-      pradius = style.node.port_radius_not_selectable;
+      port_radius = style.node.port_radius_not_selectable;
+    }
+    else
+    {
+      painter->setBrush(get_color_from_data_type(data_type));
     }
 
-    painter->drawEllipse(this->geometry.port_rects[k].center(), pradius, pradius);
+    // Draw the port as a circle (ellipse with equal width and height)
+    painter->drawEllipse(this->geometry.port_rects[k].center(), port_radius, port_radius);
   }
 }
 

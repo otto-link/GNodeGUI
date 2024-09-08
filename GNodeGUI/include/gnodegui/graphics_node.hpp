@@ -50,11 +50,15 @@ Q_SIGNALS:
   void right_clicked(const std::string &id, QPointF scene_pos);
 
 protected:
+  void hoverEnterEvent(QGraphicsSceneHoverEvent *event) override;
+
+  void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) override;
+
+  void hoverMoveEvent(QGraphicsSceneHoverEvent *event) override;
+
   void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
 
   void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
-
-  void hoverMoveEvent(QGraphicsSceneHoverEvent *event) override;
 
   virtual void paint(QPainter                       *painter,
                      const QStyleOptionGraphicsItem *option,
@@ -65,6 +69,7 @@ protected:
 private:
   NodeProxy           *p_node_proxy;
   GraphicsNodeGeometry geometry;
+  bool                 is_node_hovered = false;
   std::vector<bool>    is_port_hovered;
 
   bool        has_connection_started = false;
