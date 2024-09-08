@@ -12,14 +12,17 @@
 namespace gngui
 {
 
-GraphicsLink::GraphicsLink(QGraphicsItem *parent) : QGraphicsPathItem(parent)
+GraphicsLink::GraphicsLink(QColor color, LinkType link_type, QGraphicsItem *parent)
+    : color(color), link_type(link_type), QGraphicsPathItem(parent)
 {
   this->setFlag(QGraphicsItem::ItemIsSelectable, true);
   this->setFlag(QGraphicsItem::ItemIsMovable, false);
 
-  this->link_type = LinkType::CUBIC; // TODO
-  this->color = style.link.color_default;
+  if (this->color == QColor(0, 0, 0, 0))
+    this->color = style.link.color_default;
+
   this->setPen(QPen(this->color, style.link.pen_width));
+  this->setZValue(-1);
 }
 
 QRectF GraphicsLink::boundingRect() const
@@ -69,11 +72,20 @@ void GraphicsLink::set_endpoints(const QPointF &start_point, const QPointF &end_
   QPainterPath path(start_point);
 
   // Define control points for the cubic spline
-  QPointF control_point1(start_point.x() + 50, start_point.y());
-  QPointF control_point2(end_point.x() - 50, end_point.y());
+  float dx = std::copysign(1.f, end_point.x() - start_point.x()) *
+             style.link.control_point_dx;
+
+  QPointF control_point1(start_point.x() + dx, start_point.y());
+  QPointF control_point2(end_point.x() - dx, end_point.y());
   path.cubicTo(control_point1, control_point2, end_point);
 
   this->setPath(path);
+}
+
+void GraphicsLink::set_link_type(const LinkType &new_link_type)
+{
+  this->link_type = new_link_type;
+  this->update();
 }
 
 } // namespace gngui

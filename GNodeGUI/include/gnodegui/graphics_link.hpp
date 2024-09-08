@@ -28,11 +28,16 @@ class GraphicsLink : public QObject, public QGraphicsPathItem
   Q_OBJECT
 
 public:
-  GraphicsLink(QGraphicsItem *parent = nullptr);
+  // TODO link type
+
+  // TODO temp link dashed
+  GraphicsLink(QColor         color = QColor(0, 0, 0, 0),
+               LinkType       link_type = LinkType::CUBIC,
+               QGraphicsItem *parent = nullptr);
 
   void set_endpoints(const QPointF &start_point, const QPointF &end_point);
 
-  void set_link_type(const LinkType &new_link_type) { this->link_type = new_link_type; }
+  void set_link_type(const LinkType &new_link_type);
 
 protected:
   // add some margin to take into account additional items painted around the link

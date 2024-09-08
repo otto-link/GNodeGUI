@@ -245,7 +245,8 @@ void GraphEditor::on_connection_started(GraphicsNode *from_node, int port_index)
 {
   this->source_node = from_node;
 
-  this->temp_link = new GraphicsLink();
+  this->temp_link = new GraphicsLink(
+      get_color_from_data_type(from_node->get_proxy_ref()->get_data_type(port_index)));
 
   QPointF port_pos = from_node->scenePos() +
                      from_node->get_geometry_ref()->port_rects[port_index].center();

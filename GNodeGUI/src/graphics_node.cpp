@@ -188,6 +188,7 @@ void GraphicsNode::paint(QPainter                       *painter,
 
   for (int k = 0; k < this->p_node_proxy->get_nports(); k++)
   {
+    // k is port index
     painter->setPen(Qt::white);
 
     int align_flag = this->get_proxy_ref()->get_port_type(k) == PortType::IN
@@ -204,10 +205,7 @@ void GraphicsNode::paint(QPainter                       *painter,
       painter->setPen(QPen(style.node.color_border, style.node.thickness_border));
 
     std::string data_type = this->get_proxy_ref()->get_data_type(k);
-    if (style.node.color_port_data.contains(data_type))
-      painter->setBrush(style.node.color_port_data.at(data_type));
-    else
-      painter->setBrush(style.node.color_port_data_default);
+    painter->setBrush(get_color_from_data_type(data_type));
 
     float pradius = style.node.port_radius;
 
