@@ -237,9 +237,11 @@ void GraphicsNode::paint(QPainter                       *painter,
       painter->setPen(QPen(style.node.color_port_hovered, style.node.pen_width_hovered));
     else
     {
-      if (this->isSelected())
-        painter->setPen(QPen(style.node.color_selected, style.node.pen_width_selected));
-      else if (this->is_node_hovered)
+      // if (this->isSelected())
+      //   painter->setPen(QPen(style.node.color_selected,
+      //   style.node.pen_width_selected));
+      // else
+      if (this->is_node_hovered)
         painter->setPen(
             QPen(style.node.color_border_hovered, style.node.pen_width_hovered));
       else

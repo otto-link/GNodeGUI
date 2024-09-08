@@ -43,9 +43,9 @@ struct Style
     QColor color_port_hovered = Qt::white; // QColor(180, 180, 180, 255);
     QColor color_port_selected = QColor(80, 250, 123, 255);
 
-    float pen_width = 2;
-    float pen_width_hovered = 3;
-    float pen_width_selected = 3;
+    float pen_width = 1.5;
+    float pen_width_hovered = 2;
+    float pen_width_selected = 2;
 
     QColor color_port_data_default = Qt::lightGray;
     QColor color_port_not_selectable = QColor(102, 102, 102, 255);
