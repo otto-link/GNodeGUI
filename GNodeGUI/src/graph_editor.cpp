@@ -83,14 +83,14 @@ void GraphEditor::delete_graphics_link(GraphicsLink *p_link)
   int           port_out = p_link->get_port_out_index();
   int           port_in = p_link->get_port_in_index();
 
-  SPDLOG->trace("GraphEditor::delete_selected_items, {}:{} -> {}:{}",
+  SPDLOG->trace("GraphEditor::delete_graphics_link, {}:{} -> {}:{}",
                 node_out->get_id(),
                 node_out->get_port_id(port_out),
                 node_in->get_id(),
                 node_in->get_port_id(port_in));
 
-  node_out->set_is_port_connected(port_out, false); // actually useless
-  node_in->set_is_port_connected(port_in, false);
+  node_out->set_is_port_connected(port_out, nullptr);
+  node_in->set_is_port_connected(port_in, nullptr);
 
   delete p_link;
 
@@ -130,21 +130,23 @@ void GraphEditor::delete_selected_items()
   if (!scene)
     return;
 
-  // iterate over the selected items and delete them
-  QList<QGraphicsItem *> selected_items = scene->selectedItems();
-
-  for (QGraphicsItem *item : selected_items)
+  for (QGraphicsItem *item : scene->selectedItems())
   {
-    scene->removeItem(item);
-
-    if (GraphicsNode *p_node = qgraphicsitem_cast<GraphicsNode *>(item))
-      this->delete_graphics_node(p_node);
-    else if (GraphicsLink *p_link = qgraphicsitem_cast<GraphicsLink *>(item))
-      this->delete_graphics_link(p_link);
-    else
+    // remove item from the scene (if it's not already removed by one
+    // the methods called bellow)
+    if (scene->items().contains(item))
     {
-      SPDLOG->trace("item removed");
-      delete item;
+      scene->removeItem(item);
+
+      if (GraphicsNode *p_node = qgraphicsitem_cast<GraphicsNode *>(item))
+        this->delete_graphics_node(p_node);
+      else if (GraphicsLink *p_link = qgraphicsitem_cast<GraphicsLink *>(item))
+        this->delete_graphics_link(p_link);
+      else
+      {
+        SPDLOG->trace("item removed");
+        delete item;
+      }
     }
   }
 }
@@ -321,8 +323,8 @@ void GraphEditor::on_connection_finished(GraphicsNode *from_node,
         int port_out = this->temp_link->get_port_out_index();
         int port_in = this->temp_link->get_port_in_index();
 
-        node_out->set_is_port_connected(port_out, true); // actually useless
-        node_in->set_is_port_connected(port_in, true);
+        node_out->set_is_port_connected(port_out, this->temp_link);
+        node_in->set_is_port_connected(port_in, this->temp_link);
 
         SPDLOG->trace("GraphEditor::on_connection_finished, {}:{} -> {}:{}",
                       node_out->get_id(),

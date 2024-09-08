@@ -71,6 +71,21 @@ void GraphicsLink::paint(QPainter                       *painter,
   pen.setStyle(this->pen_style);
   painter->setPen(pen);
   painter->setBrush(Qt::NoBrush);
+
+  // update path
+  if (this->node_out && this->node_in)
+  {
+    QPointF start_point = this->node_out->scenePos() + this->node_out->get_geometry_ref()
+                                                           ->port_rects[port_out_index]
+                                                           .center();
+    QPointF end_point = this->node_in->scenePos() + this->node_in->get_geometry_ref()
+                                                        ->port_rects[port_in_index]
+                                                        .center();
+
+    this->set_endpoints(start_point, end_point);
+  }
+
+  // draw path
   painter->drawPath(this->path());
 
   // port tips
@@ -124,8 +139,9 @@ void GraphicsLink::set_endpoints(const QPointF &start_point, const QPointF &end_
   QPainterPath path(start_point);
 
   // Define control points for the cubic spline
-  float dx = std::copysign(1.f, end_point.x() - start_point.x()) *
-             style.link.control_point_dx;
+  // float dx = std::copysign(1.f, end_point.x() - start_point.x()) *
+  //            style.link.control_point_dx;
+  float dx = style.link.control_point_dx;
 
   QPointF control_point1(start_point.x() + dx, start_point.y());
   QPointF control_point2(end_point.x() - dx, end_point.y());

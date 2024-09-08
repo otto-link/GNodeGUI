@@ -7,6 +7,7 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QPainter>
 
+#include "gnodegui/graphics_link.hpp"
 #include "gnodegui/graphics_node.hpp"
 #include "gnodegui/logger.hpp"
 #include "gnodegui/style.hpp"
@@ -29,7 +30,7 @@ GraphicsNode::GraphicsNode(NodeProxy *p_node_proxy, QGraphicsItem *parent)
   this->geometry = GraphicsNodeGeometry(this->p_node_proxy);
   this->setRect(0.f, 0.f, this->geometry.full_width, this->geometry.full_height);
   this->is_port_hovered.resize(this->p_node_proxy->get_nports());
-  this->is_port_connected.resize(this->p_node_proxy->get_nports());
+  this->connected_link_ref.resize(this->p_node_proxy->get_nports());
 }
 
 int GraphicsNode::get_hovered_port_index() const
@@ -73,8 +74,17 @@ bool GraphicsNode::is_port_available(int port_index)
   if (this->get_port_type(port_index) == PortType::OUT)
     return true;
   else
-    return !this->is_port_connected[port_index];
+    return !this->connected_link_ref[port_index];
 }
+
+// void GraphicsNode::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+// {
+//   // // move links
+//   // for (auto p_link : connected_link_ref)
+//   //   p_link->update();
+
+//   QGraphicsRectItem::mouseMoveEvent(event);
+// }
 
 void GraphicsNode::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
@@ -93,6 +103,11 @@ void GraphicsNode::mousePressEvent(QGraphicsSceneMouseEvent *event)
       Q_EMIT connection_started(this, hovered_port_index);
       event->accept();
     }
+    else
+    {
+      this->is_node_dragged = true;
+      SPDLOG->trace("node dragging starts");
+    }
   }
 
   else if (event->button() == Qt::RightButton)
@@ -105,7 +120,12 @@ void GraphicsNode::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
   if (event->button() == Qt::LeftButton)
   {
-    if (this->has_connection_started)
+    if (this->is_node_dragged)
+    {
+      this->is_node_dragged = false;
+      SPDLOG->trace("node dragging stop");
+    }
+    else if (this->has_connection_started)
     {
       // get all items at the mouse release position (in stacking order)
       QList<QGraphicsItem *> items_under_mouse = scene()->items(event->scenePos());
@@ -212,14 +232,19 @@ void GraphicsNode::paint(QPainter                       *painter,
                       align_flag,
                       this->get_port_caption(k).c_str());
 
-    // Port appearance when hovered or not
+    // Port appearance when selected or not
     if (this->is_port_hovered[k])
-      painter->setPen(QPen(style.node.color_port_hovered, style.node.pen_width_selected));
-    else if (this->is_node_hovered)
-      painter->setPen(
-          QPen(style.node.color_border_hovered, style.node.pen_width_hovered));
+      painter->setPen(QPen(style.node.color_port_hovered, style.node.pen_width_hovered));
     else
-      painter->setPen(QPen(style.node.color_border, style.node.pen_width));
+    {
+      if (this->isSelected())
+        painter->setPen(QPen(style.node.color_selected, style.node.pen_width_selected));
+      else if (this->is_node_hovered)
+        painter->setPen(
+            QPen(style.node.color_border_hovered, style.node.pen_width_hovered));
+      else
+        painter->setPen(QPen(style.node.color_border, style.node.pen_width));
+    }
 
     // Set port brush based on data type compatibility
     std::string data_type = this->get_data_type(k);
@@ -231,9 +256,7 @@ void GraphicsNode::paint(QPainter                       *painter,
       port_radius = style.node.port_radius_not_selectable;
     }
     else
-    {
       painter->setBrush(get_color_from_data_type(data_type));
-    }
 
     // Draw the port as a circle (ellipse with equal width and height)
     painter->drawEllipse(this->geometry.port_rects[k].center(), port_radius, port_radius);

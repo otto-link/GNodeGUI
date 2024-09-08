@@ -17,12 +17,15 @@
 #include <QMouseEvent>
 #include <QObject>
 
+#include "gnodegui/graphics_link.hpp"
 #include "gnodegui/graphics_node_geometry.hpp"
 #include "gnodegui/logger.hpp"
 #include "gnodegui/node_proxy.hpp"
 
 namespace gngui
 {
+
+class GraphicsLink;
 
 class GraphicsNode : public QObject, public QGraphicsRectItem
 {
@@ -67,9 +70,10 @@ public:
   // multiple inputs
   bool is_port_available(int port_index);
 
-  void set_is_port_connected(int port_index, bool new_state)
+  // set to nullptr to flag a disconnect port
+  void set_is_port_connected(int port_index, GraphicsLink *p_link)
   {
-    this->is_port_connected[port_index] = new_state;
+    this->connected_link_ref[port_index] = p_link;
   }
 
 Q_SIGNALS:
@@ -91,6 +95,8 @@ protected:
 
   void hoverMoveEvent(QGraphicsSceneHoverEvent *event) override;
 
+  // void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
+
   void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
 
   void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
@@ -102,11 +108,12 @@ protected:
   bool sceneEventFilter(QGraphicsItem *watched, QEvent *event) override;
 
 private:
-  NodeProxy           *p_node_proxy;
-  GraphicsNodeGeometry geometry;
-  bool                 is_node_hovered = false;
-  std::vector<bool>    is_port_hovered;
-  std::vector<bool>    is_port_connected;
+  NodeProxy                  *p_node_proxy;
+  GraphicsNodeGeometry        geometry;
+  bool                        is_node_dragged = false;
+  bool                        is_node_hovered = false;
+  std::vector<bool>           is_port_hovered;
+  std::vector<GraphicsLink *> connected_link_ref;
 
   bool        has_connection_started = false;
   int         port_index_from;

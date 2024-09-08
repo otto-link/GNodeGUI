@@ -20,6 +20,8 @@
 namespace gngui
 {
 
+class GraphicsNode;
+
 enum LinkType
 {
   CUBIC,
