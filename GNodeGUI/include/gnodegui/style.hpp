@@ -65,6 +65,16 @@ struct Style
     QColor color_default = Qt::lightGray;
     QColor color_selected = QColor(80, 250, 123, 255);
   } link;
+
+  struct Group
+  {
+    float rounding_radius = 8.f;
+
+    QColor color = Qt::white;
+    QColor color_fill = QColor(255, 255, 255, 16);
+    QColor color_hovered = Qt::lightGray;
+    QColor color_selected = QColor(80, 250, 123, 255);
+  } group;
 };
 
 static Style style;

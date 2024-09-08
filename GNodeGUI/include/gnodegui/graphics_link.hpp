@@ -32,7 +32,7 @@ class GraphicsLink : public QObject, public QGraphicsPathItem
   Q_OBJECT
 
 public:
-  // TODO temp link dashed
+  // TODO fix zbuffer and selection
   GraphicsLink(QColor         color = QColor(0, 0, 0, 0),
                LinkType       link_type = LinkType::CUBIC,
                QGraphicsItem *parent = nullptr);

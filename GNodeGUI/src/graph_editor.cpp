@@ -171,12 +171,12 @@ void GraphEditor::export_to_graphviz(const std::string &fname)
 
   // Output nodes with their labels
   for (QGraphicsItem *item : this->scene()->items())
-    if (GraphicsNode *p_node = qgraphicsitem_cast<GraphicsNode *>(item))
+    if (GraphicsNode *p_node = dynamic_cast<GraphicsNode *>(item))
       file << p_node->get_id() << " [label=\"" << p_node->get_caption() << "("
            << p_node->get_id() << ")" << "\"];\n";
 
   for (QGraphicsItem *item : this->scene()->items())
-    if (GraphicsLink *p_link = qgraphicsitem_cast<GraphicsLink *>(item))
+    if (GraphicsLink *p_link = dynamic_cast<GraphicsLink *>(item))
       file << "\"" << p_link->get_node_out()->get_id() << "\" -> \""
            << p_link->get_node_in()->get_id() << "\" [fontsize=8, label=\""
            << p_link->get_node_out()->get_port_id(p_link->get_port_out_index()) << " - "

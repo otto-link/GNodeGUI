@@ -104,10 +104,7 @@ void GraphicsNode::mousePressEvent(QGraphicsSceneMouseEvent *event)
       event->accept();
     }
     else
-    {
       this->is_node_dragged = true;
-      SPDLOG->trace("node dragging starts");
-    }
   }
 
   else if (event->button() == Qt::RightButton)
@@ -123,7 +120,6 @@ void GraphicsNode::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     if (this->is_node_dragged)
     {
       this->is_node_dragged = false;
-      SPDLOG->trace("node dragging stop");
     }
     else if (this->has_connection_started)
     {

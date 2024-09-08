@@ -2,6 +2,7 @@
 #include <QFont>
 
 #include "gnodegui/graph_editor.hpp"
+#include "gnodegui/graphics_group.hpp"
 #include "gnodegui/graphics_node.hpp"
 #include "gnodegui/logger.hpp"
 #include "gnodegui/node_proxy.hpp"
@@ -81,7 +82,8 @@ int main(int argc, char *argv[])
 {
   QApplication app(argc, argv);
 
-  QFont font("Roboto");
+  // QFont font("Roboto");
+  QFont font("Aptos");
   font.setPointSize(10);
   app.setFont(font);
 
@@ -96,6 +98,8 @@ int main(int argc, char *argv[])
   ed.add_node(node1.get_proxy_ref(), QPointF(300, 300));
   ed.add_node(node2.get_proxy_ref(), QPointF(500, 450));
   ed.add_node(node3.get_proxy_ref(), QPointF(700, 250));
+
+  ed.add_item(new gngui::GraphicsGroup(), QPointF(200, 300));
 
   ed.resize(800, 600);
   ed.show();
