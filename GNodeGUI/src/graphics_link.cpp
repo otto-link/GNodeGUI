@@ -66,8 +66,11 @@ void GraphicsLink::paint(QPainter                       *painter,
                                             : style.link.pen_width);
 
   // link
+  QPen pen(pcolor);
+  pen.setWidth(pwidth);
+  pen.setStyle(this->pen_style);
+  painter->setPen(pen);
   painter->setBrush(Qt::NoBrush);
-  painter->setPen(QPen(pcolor, pwidth));
   painter->drawPath(this->path());
 
   // port tips
@@ -83,6 +86,36 @@ void GraphicsLink::paint(QPainter                       *painter,
     painter->drawEllipse(end_point,
                          style.link.port_tip_radius,
                          style.link.port_tip_radius);
+  }
+}
+
+void GraphicsLink::set_endnodes(GraphicsNode *from,
+                                int           port_from_index,
+                                GraphicsNode *to,
+                                int           port_to_index)
+{
+  if (!from || !to)
+  {
+    SPDLOG->warn("GraphicsLink::set_endnodes: invalid nodes provided for GraphicsLink.");
+    return;
+  }
+
+  // put the ports in the right order (from output to input)
+  if (from->get_proxy_ref()->get_port_type(port_from_index) == PortType::OUT)
+  {
+    // 'from' is the output node, 'to' is the input node
+    this->node_out = from;
+    this->port_out_index = port_from_index;
+    this->node_in = to;
+    this->port_in_index = port_to_index;
+  }
+  else
+  {
+    // 'from' is the input node, 'to' is the output node
+    this->node_in = from;
+    this->port_in_index = port_from_index;
+    this->node_out = to;
+    this->port_out_index = port_to_index;
   }
 }
 

@@ -33,9 +33,16 @@ public:
 
   GraphicsNodeGeometry *get_geometry_ref() { return &(this->geometry); };
 
-  // bool get_has_connection_started() const { return this->has_connection_started; }
-
   NodeProxy *get_proxy_ref() { return this->p_node_proxy; }
+
+  // always returns true for outputs since we accept multiple links from one output to
+  // multiple inputs
+  bool is_port_available(int port_index);
+
+  void set_is_port_connected(int port_index, bool new_state)
+  {
+    this->is_port_connected[port_index] = new_state;
+  }
 
 Q_SIGNALS:
   void connection_dropped(GraphicsNode *from, int port_index, QPointF scene_pos);
@@ -71,6 +78,7 @@ private:
   GraphicsNodeGeometry geometry;
   bool                 is_node_hovered = false;
   std::vector<bool>    is_port_hovered;
+  std::vector<bool>    is_port_connected;
 
   bool        has_connection_started = false;
   int         port_index_from;

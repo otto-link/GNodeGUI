@@ -43,14 +43,19 @@ Q_SIGNALS:
 
   void node_right_clicked(const std::string &id, QPointF scene_pos);
 
+  void connection_deleted(const std::string &id_out,
+                          const std::string &port_id_out,
+                          const std::string &to_in,
+                          const std::string &port_id_in);
+
   void connection_dropped(const std::string &id,
                           const std::string &port_id,
                           QPointF            scene_pos);
 
-  void connection_finished(const std::string &id_from,
-                           const std::string &port_id_from,
-                           const std::string &to_from,
-                           const std::string &port_id_to);
+  void connection_finished(const std::string &id_out,
+                           const std::string &port_id_out,
+                           const std::string &to_in,
+                           const std::string &port_id_in);
 
   void connection_started(const std::string &id_from, const std::string &port_id_from);
 
@@ -72,6 +77,7 @@ protected:
 private Q_SLOTS:
   void on_connection_dropped(GraphicsNode *from, int port_index, QPointF scene_pos);
 
+  // reordered: 'from' is 'output' and 'to' is 'input'
   void on_connection_finished(GraphicsNode *from_node,
                               int           port_from_index,
                               GraphicsNode *to_node,

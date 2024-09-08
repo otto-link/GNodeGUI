@@ -29,6 +29,7 @@ GraphicsNode::GraphicsNode(NodeProxy *p_node_proxy, QGraphicsItem *parent)
   this->geometry = GraphicsNodeGeometry(this->p_node_proxy);
   this->setRect(0.f, 0.f, this->geometry.full_width, this->geometry.full_height);
   this->is_port_hovered.resize(this->p_node_proxy->get_nports());
+  this->is_port_connected.resize(this->p_node_proxy->get_nports());
 }
 
 int GraphicsNode::get_hovered_port_index() const
@@ -65,6 +66,14 @@ void GraphicsNode::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
     this->update();
 
   QGraphicsRectItem::hoverMoveEvent(event);
+}
+
+bool GraphicsNode::is_port_available(int port_index)
+{
+  if (this->get_proxy_ref()->get_port_type(port_index) == PortType::OUT)
+    return true;
+  else
+    return !this->is_port_connected[port_index];
 }
 
 void GraphicsNode::mousePressEvent(QGraphicsSceneMouseEvent *event)
@@ -121,6 +130,7 @@ void GraphicsNode::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
                                        this->port_index_from,
                                        target_node,
                                        hovered_port_index);
+
             is_dropped = false;
             break;
           }

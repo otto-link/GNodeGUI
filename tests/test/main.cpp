@@ -53,15 +53,15 @@ public:
 
   std::string get_data_type(int port_index) const override
   {
-    std::vector<std::string> vec = {"float", "image", "int"};
+    std::vector<std::string> vec = {"float", "image", "int", "float"};
     return vec[port_index];
   }
 
-  int get_nports() const override { return 3; }
+  int get_nports() const override { return 4; }
 
   std::string get_port_caption(int port_index) const override
   {
-    std::vector<std::string> vec = {"in1", "out1", "in2"};
+    std::vector<std::string> vec = {"in1", "out1", "in2", "output"};
     return vec[port_index];
   }
 
@@ -69,7 +69,8 @@ public:
   {
     std::vector<gngui::PortType> vec = {gngui::PortType::IN,
                                         gngui::PortType::OUT,
-                                        gngui::PortType::IN};
+                                        gngui::PortType::IN,
+                                        gngui::PortType::OUT};
     return vec[port_index];
   }
 };

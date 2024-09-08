@@ -80,11 +80,33 @@ void GraphEditor::delete_selected_items()
   {
     scene->removeItem(item);
 
-    GraphicsNode *p_node = qgraphicsitem_cast<GraphicsNode *>(item);
-    if (p_node)
+    if (GraphicsNode *p_node = qgraphicsitem_cast<GraphicsNode *>(item))
     {
-      Q_EMIT this->node_deleted(p_node->get_proxy_ref()->get_id());
       SPDLOG->trace("GraphicsNode removed, id: {}", p_node->get_proxy_ref()->get_id());
+      Q_EMIT this->node_deleted(p_node->get_proxy_ref()->get_id());
+    }
+    else if (GraphicsLink *p_link = qgraphicsitem_cast<GraphicsLink *>(item))
+    {
+      SPDLOG->trace("GraphicsLink removed");
+
+      GraphicsNode *node_out = p_link->get_node_out();
+      GraphicsNode *node_in = p_link->get_node_in();
+      int           port_out = p_link->get_port_out_index();
+      int           port_in = p_link->get_port_in_index();
+
+      SPDLOG->trace("GraphEditor::delete_selected_items, {}:{} -> {}:{}",
+                    node_out->get_proxy_ref()->get_id(),
+                    node_out->get_proxy_ref()->get_port_id(port_out),
+                    node_in->get_proxy_ref()->get_id(),
+                    node_in->get_proxy_ref()->get_port_id(port_in));
+
+      node_out->set_is_port_connected(port_out, false); // actually useless
+      node_in->set_is_port_connected(port_in, false);
+
+      Q_EMIT this->connection_deleted(node_out->get_proxy_ref()->get_id(),
+                                      node_out->get_proxy_ref()->get_port_id(port_out),
+                                      node_in->get_proxy_ref()->get_id(),
+                                      node_in->get_proxy_ref()->get_port_id(port_in));
     }
     else
       SPDLOG->trace("item removed");
@@ -201,14 +223,10 @@ void GraphEditor::on_connection_finished(GraphicsNode *from_node,
     PortType from_type = from_node->get_proxy_ref()->get_port_type(port_from_index);
     PortType to_type = to_node->get_proxy_ref()->get_port_type(port_to_index);
 
-    if (from_node != to_node && from_type != to_type)
+    if (from_node != to_node && from_type != to_type &&
+        from_node->is_port_available(port_from_index) &&
+        to_node->is_port_available(port_to_index))
     {
-      SPDLOG->trace("GraphEditor::on_connection_finished, {}:{} -> {}:{}",
-                    from_node->get_proxy_ref()->get_caption(),
-                    from_node->get_proxy_ref()->get_port_id(port_from_index),
-                    to_node->get_proxy_ref()->get_caption(),
-                    to_node->get_proxy_ref()->get_port_id(port_to_index));
-
       // Finalize the connection
       QPointF port_from_pos = from_node->scenePos() + from_node->get_geometry_ref()
                                                           ->port_rects[port_from_index]
@@ -218,15 +236,35 @@ void GraphEditor::on_connection_finished(GraphicsNode *from_node,
                                                       .center();
 
       this->temp_link->set_endpoints(port_from_pos, port_to_pos);
+      this->temp_link->set_pen_style(Qt::SolidLine);
+
+      // from output to input
+      {
+        this->temp_link->set_endnodes(from_node, port_from_index, to_node, port_to_index);
+
+        GraphicsNode *node_out = this->temp_link->get_node_out();
+        GraphicsNode *node_in = this->temp_link->get_node_in();
+
+        int port_out = this->temp_link->get_port_out_index();
+        int port_in = this->temp_link->get_port_in_index();
+
+        node_out->set_is_port_connected(port_out, true); // actually useless
+        node_in->set_is_port_connected(port_in, true);
+
+        SPDLOG->trace("GraphEditor::on_connection_finished, {}:{} -> {}:{}",
+                      node_out->get_proxy_ref()->get_id(),
+                      node_out->get_proxy_ref()->get_port_id(port_out),
+                      node_in->get_proxy_ref()->get_id(),
+                      node_in->get_proxy_ref()->get_port_id(port_in));
+
+        Q_EMIT this->connection_finished(node_out->get_proxy_ref()->get_id(),
+                                         node_out->get_proxy_ref()->get_port_id(port_out),
+                                         node_in->get_proxy_ref()->get_id(),
+                                         node_in->get_proxy_ref()->get_port_id(port_in));
+      }
 
       // Keep the link as a permanent connection
       this->temp_link = nullptr;
-
-      Q_EMIT this->connection_finished(
-          from_node->get_proxy_ref()->get_id(),
-          from_node->get_proxy_ref()->get_port_id(port_from_index),
-          to_node->get_proxy_ref()->get_id(),
-          to_node->get_proxy_ref()->get_port_id(port_to_index));
     }
     else
     {
