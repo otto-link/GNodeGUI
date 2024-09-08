@@ -1,6 +1,8 @@
 /* Copyright (c) 2024 Otto Link. Distributed under the terms of the GNU General
  * Public License. The full license is in the file LICENSE, distributed with
  * this software. */
+#include <fstream>
+
 #include <QKeyEvent>
 
 #include "gnodegui/graph_editor.hpp"
@@ -66,6 +68,61 @@ void GraphEditor::add_node(NodeProxy *p_node_proxy, QPointF scene_pos)
                 &GraphEditor::on_connection_dropped);
 }
 
+void GraphEditor::delete_graphics_link(GraphicsLink *p_link)
+{
+  SPDLOG->trace("GraphicsLink removing");
+
+  if (!p_link)
+  {
+    SPDLOG->warn("GraphEditor::delete_graphics_link: invalid link provided.");
+    return;
+  }
+
+  GraphicsNode *node_out = p_link->get_node_out();
+  GraphicsNode *node_in = p_link->get_node_in();
+  int           port_out = p_link->get_port_out_index();
+  int           port_in = p_link->get_port_in_index();
+
+  SPDLOG->trace("GraphEditor::delete_selected_items, {}:{} -> {}:{}",
+                node_out->get_id(),
+                node_out->get_port_id(port_out),
+                node_in->get_id(),
+                node_in->get_port_id(port_in));
+
+  node_out->set_is_port_connected(port_out, false); // actually useless
+  node_in->set_is_port_connected(port_in, false);
+
+  delete p_link;
+
+  Q_EMIT this->connection_deleted(node_out->get_id(),
+                                  node_out->get_port_id(port_out),
+                                  node_in->get_id(),
+                                  node_in->get_port_id(port_in));
+}
+
+void GraphEditor::delete_graphics_node(GraphicsNode *p_node)
+{
+  SPDLOG->trace("GraphicsNode removing, id: {}", p_node->get_id());
+
+  if (!p_node)
+  {
+    SPDLOG->warn("GraphEditor::delete_graphics_node: invalid node provided.");
+    return;
+  }
+
+  SPDLOG->trace("GraphicsNode removing, id: {}", p_node->get_id());
+
+  // remove any connected links
+  for (QGraphicsItem *item : this->scene()->items())
+    if (GraphicsLink *p_link = qgraphicsitem_cast<GraphicsLink *>(item))
+      if (p_link->get_node_out()->get_id() == p_node->get_id() ||
+          p_link->get_node_in()->get_id() == p_node->get_id())
+        this->delete_graphics_link(p_link);
+
+  delete p_node;
+  Q_EMIT this->node_deleted(p_node->get_id());
+}
+
 void GraphEditor::delete_selected_items()
 {
   QGraphicsScene *scene = this->scene();
@@ -81,38 +138,50 @@ void GraphEditor::delete_selected_items()
     scene->removeItem(item);
 
     if (GraphicsNode *p_node = qgraphicsitem_cast<GraphicsNode *>(item))
-    {
-      SPDLOG->trace("GraphicsNode removed, id: {}", p_node->get_proxy_ref()->get_id());
-      Q_EMIT this->node_deleted(p_node->get_proxy_ref()->get_id());
-    }
+      this->delete_graphics_node(p_node);
     else if (GraphicsLink *p_link = qgraphicsitem_cast<GraphicsLink *>(item))
-    {
-      SPDLOG->trace("GraphicsLink removed");
-
-      GraphicsNode *node_out = p_link->get_node_out();
-      GraphicsNode *node_in = p_link->get_node_in();
-      int           port_out = p_link->get_port_out_index();
-      int           port_in = p_link->get_port_in_index();
-
-      SPDLOG->trace("GraphEditor::delete_selected_items, {}:{} -> {}:{}",
-                    node_out->get_proxy_ref()->get_id(),
-                    node_out->get_proxy_ref()->get_port_id(port_out),
-                    node_in->get_proxy_ref()->get_id(),
-                    node_in->get_proxy_ref()->get_port_id(port_in));
-
-      node_out->set_is_port_connected(port_out, false); // actually useless
-      node_in->set_is_port_connected(port_in, false);
-
-      Q_EMIT this->connection_deleted(node_out->get_proxy_ref()->get_id(),
-                                      node_out->get_proxy_ref()->get_port_id(port_out),
-                                      node_in->get_proxy_ref()->get_id(),
-                                      node_in->get_proxy_ref()->get_port_id(port_in));
-    }
+      this->delete_graphics_link(p_link);
     else
+    {
       SPDLOG->trace("item removed");
-
-    delete item;
+      delete item;
+    }
   }
+}
+
+void GraphEditor::export_to_graphviz(const std::string &fname)
+{
+  // after export: to convert, command line: dot export.dot -Tsvg > output.svg
+
+  SPDLOG->trace("exporting to graphviz format...");
+
+  std::ofstream file(fname);
+
+  if (!file.is_open())
+    throw std::runtime_error("Failed to open file: " + fname);
+
+  file << "digraph root {\n";
+  file << "label=\"" << "GraphEditor::export_to_graphviz" << "\";\n";
+  file << "labelloc=\"t\";\n";
+  file << "rankdir=TD;\n";
+  file << "ranksep=0.5;\n";
+  file << "node [shape=record];\n";
+
+  // Output nodes with their labels
+  for (QGraphicsItem *item : this->scene()->items())
+    if (GraphicsNode *p_node = qgraphicsitem_cast<GraphicsNode *>(item))
+      file << p_node->get_id() << " [label=\"" << p_node->get_caption() << "("
+           << p_node->get_id() << ")" << "\"];\n";
+
+  for (QGraphicsItem *item : this->scene()->items())
+    if (GraphicsLink *p_link = qgraphicsitem_cast<GraphicsLink *>(item))
+      file << "\"" << p_link->get_node_out()->get_id() << "\" -> \""
+           << p_link->get_node_in()->get_id() << "\" [fontsize=8, label=\""
+           << p_link->get_node_out()->get_port_id(p_link->get_port_out_index()) << " - "
+           << p_link->get_node_in()->get_port_id(p_link->get_port_in_index()) << "\"]"
+           << std::endl;
+
+  file << "}\n";
 }
 
 void GraphEditor::keyPressEvent(QKeyEvent *event)
@@ -142,6 +211,10 @@ void GraphEditor::keyReleaseEvent(QKeyEvent *event)
   case Qt::Key_D:
   case Qt::Key_Delete:
     this->delete_selected_items();
+    break;
+
+  case Qt::Key_E:
+    this->export_to_graphviz();
     break;
   }
 
@@ -204,11 +277,11 @@ void GraphEditor::on_connection_dropped(GraphicsNode *from,
     this->temp_link = nullptr;
 
     SPDLOG->trace("GraphEditor::on_connection_dropped connection_dropped {}:{}",
-                  from->get_proxy_ref()->get_id(),
-                  from->get_proxy_ref()->get_port_id(port_index));
+                  from->get_id(),
+                  from->get_port_id(port_index));
 
-    Q_EMIT this->connection_dropped(from->get_proxy_ref()->get_id(),
-                                    from->get_proxy_ref()->get_port_id(port_index),
+    Q_EMIT this->connection_dropped(from->get_id(),
+                                    from->get_port_id(port_index),
                                     scene_pos);
   }
 }
@@ -220,8 +293,8 @@ void GraphEditor::on_connection_finished(GraphicsNode *from_node,
 {
   if (this->temp_link)
   {
-    PortType from_type = from_node->get_proxy_ref()->get_port_type(port_from_index);
-    PortType to_type = to_node->get_proxy_ref()->get_port_type(port_to_index);
+    PortType from_type = from_node->get_port_type(port_from_index);
+    PortType to_type = to_node->get_port_type(port_to_index);
 
     if (from_node != to_node && from_type != to_type &&
         from_node->is_port_available(port_from_index) &&
@@ -252,15 +325,15 @@ void GraphEditor::on_connection_finished(GraphicsNode *from_node,
         node_in->set_is_port_connected(port_in, true);
 
         SPDLOG->trace("GraphEditor::on_connection_finished, {}:{} -> {}:{}",
-                      node_out->get_proxy_ref()->get_id(),
-                      node_out->get_proxy_ref()->get_port_id(port_out),
-                      node_in->get_proxy_ref()->get_id(),
-                      node_in->get_proxy_ref()->get_port_id(port_in));
+                      node_out->get_id(),
+                      node_out->get_port_id(port_out),
+                      node_in->get_id(),
+                      node_in->get_port_id(port_in));
 
-        Q_EMIT this->connection_finished(node_out->get_proxy_ref()->get_id(),
-                                         node_out->get_proxy_ref()->get_port_id(port_out),
-                                         node_in->get_proxy_ref()->get_id(),
-                                         node_in->get_proxy_ref()->get_port_id(port_in));
+        Q_EMIT this->connection_finished(node_out->get_id(),
+                                         node_out->get_port_id(port_out),
+                                         node_in->get_id(),
+                                         node_in->get_port_id(port_in));
       }
 
       // Keep the link as a permanent connection
@@ -284,7 +357,7 @@ void GraphEditor::on_connection_started(GraphicsNode *from_node, int port_index)
   this->source_node = from_node;
 
   this->temp_link = new GraphicsLink(
-      get_color_from_data_type(from_node->get_proxy_ref()->get_data_type(port_index)));
+      get_color_from_data_type(from_node->get_data_type(port_index)));
 
   QPointF port_pos = from_node->scenePos() +
                      from_node->get_geometry_ref()->port_rects[port_index].center();
@@ -292,8 +365,8 @@ void GraphEditor::on_connection_started(GraphicsNode *from_node, int port_index)
   this->temp_link->set_endpoints(port_pos, port_pos);
   this->scene()->addItem(this->temp_link);
 
-  Q_EMIT this->connection_started(from_node->get_proxy_ref()->get_id(),
-                                  from_node->get_proxy_ref()->get_port_id(port_index));
+  Q_EMIT this->connection_started(from_node->get_id(),
+                                  from_node->get_port_id(port_index));
 }
 
 void GraphEditor::on_node_right_clicked(const std::string &id, QPointF scene_pos)

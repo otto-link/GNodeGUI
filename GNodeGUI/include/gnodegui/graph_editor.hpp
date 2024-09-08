@@ -32,6 +32,10 @@ public:
 
   void add_node(NodeProxy *p_node_proxy, QPointF scene_pos);
 
+  // useful for debugging graph actual state, after export: to convert, command line: dot
+  // export.dot -Tsvg > output.svg
+  void export_to_graphviz(const std::string &fname = "export.dot");
+
 public Q_SLOTS:
 
   void on_node_right_clicked(const std::string &id, QPointF scene_pos);
@@ -88,6 +92,10 @@ private Q_SLOTS:
 private:
   GraphicsLink *temp_link = nullptr;   // Temporary link
   GraphicsNode *source_node = nullptr; // Source node for the connection
+
+  void delete_graphics_link(GraphicsLink *p_link);
+
+  void delete_graphics_node(GraphicsNode *p_node);
 };
 
 } // namespace gngui

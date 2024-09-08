@@ -31,7 +31,35 @@ class GraphicsNode : public QObject, public QGraphicsRectItem
 public:
   GraphicsNode(NodeProxy *p_node_proxy, QGraphicsItem *parent = nullptr);
 
+  std::string get_caption() const { return this->p_node_proxy->get_caption(); }
+
+  std::string get_category() const { return this->p_node_proxy->get_category(); }
+
+  std::string get_data_type(int port_index) const
+  {
+    return this->p_node_proxy->get_data_type(port_index);
+  }
+
   GraphicsNodeGeometry *get_geometry_ref() { return &(this->geometry); };
+
+  std::string get_id() const { return this->p_node_proxy->get_id(); }
+
+  int get_nports() const { return this->p_node_proxy->get_nports(); }
+
+  std::string get_port_caption(int port_index) const
+  {
+    return this->p_node_proxy->get_port_caption(port_index);
+  }
+
+  std::string get_port_id(int port_index) const
+  {
+    return this->p_node_proxy->get_port_id(port_index);
+  }
+
+  PortType get_port_type(int port_index) const
+  {
+    return this->p_node_proxy->get_port_type(port_index);
+  }
 
   NodeProxy *get_proxy_ref() { return this->p_node_proxy; }
 

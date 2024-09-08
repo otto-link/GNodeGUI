@@ -96,7 +96,7 @@ void GraphicsLink::set_endnodes(GraphicsNode *from,
 {
   if (!from || !to)
   {
-    SPDLOG->warn("GraphicsLink::set_endnodes: invalid nodes provided for GraphicsLink.");
+    SPDLOG->warn("GraphicsLink::set_endnodes: invalid nodes provided.");
     return;
   }
 

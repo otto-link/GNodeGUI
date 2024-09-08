@@ -97,6 +97,13 @@ struct NodeProxy
   virtual std::string get_data_type(int port_index) const = 0;
 
   /**
+   * @brief Get the ID of the node.
+   *
+   * @return A string representing the ID of the node.
+   */
+  std::string get_id() const { return this->id; }
+
+  /**
    * @brief Get the number of ports in the node.
    *
    * This function is pure virtual and must be implemented by derived classes.
@@ -151,13 +158,6 @@ struct NodeProxy
    * @return NodeProxy* A pointer to the current `NodeProxy` instance (`this`).
    */
   NodeProxy *get_proxy_ref() { return this; }
-
-  /**
-   * @brief Get the ID of the node.
-   *
-   * @return A string representing the ID of the node.
-   */
-  std::string get_id() const { return this->id; }
 
   /**
    * @brief Set the ID of the node.

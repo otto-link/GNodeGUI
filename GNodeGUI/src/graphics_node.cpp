@@ -70,7 +70,7 @@ void GraphicsNode::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
 
 bool GraphicsNode::is_port_available(int port_index)
 {
-  if (this->get_proxy_ref()->get_port_type(port_index) == PortType::OUT)
+  if (this->get_port_type(port_index) == PortType::OUT)
     return true;
   else
     return !this->is_port_connected[port_index];
@@ -84,22 +84,19 @@ void GraphicsNode::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
     if (hovered_port_index >= 0)
     {
-      SPDLOG->trace("connection_started {}:{}",
-                    this->get_proxy_ref()->get_id(),
-                    hovered_port_index);
+      SPDLOG->trace("connection_started {}:{}", this->get_id(), hovered_port_index);
 
       this->has_connection_started = true;
       this->setFlag(QGraphicsItem::ItemIsMovable, false);
       this->port_index_from = hovered_port_index;
-      this->data_type_connecting = this->get_proxy_ref()->get_data_type(
-          hovered_port_index);
+      this->data_type_connecting = this->get_data_type(hovered_port_index);
       Q_EMIT connection_started(this, hovered_port_index);
       event->accept();
     }
   }
 
   else if (event->button() == Qt::RightButton)
-    Q_EMIT this->right_clicked(this->get_proxy_ref()->get_id(), this->scenePos());
+    Q_EMIT this->right_clicked(this->get_id(), this->scenePos());
 
   QGraphicsRectItem::mousePressEvent(event);
 }
@@ -123,7 +120,7 @@ void GraphicsNode::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
           if (hovered_port_index >= 0)
           {
             SPDLOG->trace("connection_finished {}:{}",
-                          target_node->get_proxy_ref()->get_id(),
+                          target_node->get_id(),
                           hovered_port_index);
 
             Q_EMIT connection_finished(this,
@@ -147,7 +144,7 @@ void GraphicsNode::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
       if (is_dropped)
       {
         SPDLOG->trace("GraphicsNode::mouseReleaseEvent connection_dropped {}",
-                      this->get_proxy_ref()->get_id());
+                      this->get_id());
         Q_EMIT connection_dropped(this, this->port_index_from, event->scenePos());
       }
 
@@ -187,8 +184,7 @@ void GraphicsNode::paint(QPainter                       *painter,
   // Set pen based on whether the node is selected or not
   painter->setPen(this->isSelected() ? style.node.color_selected
                                      : style.node.color_caption);
-  painter->drawText(this->geometry.caption_pos,
-                    this->get_proxy_ref()->get_caption().c_str());
+  painter->drawText(this->geometry.caption_pos, this->get_caption().c_str());
 
   // --- Border ---
   painter->setBrush(Qt::NoBrush);
@@ -207,15 +203,14 @@ void GraphicsNode::paint(QPainter                       *painter,
   for (int k = 0; k < this->p_node_proxy->get_nports(); k++)
   {
     // Set alignment based on port type (IN/OUT)
-    int align_flag = (this->get_proxy_ref()->get_port_type(k) == PortType::IN)
-                         ? Qt::AlignLeft
-                         : Qt::AlignRight;
+    int align_flag = (this->get_port_type(k) == PortType::IN) ? Qt::AlignLeft
+                                                              : Qt::AlignRight;
 
     // Draw port labels
     painter->setPen(Qt::white); // Assuming labels are always white
     painter->drawText(this->geometry.port_label_rects[k],
                       align_flag,
-                      this->get_proxy_ref()->get_port_caption(k).c_str());
+                      this->get_port_caption(k).c_str());
 
     // Port appearance when hovered or not
     if (this->is_port_hovered[k])
@@ -227,7 +222,7 @@ void GraphicsNode::paint(QPainter                       *painter,
       painter->setPen(QPen(style.node.color_border, style.node.pen_width));
 
     // Set port brush based on data type compatibility
-    std::string data_type = this->get_proxy_ref()->get_data_type(k);
+    std::string data_type = this->get_data_type(k);
     float       port_radius = style.node.port_radius;
 
     if (!this->data_type_connecting.empty() && data_type != this->data_type_connecting)
@@ -280,16 +275,16 @@ bool GraphicsNode::sceneEventFilter(QGraphicsItem *watched, QEvent *event)
         // if a port is hovered, check that the port type (in/out)
         // and data type are compatible with the incoming link,
         // deactivate hovering for this port
-        for (int k = 0; k < this->get_proxy_ref()->get_nports(); k++)
+        for (int k = 0; k < this->get_nports(); k++)
           if (this->is_port_hovered[k])
           {
             int from_pidx = node->port_index_from;
 
-            PortType from_ptype = node->get_proxy_ref()->get_port_type(from_pidx);
-            PortType to_ptype = this->get_proxy_ref()->get_port_type(k);
+            PortType from_ptype = node->get_port_type(from_pidx);
+            PortType to_ptype = this->get_port_type(k);
 
-            std::string from_pdata = node->get_proxy_ref()->get_data_type(from_pidx);
-            std::string to_pdata = this->get_proxy_ref()->get_data_type(k);
+            std::string from_pdata = node->get_data_type(from_pidx);
+            std::string to_pdata = this->get_data_type(k);
 
             if (from_ptype == to_ptype || from_pdata != to_pdata)
               this->is_port_hovered[k] = false;
