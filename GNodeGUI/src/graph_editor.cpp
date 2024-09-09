@@ -210,13 +210,20 @@ void GraphEditor::keyReleaseEvent(QKeyEvent *event)
     //   break;
     // }
 
-  case Qt::Key_D:
   case Qt::Key_Delete:
     this->delete_selected_items();
     break;
 
   case Qt::Key_E:
     this->export_to_graphviz();
+    break;
+
+  case Qt::Key_S:
+    this->save_screenshot();
+    break;
+
+  case Qt::Key_Z:
+    this->zoom_to_content();
     break;
   }
 
@@ -376,6 +383,13 @@ void GraphEditor::on_node_right_clicked(const std::string &id, QPointF scene_pos
   Q_EMIT this->node_right_clicked(id, scene_pos);
 }
 
+void GraphEditor::save_screenshot(const std::string &fname)
+{
+  this->zoom_to_content();
+  QPixmap pixMap = this->grab();
+  pixMap.save(fname.c_str());
+}
+
 void GraphEditor::wheelEvent(QWheelEvent *event)
 {
   const float factor = 1.2f;
@@ -392,6 +406,11 @@ void GraphEditor::wheelEvent(QWheelEvent *event)
   this->translate(delta.x(), delta.y());
 
   event->accept();
+}
+
+void GraphEditor::zoom_to_content()
+{
+  this->fitInView(this->scene()->itemsBoundingRect(), Qt::KeepAspectRatio);
 }
 
 } // namespace gngui

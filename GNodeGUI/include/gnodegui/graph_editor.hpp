@@ -21,6 +21,10 @@
 namespace gngui
 {
 
+// TODO zoom to node, zoom to selected items
+
+// TODO overlay data type on links
+
 class GraphEditor : public QGraphicsView
 {
   Q_OBJECT
@@ -36,8 +40,11 @@ public:
   // export.dot -Tsvg > output.svg
   void export_to_graphviz(const std::string &fname = "export.dot");
 
-public Q_SLOTS:
+  void save_screenshot(const std::string &fname = "screenshot.png");
 
+  void zoom_to_content();
+
+public Q_SLOTS:
   void on_node_right_clicked(const std::string &id, QPointF scene_pos);
 
 Q_SIGNALS:
