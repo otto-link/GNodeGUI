@@ -20,7 +20,7 @@ GraphicsGroup::GraphicsGroup(QGraphicsItem *parent)
   this->setFlag(QGraphicsItem::ItemIsSelectable, true);
   this->setFlag(QGraphicsItem::ItemIsMovable, true);
   this->setAcceptHoverEvents(true);
-  this->setRect(0.f, 0.f, 256.f, 256.f);
+  this->setRect(0.f, 0.f, 256.f, 128.f);
   this->setZValue(-1);
 
   // Create a caption text item at the top middle of the rectangle

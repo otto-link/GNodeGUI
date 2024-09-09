@@ -138,10 +138,7 @@ void GraphicsLink::set_endpoints(const QPointF &start_point, const QPointF &end_
 {
   QPainterPath path(start_point);
 
-  // Define control points for the cubic spline
-  // float dx = std::copysign(1.f, end_point.x() - start_point.x()) *
-  //            style.link.control_point_dx;
-  float dx = style.link.control_point_dx;
+  float dx = std::abs(end_point.x() - start_point.x()) * style.link.curvature;
 
   QPointF control_point1(start_point.x() + dx, start_point.y());
   QPointF control_point2(end_point.x() - dx, end_point.y());

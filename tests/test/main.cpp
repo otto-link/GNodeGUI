@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
   ed.add_node(node2.get_proxy_ref(), QPointF(500, 450));
   ed.add_node(node3.get_proxy_ref(), QPointF(700, 250));
 
-  ed.add_item(new gngui::GraphicsGroup(), QPointF(200, 300));
+  ed.add_item(new gngui::GraphicsGroup(), QPointF(200, 100));
 
   ed.resize(800, 600);
   ed.show();

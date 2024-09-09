@@ -373,10 +373,6 @@ void GraphEditor::on_connection_started(GraphicsNode *from_node, int port_index)
 
 void GraphEditor::on_node_right_clicked(const std::string &id, QPointF scene_pos)
 {
-  SPDLOG->trace("in GraphEditor, node right clicked, id: {}, scene position: {} {}",
-                id,
-                scene_pos.x(),
-                scene_pos.y());
   Q_EMIT this->node_right_clicked(id, scene_pos);
 }
 

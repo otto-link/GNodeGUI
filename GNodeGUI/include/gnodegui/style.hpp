@@ -61,7 +61,7 @@ struct Style
     float  pen_width_hovered = 2.f;
     float  pen_width_selected = 3.f;
     float  port_tip_radius = 2.f;
-    float  control_point_dx = 100.f;
+    float  curvature = 0.5f;
     QColor color_default = Qt::lightGray;
     QColor color_selected = QColor(80, 250, 123, 255);
   } link;
