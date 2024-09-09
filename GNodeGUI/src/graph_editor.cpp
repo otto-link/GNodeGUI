@@ -114,7 +114,7 @@ void GraphEditor::delete_graphics_node(GraphicsNode *p_node)
 
   // remove any connected links
   for (QGraphicsItem *item : this->scene()->items())
-    if (GraphicsLink *p_link = qgraphicsitem_cast<GraphicsLink *>(item))
+    if (GraphicsLink *p_link = dynamic_cast<GraphicsLink *>(item))
       if (p_link->get_node_out()->get_id() == p_node->get_id() ||
           p_link->get_node_in()->get_id() == p_node->get_id())
         this->delete_graphics_link(p_link);
@@ -138,9 +138,9 @@ void GraphEditor::delete_selected_items()
     {
       scene->removeItem(item);
 
-      if (GraphicsNode *p_node = qgraphicsitem_cast<GraphicsNode *>(item))
+      if (GraphicsNode *p_node = dynamic_cast<GraphicsNode *>(item))
         this->delete_graphics_node(p_node);
-      else if (GraphicsLink *p_link = qgraphicsitem_cast<GraphicsLink *>(item))
+      else if (GraphicsLink *p_link = dynamic_cast<GraphicsLink *>(item))
         this->delete_graphics_link(p_link);
       else
       {

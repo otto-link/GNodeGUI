@@ -2,6 +2,8 @@
  * Public License. The full license is in the file LICENSE, distributed with
  * this software. */
 #include <QGraphicsScene>
+#include <QInputDialog>
+#include <QLineEdit>
 #include <QPainter>
 
 #include "gnodegui/graphics_group.hpp"
@@ -18,34 +20,45 @@ GraphicsGroup::GraphicsGroup(QGraphicsItem *parent)
   this->setFlag(QGraphicsItem::ItemIsSelectable, true);
   this->setFlag(QGraphicsItem::ItemIsMovable, true);
   this->setAcceptHoverEvents(true);
-  this->setRect(0.f, 0.f, 128.f, 128.f);
+  this->setRect(0.f, 0.f, 256.f, 256.f);
   this->setZValue(-1);
+
+  // Create a caption text item at the top middle of the rectangle
+  caption_item = new QGraphicsTextItem("Double-click to edit caption", this);
+  caption_item->setTextInteractionFlags(Qt::NoTextInteraction);
+  caption_item->setFlag(QGraphicsItem::ItemIsSelectable, false);
+  caption_item->setDefaultTextColor(style.group.color_caption);
+
+  QFont font = caption_item->font();
+  font.setBold(style.group.bold_caption);
+  caption_item->setFont(font);
+
+  this->update_caption_position();
 }
 
 GraphicsGroup::Corner GraphicsGroup::get_resize_corner(const QPointF &pos) const
 {
   QRectF rect = this->rect();
+  QSizeF handle_size(this->resize_handle_size, this->resize_handle_size);
 
-  QRectF top_left_rect = QRectF(
-      rect.topLeft(),
-      QSizeF(this->resize_handle_size, this->resize_handle_size));
-  QRectF top_right_rect = QRectF(
-      rect.topRight() - QPointF(this->resize_handle_size, 0),
-      QSizeF(this->resize_handle_size, this->resize_handle_size));
-  QRectF bottom_left_rect = QRectF(
-      rect.bottomLeft() - QPointF(0, this->resize_handle_size),
-      QSizeF(this->resize_handle_size, this->resize_handle_size));
-  QRectF bottom_right_rect = QRectF(
-      rect.bottomRight() - QPointF(this->resize_handle_size, this->resize_handle_size),
-      QSizeF(this->resize_handle_size, this->resize_handle_size));
+  QPointF top_left = rect.topLeft();
+  QPointF top_right = rect.topRight() - QPointF(this->resize_handle_size, 0);
+  QPointF bottom_left = rect.bottomLeft() - QPointF(0, this->resize_handle_size);
+  QPointF bottom_right = rect.bottomRight() -
+                         QPointF(this->resize_handle_size, this->resize_handle_size);
+
+  QRectF top_left_rect(top_left, handle_size);
+  QRectF top_right_rect(top_right, handle_size);
+  QRectF bottom_left_rect(bottom_left, handle_size);
+  QRectF bottom_right_rect(bottom_right, handle_size);
 
   if (top_left_rect.contains(pos))
     return Corner::TOP_LEFT;
-  else if (top_right_rect.contains(pos))
+  if (top_right_rect.contains(pos))
     return Corner::TOP_RIGHT;
-  else if (bottom_left_rect.contains(pos))
+  if (bottom_left_rect.contains(pos))
     return Corner::BOTTOM_LEFT;
-  else if (bottom_right_rect.contains(pos))
+  if (bottom_right_rect.contains(pos))
     return Corner::BOTTOM_RIGHT;
 
   return Corner::NONE;
@@ -84,6 +97,33 @@ void GraphicsGroup::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
   }
 
   QGraphicsRectItem::hoverMoveEvent(event);
+}
+
+void GraphicsGroup::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
+{
+  // check if double-click is on the caption to start editing
+  QRectF bbox = this->caption_item->boundingRect();
+  bbox.moveTo(this->caption_item->pos());
+
+  // event position with respect current graphic item
+  QPointF item_pos = event->scenePos() - this->scenePos();
+
+  if (bbox.contains(item_pos))
+  {
+    bool    ok;
+    QString new_caption = QInputDialog::getText(nullptr,
+                                                "Edit Caption",
+                                                "Enter new caption:",
+                                                QLineEdit::Normal,
+                                                this->caption_item->toPlainText(),
+                                                &ok);
+    if (ok && !new_caption.isEmpty())
+    {
+      this->caption_item->setPlainText(new_caption);
+      this->update_caption_position();
+    }
+  }
+  QGraphicsRectItem::mouseDoubleClickEvent(event);
 }
 
 void GraphicsGroup::mousePressEvent(QGraphicsSceneMouseEvent *event)
@@ -137,6 +177,8 @@ void GraphicsGroup::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
     this->setRect(new_rect);
     this->resize_start_pos = event->pos();
+
+    this->update_caption_position();
     return;
   }
   else if (dragging)
@@ -158,6 +200,8 @@ void GraphicsGroup::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     // move the rectangle itself
     this->setPos(pos() + delta);
     this->drag_start_pos = event->scenePos();
+
+    this->update_caption_position();
   }
 
   QGraphicsRectItem::mouseMoveEvent(event);
@@ -189,6 +233,15 @@ void GraphicsGroup::paint(QPainter                       *painter,
   painter->drawRoundedRect(this->rect(),
                            style.group.rounding_radius,
                            style.group.rounding_radius);
+}
+
+void GraphicsGroup::update_caption_position()
+{
+  QRectF  rect = this->rect();
+  QRectF  caption_bbox = this->caption_item->boundingRect();
+  QPointF top_center = rect.topLeft() +
+                       QPointF(0.5f * (rect.width() - caption_bbox.width()), 0.f);
+  this->caption_item->setPos(top_center);
 }
 
 } // namespace gngui

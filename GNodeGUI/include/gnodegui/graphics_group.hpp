@@ -42,6 +42,8 @@ protected:
 
   void hoverMoveEvent(QGraphicsSceneHoverEvent *event) override;
 
+  void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event) override;
+
   void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
 
   void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
@@ -53,6 +55,8 @@ protected:
                      QWidget                        *widget) override;
 
 private:
+  QGraphicsTextItem *caption_item;
+
   bool is_hovered = false;
 
   bool    resizing;
@@ -65,6 +69,9 @@ private:
 
   // Helper function to determine which corner is being hovered or clicked
   Corner get_resize_corner(const QPointF &pos) const;
+
+  // Update the position of the caption to stay at the top middle of the rectangle
+  void update_caption_position();
 };
 
 } // namespace gngui

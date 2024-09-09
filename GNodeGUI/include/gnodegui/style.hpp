@@ -74,6 +74,9 @@ struct Style
     QColor color_fill = QColor(255, 255, 255, 16);
     QColor color_hovered = Qt::lightGray;
     QColor color_selected = QColor(80, 250, 123, 255);
+    QColor color_caption = Qt::white;
+
+    bool bold_caption = false;
   } group;
 };
 
