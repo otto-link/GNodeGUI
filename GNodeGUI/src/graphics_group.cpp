@@ -1,6 +1,7 @@
 /* Copyright (c) 2024 Otto Link. Distributed under the terms of the GNU General
  * Public License. The full license is in the file LICENSE, distributed with
  * this software. */
+#include <QGraphicsProxyWidget>
 #include <QGraphicsScene>
 #include <QInputDialog>
 #include <QLineEdit>
@@ -187,15 +188,12 @@ void GraphicsGroup::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     QPointF delta = event->scenePos() - this->drag_start_pos;
 
     // move all items inside the rectangle but don't move the
-    // rectangle itself and don't move the links since they are
-    // already moved along with the nodes
+    // rectangle itself and don't move the links or the widgets since
+    // they are already moved along with the nodes
     for (QGraphicsItem *item : this->selected_items)
       if (item != this)
-      {
-        GraphicsLink *p_link = dynamic_cast<GraphicsLink *>(item);
-        if (!p_link)
+        if (GraphicsNode *p_node = dynamic_cast<GraphicsNode *>(item))
           item->moveBy(delta.x(), delta.y());
-      }
 
     // move the rectangle itself
     this->setPos(pos() + delta);
