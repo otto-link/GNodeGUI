@@ -28,6 +28,8 @@ struct Style
   {
     float width = 128.f;
     float padding = 6.f;
+    float padding_widget_width = 4.f;
+    float padding_widget_height = 6.f;
     float rounding_radius = 8.f;
     float port_radius = 6.f;
     float port_radius_not_selectable = 5.f;

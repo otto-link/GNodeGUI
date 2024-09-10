@@ -2,6 +2,7 @@
  * Public License. The full license is in the file LICENSE, distributed with
  * this software. */
 #include <QApplication>
+#include <QGraphicsProxyWidget>
 #include <QGraphicsRectItem>
 #include <QGraphicsScene>
 #include <QGraphicsSceneMouseEvent>
@@ -20,25 +21,49 @@ GraphicsNode::GraphicsNode(NodeProxy *p_node_proxy, QGraphicsItem *parent)
 {
   this->setFlag(QGraphicsItem::ItemIsSelectable, true);
   this->setFlag(QGraphicsItem::ItemIsMovable, true);
-  this->setFlag(QGraphicsItem::ItemDoesntPropagateOpacityToChildren, true);
+  this->setFlag(QGraphicsItem::ItemDoesntPropagateOpacityToChildren, false);
   this->setFlag(QGraphicsItem::ItemIsFocusable, true);
   this->setFlag(QGraphicsItem::ItemClipsChildrenToShape, false);
   this->setAcceptHoverEvents(true);
-  this->setOpacity(1);
+  this->setOpacity(1.f);
   this->setZValue(0);
+
+  this->is_port_hovered.resize(this->get_nports());
+  this->connected_link_ref.resize(this->get_nports());
 
   this->geometry = GraphicsNodeGeometry(this->p_node_proxy);
   this->setRect(0.f, 0.f, this->geometry.full_width, this->geometry.full_height);
-  this->is_port_hovered.resize(this->p_node_proxy->get_nports());
-  this->connected_link_ref.resize(this->p_node_proxy->get_nports());
+
+  if (QWidget *widget = this->p_node_proxy->get_qwidget_ref())
+  {
+    // ensure it's a top-level widget
+    widget->setParent(nullptr);
+
+    QGraphicsProxyWidget *proxy_widget = new QGraphicsProxyWidget(this);
+    proxy_widget->setWidget(widget);
+    proxy_widget->resize(this->p_node_proxy->get_qwidget_size());
+    QSizeF widget_size = proxy_widget->size();
+
+    // update the geometry
+    this->geometry = GraphicsNodeGeometry(this->p_node_proxy, widget_size);
+    this->setRect(0.f, 0.f, this->geometry.full_width, this->geometry.full_height);
+
+    proxy_widget->setPos(this->geometry.widget_pos);
+  }
 }
 
 int GraphicsNode::get_hovered_port_index() const
 {
   auto it = std::find(this->is_port_hovered.begin(), this->is_port_hovered.end(), true);
-  return (it != this->is_port_hovered.end())
-             ? std::distance(this->is_port_hovered.begin(), it)
-             : -1;
+
+  // if found, calculate the index; otherwise, return -1
+  if (it != this->is_port_hovered.end())
+  {
+    int index = std::distance(this->is_port_hovered.begin(), it);
+    return index;
+  }
+  else
+    return -1;
 }
 
 void GraphicsNode::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
@@ -76,15 +101,6 @@ bool GraphicsNode::is_port_available(int port_index)
   else
     return !this->connected_link_ref[port_index];
 }
-
-// void GraphicsNode::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
-// {
-//   // // move links
-//   // for (auto p_link : connected_link_ref)
-//   //   p_link->update();
-
-//   QGraphicsRectItem::mouseMoveEvent(event);
-// }
 
 void GraphicsNode::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
@@ -174,7 +190,7 @@ void GraphicsNode::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
           node->update();
         }
 
-      this->data_type_connecting = "";
+      // this->data_type_connecting = "";
 
       this->setFlag(QGraphicsItem::ItemIsMovable, true);
     }

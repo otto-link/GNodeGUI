@@ -17,6 +17,7 @@
  * @copyright Copyright (c) 2024
  */
 #pragma once
+#include <QWidget>
 
 #include <string>
 
@@ -46,8 +47,10 @@ enum PortType
  * such as the node ID, labels, port counts, and port types. This is an abstract class,
  * so it cannot be instantiated directly.
  */
-struct NodeProxy
+class NodeProxy : public QWidget
 {
+  // Q_OBJECT
+public:
   /**
    * @brief Deleted default constructor.
    *
@@ -158,6 +161,32 @@ struct NodeProxy
    * @return NodeProxy* A pointer to the current `NodeProxy` instance (`this`).
    */
   NodeProxy *get_proxy_ref() { return this; }
+
+  /**
+   * @brief Get a pointer to the associated QWidget for embedding purposes.
+   *
+   * This method returns a pointer to a QWidget that can be embedded within
+   * the body of the node or added to the node's contextual menu, allowing
+   * for custom GUI components inside the graphical node.
+   *
+   * Derived classes must implement this function to return a specific QWidget.
+   *
+   * @return A pointer to the QWidget associated with the node.
+   *         Returns nullptr if no QWidget is available.
+   */
+  virtual QWidget *get_qwidget_ref() { return nullptr; }
+
+  /**
+   * @brief Get the preferred size of the embedded QWidget.
+   *
+   * This method can be overridden in derived classes to return a specific size
+   * for the QWidget associated with this object. By default, it returns the
+   * size hint of the widget, which is a recommended size based on its contents.
+   *
+   * @return QSize The preferred size of the QWidget. If not overridden,
+   * it returns the size hint as determined by the widget's layout and content.
+   */
+  virtual QSize get_qwidget_size() { return this->sizeHint(); }
 
   /**
    * @brief Set the ID of the node.

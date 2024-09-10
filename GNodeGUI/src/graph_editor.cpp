@@ -46,6 +46,8 @@ void GraphEditor::add_node(NodeProxy *p_node_proxy, QPointF scene_pos)
 {
   GraphicsNode *p_node = new GraphicsNode(p_node_proxy);
   this->add_item(p_node, scene_pos);
+  // this->scene()->update();
+  // p_node->initialize_geometry();
 
   this->connect(p_node,
                 &GraphicsNode::right_clicked,

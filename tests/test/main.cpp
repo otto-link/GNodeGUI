@@ -1,5 +1,6 @@
 #include <QApplication>
 #include <QFont>
+#include <QPushButton>
 
 #include "gnodegui/graph_editor.hpp"
 #include "gnodegui/graphics_group.hpp"
@@ -41,6 +42,19 @@ public:
                                         gngui::PortType::OUT};
     return vec[port_index];
   }
+
+  QWidget *get_qwidget_ref() override
+  {
+    if (!this->push_button)
+      this->push_button = new QPushButton("button", this);
+
+    return (QWidget *)this->push_button;
+  }
+
+  // QSize get_qwidget_size() override { return QSize(256, 32); }
+
+private:
+  QWidget *push_button = nullptr;
 };
 
 class LongNode : public gngui::NodeProxy

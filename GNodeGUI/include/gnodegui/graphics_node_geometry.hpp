@@ -21,10 +21,11 @@ class GraphicsNodeGeometry
 public:
   GraphicsNodeGeometry() = default;
 
-  GraphicsNodeGeometry(NodeProxy *p_node_proxy);
+  GraphicsNodeGeometry(NodeProxy *p_node_proxy, QSizeF widget_size = QSizeF(0.f, 0.f));
 
   QSizeF  caption_size;
   QPointF caption_pos;
+  QPointF widget_pos;
   QRectF  body_rect;
   int     full_width;
   int     full_height;

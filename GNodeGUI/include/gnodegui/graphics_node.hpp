@@ -16,6 +16,7 @@
 #include <QGraphicsRectItem>
 #include <QMouseEvent>
 #include <QObject>
+#include <QWidget>
 
 #include "gnodegui/graphics_link.hpp"
 #include "gnodegui/graphics_node_geometry.hpp"
@@ -66,6 +67,8 @@ public:
 
   NodeProxy *get_proxy_ref() { return this->p_node_proxy; }
 
+  virtual QWidget *get_qwidget_ref() { return nullptr; }
+
   // always returns true for outputs since we accept multiple links from one output to
   // multiple inputs
   bool is_port_available(int port_index);
@@ -94,8 +97,6 @@ protected:
   void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) override;
 
   void hoverMoveEvent(QGraphicsSceneHoverEvent *event) override;
-
-  // void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
 
   void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
 
