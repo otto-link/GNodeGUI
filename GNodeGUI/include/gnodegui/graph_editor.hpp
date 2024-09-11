@@ -34,7 +34,8 @@ public:
 
   void add_item(QGraphicsItem *item, QPointF scene_pos);
 
-  void add_node(NodeProxy *p_node_proxy, QPointF scene_pos);
+  // returns a unique ID for the node
+  std::string add_node(NodeProxy *p_node_proxy, QPointF scene_pos);
 
   // useful for debugging graph actual state, after export: to convert, command line: dot
   // export.dot -Tsvg > output.svg

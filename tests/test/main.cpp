@@ -96,8 +96,10 @@ int main(int argc, char *argv[])
 {
   QApplication app(argc, argv);
 
-  // QFont font("Roboto");
-  QFont font("Aptos");
+  QFont font("Roboto");
+  // QFont font("Aptos");
+  // QFont font("Dejavu Sans Mono");
+  // QFont font("Source Code Pro");
   font.setPointSize(10);
   app.setFont(font);
 
@@ -115,7 +117,7 @@ int main(int argc, char *argv[])
 
   ed.add_item(new gngui::GraphicsGroup(), QPointF(200, 100));
 
-  ed.resize(800, 600);
+  ed.resize(1000, 800);
   ed.show();
 
   return app.exec();

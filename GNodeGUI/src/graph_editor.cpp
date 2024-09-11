@@ -2,6 +2,7 @@
  * Public License. The full license is in the file LICENSE, distributed with
  * this software. */
 #include <fstream>
+#include <iostream>
 
 #include <QKeyEvent>
 
@@ -43,12 +44,10 @@ void GraphEditor::add_item(QGraphicsItem *item, QPointF scene_pos)
         }
 }
 
-void GraphEditor::add_node(NodeProxy *p_node_proxy, QPointF scene_pos)
+std::string GraphEditor::add_node(NodeProxy *p_node_proxy, QPointF scene_pos)
 {
   GraphicsNode *p_node = new GraphicsNode(p_node_proxy);
   this->add_item(p_node, scene_pos);
-  // this->scene()->update();
-  // p_node->initialize_geometry();
 
   this->connect(p_node,
                 &GraphicsNode::right_clicked,
@@ -69,6 +68,11 @@ void GraphEditor::add_node(NodeProxy *p_node_proxy, QPointF scene_pos)
                 &GraphicsNode::connection_dropped,
                 this,
                 &GraphEditor::on_connection_dropped);
+
+  // generate a unique id based on the object address
+  std::ostringstream oss;
+  oss << std::to_string((unsigned long long)(void **)p_node);
+  return oss.str();
 }
 
 void GraphEditor::delete_graphics_link(GraphicsLink *p_link)
