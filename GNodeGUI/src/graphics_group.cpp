@@ -244,8 +244,15 @@ void GraphicsGroup::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     // they are already moved along with the nodes
     for (QGraphicsItem *item : this->selected_items)
       if (item != this)
+      {
         if (GraphicsNode *p_node = dynamic_cast<GraphicsNode *>(item))
           p_node->moveBy(delta.x(), delta.y());
+
+        // move a group if it is within the currently moving group
+        if (GraphicsGroup *p_group = dynamic_cast<GraphicsGroup *>(item))
+          if (this->sceneBoundingRect().contains(p_group->sceneBoundingRect()))
+            p_group->moveBy(delta.x(), delta.y());
+      }
 
     // move the rectangle itself
     this->setPos(pos() + delta);
@@ -271,18 +278,24 @@ void GraphicsGroup::paint(QPainter                       *painter,
   Q_UNUSED(option);
   Q_UNUSED(widget);
 
+  // set the pen depending on the state (selected, hovered, or default)
+  qreal pen_width = GN_STYLE->group.pen_width;
   if (this->isSelected())
-    painter->setPen(
-        QPen(GN_STYLE->group.color_selected, GN_STYLE->group.pen_width_selected));
+  {
+    pen_width = GN_STYLE->group.pen_width_selected;
+  }
   else if (this->is_hovered)
-    painter->setPen(QPen(this->color, GN_STYLE->group.pen_width_hovered));
-  else
-    painter->setPen(QPen(this->color, GN_STYLE->group.pen_width));
+  {
+    pen_width = GN_STYLE->group.pen_width_hovered;
+  }
+  painter->setPen(QPen(this->color, pen_width));
 
+  // set the fill color with the defined transparency
   QColor fill_color = this->color;
   fill_color.setAlphaF(GN_STYLE->group.background_fill_alpha);
   painter->setBrush(fill_color);
 
+  // draw the rounded rectangle
   painter->drawRoundedRect(this->rect(),
                            GN_STYLE->group.rounding_radius,
                            GN_STYLE->group.rounding_radius);
