@@ -1,6 +1,8 @@
 /* Copyright (c) 2024 Otto Link. Distributed under the terms of the GNU General
  * Public License. The full license is in the file LICENSE, distributed with
  * this software. */
+#include <sstream>
+
 #include <QApplication>
 #include <QGraphicsProxyWidget>
 #include <QGraphicsRectItem>
@@ -52,6 +54,18 @@ GraphicsNode::GraphicsNode(NodeProxy *p_node_proxy, QGraphicsItem *parent)
   }
 }
 
+std::vector<std::string> GraphicsNode::get_category_splitted(char delimiter) const
+{
+  std::vector<std::string> result;
+  std::stringstream        ss(this->get_category());
+  std::string              word;
+
+  while (std::getline(ss, word, delimiter))
+    result.push_back(word);
+
+  return result;
+}
+
 int GraphicsNode::get_hovered_port_index() const
 {
   auto it = std::find(this->is_port_hovered.begin(), this->is_port_hovered.end(), true);
@@ -64,6 +78,13 @@ int GraphicsNode::get_hovered_port_index() const
   }
   else
     return -1;
+}
+
+std::string GraphicsNode::get_main_category() const
+{
+  std::string node_category = this->get_category();
+  int         pos = node_category.find("/");
+  return node_category.substr(0, pos);
 }
 
 void GraphicsNode::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
@@ -205,20 +226,47 @@ void GraphicsNode::paint(QPainter                       *painter,
   Q_UNUSED(option);
   Q_UNUSED(widget);
 
-  // --- Background rectangle ---
+  // --- Background rectangle
+
   painter->setBrush(QBrush(GN_STYLE->node.color_bg));
   painter->setPen(Qt::NoPen);
   painter->drawRoundedRect(this->geometry.body_rect,
                            GN_STYLE->node.rounding_radius,
                            GN_STYLE->node.rounding_radius);
 
-  // --- Caption ---
+  // --- Caption
+
   // Set pen based on whether the node is selected or not
   painter->setPen(this->isSelected() ? GN_STYLE->node.color_selected
                                      : GN_STYLE->node.color_caption);
   painter->drawText(this->geometry.caption_pos, this->get_caption().c_str());
 
-  // --- Border ---
+  // --- Header
+
+  std::string main_category = this->get_main_category();
+  if (GN_STYLE->node.color_category.contains(main_category))
+    painter->setBrush(GN_STYLE->node.color_category.at(main_category));
+  else
+    painter->setBrush(GN_STYLE->node.color_bg_light);
+
+  painter->setPen(Qt::NoPen);
+
+  QPainterPath path;
+  QRectF       rect = this->geometry.header_rect;
+  float        radius = GN_STYLE->node.rounding_radius;
+
+  path.moveTo(rect.left(), rect.bottom());
+  path.lineTo(rect.left(), rect.top() + radius);
+  path.arcTo(rect.left(), rect.top(), radius * 2, radius * 2, 180, -90);
+  path.lineTo(rect.right() - radius, rect.top());
+  path.arcTo(rect.right() - radius * 2, rect.top(), radius * 2, radius * 2, 90, -90);
+  path.lineTo(rect.right(), rect.bottom());
+  path.closeSubpath();
+
+  painter->drawPath(path);
+
+  // --- Border
+
   painter->setBrush(Qt::NoBrush);
   if (this->isSelected())
     painter->setPen(
@@ -233,7 +281,8 @@ void GraphicsNode::paint(QPainter                       *painter,
                            GN_STYLE->node.rounding_radius,
                            GN_STYLE->node.rounding_radius);
 
-  // --- Ports ---
+  // --- Ports
+
   for (int k = 0; k < this->p_node_proxy->get_nports(); k++)
   {
     // Set alignment based on port type (IN/OUT)

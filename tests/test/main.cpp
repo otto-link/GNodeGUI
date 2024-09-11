@@ -18,7 +18,7 @@ public:
 
   std::string get_caption() const override { return "NoiseFbm"; }
 
-  std::string get_category() const override { return "Primitive/Coherent"; }
+  std::string get_category() const override { return "Primitive"; }
 
   std::string get_data_type(int port_index) const override
   {

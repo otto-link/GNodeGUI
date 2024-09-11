@@ -22,7 +22,7 @@ GraphicsNodeGeometry::GraphicsNodeGeometry(NodeProxy *p_node_proxy, QSizeF widge
   float dy = GN_STYLE->node.vertical_stretching * font_metrics.height();
   float margin = 2 * GN_STYLE->node.port_radius;
 
-  float caption_to_ports_gap = dy;
+  float caption_to_ports_gap = GN_STYLE->node.header_height_scale * dy;
 
   // get widget size and adjust node width accordingly
   float node_width = GN_STYLE->node.width;
@@ -44,7 +44,8 @@ GraphicsNodeGeometry::GraphicsNodeGeometry(NodeProxy *p_node_proxy, QSizeF widge
                               node_width) +
                      2.f * margin;
 
-  this->full_height = dy * (0.5f + this->p_node_proxy->get_nports()) +
+  this->full_height = dy * (GN_STYLE->node.header_height_scale +
+                            this->p_node_proxy->get_nports()) +
                       caption_to_ports_gap + 2.f * margin;
 
   // if widget exists add it with some padding (before and after)
@@ -56,8 +57,12 @@ GraphicsNodeGeometry::GraphicsNodeGeometry(NodeProxy *p_node_proxy, QSizeF widge
   float ybody = this->caption_pos.y() + GN_STYLE->node.padding;
   this->body_rect = QRectF(margin, ybody, node_width, this->full_height - ybody);
 
+  // node header lowest position
+  this->header_rect = this->body_rect;
+  this->header_rect.setHeight(caption_to_ports_gap);
+
   // ports bounding box
-  float ypos = 1.5f * dy + caption_to_ports_gap;
+  float ypos = (1.f + GN_STYLE->node.header_height_scale) * dy + caption_to_ports_gap;
 
   for (int k = 0; k < this->p_node_proxy->get_nports(); k++)
   {

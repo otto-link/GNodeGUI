@@ -27,6 +27,7 @@ public:
   QPointF caption_pos;
   QPointF widget_pos;
   QRectF  body_rect;
+  QRectF  header_rect;
   int     full_width;
   int     full_height;
 

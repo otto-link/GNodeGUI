@@ -41,6 +41,7 @@ public:
     float port_radius = 6.f;
     float port_radius_not_selectable = 5.f;
     float vertical_stretching = 1.3f;
+    float header_height_scale = 1.2f;
 
     QColor color_bg = QColor(102, 102, 102, 255);
     QColor color_bg_light = QColor(108, 108, 108, 255);

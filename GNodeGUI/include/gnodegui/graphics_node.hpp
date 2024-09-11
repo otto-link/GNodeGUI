@@ -39,6 +39,8 @@ public:
 
   std::string get_category() const { return this->p_node_proxy->get_category(); }
 
+  std::vector<std::string> get_category_splitted(char delimiter = '/') const;
+
   std::string get_data_type(int port_index) const
   {
     return this->p_node_proxy->get_data_type(port_index);
@@ -47,6 +49,8 @@ public:
   GraphicsNodeGeometry *get_geometry_ref() { return &(this->geometry); };
 
   std::string get_id() const { return this->p_node_proxy->get_id(); }
+
+  std::string get_main_category() const;
 
   int get_nports() const { return this->p_node_proxy->get_nports(); }
 
