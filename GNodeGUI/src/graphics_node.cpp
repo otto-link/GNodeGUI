@@ -206,30 +206,32 @@ void GraphicsNode::paint(QPainter                       *painter,
   Q_UNUSED(widget);
 
   // --- Background rectangle ---
-  painter->setBrush(QBrush(style.node.color_bg));
+  painter->setBrush(QBrush(GN_STYLE->node.color_bg));
   painter->setPen(Qt::NoPen);
   painter->drawRoundedRect(this->geometry.body_rect,
-                           style.node.rounding_radius,
-                           style.node.rounding_radius);
+                           GN_STYLE->node.rounding_radius,
+                           GN_STYLE->node.rounding_radius);
 
   // --- Caption ---
   // Set pen based on whether the node is selected or not
-  painter->setPen(this->isSelected() ? style.node.color_selected
-                                     : style.node.color_caption);
+  painter->setPen(this->isSelected() ? GN_STYLE->node.color_selected
+                                     : GN_STYLE->node.color_caption);
   painter->drawText(this->geometry.caption_pos, this->get_caption().c_str());
 
   // --- Border ---
   painter->setBrush(Qt::NoBrush);
   if (this->isSelected())
-    painter->setPen(QPen(style.node.color_selected, style.node.pen_width_selected));
+    painter->setPen(
+        QPen(GN_STYLE->node.color_selected, GN_STYLE->node.pen_width_selected));
   else if (this->is_node_hovered)
-    painter->setPen(QPen(style.node.color_border_hovered, style.node.pen_width_hovered));
+    painter->setPen(
+        QPen(GN_STYLE->node.color_border_hovered, GN_STYLE->node.pen_width_hovered));
   else
-    painter->setPen(QPen(style.node.color_border, style.node.pen_width));
+    painter->setPen(QPen(GN_STYLE->node.color_border, GN_STYLE->node.pen_width));
 
   painter->drawRoundedRect(this->geometry.body_rect,
-                           style.node.rounding_radius,
-                           style.node.rounding_radius);
+                           GN_STYLE->node.rounding_radius,
+                           GN_STYLE->node.rounding_radius);
 
   // --- Ports ---
   for (int k = 0; k < this->p_node_proxy->get_nports(); k++)
@@ -246,28 +248,29 @@ void GraphicsNode::paint(QPainter                       *painter,
 
     // Port appearance when selected or not
     if (this->is_port_hovered[k])
-      painter->setPen(QPen(style.node.color_port_hovered, style.node.pen_width_hovered));
+      painter->setPen(
+          QPen(GN_STYLE->node.color_port_hovered, GN_STYLE->node.pen_width_hovered));
     else
     {
       // if (this->isSelected())
-      //   painter->setPen(QPen(style.node.color_selected,
-      //   style.node.pen_width_selected));
+      //   painter->setPen(QPen(GN_STYLE->node.color_selected,
+      //   GN_STYLE->node.pen_width_selected));
       // else
       if (this->is_node_hovered)
         painter->setPen(
-            QPen(style.node.color_border_hovered, style.node.pen_width_hovered));
+            QPen(GN_STYLE->node.color_border_hovered, GN_STYLE->node.pen_width_hovered));
       else
-        painter->setPen(QPen(style.node.color_border, style.node.pen_width));
+        painter->setPen(QPen(GN_STYLE->node.color_border, GN_STYLE->node.pen_width));
     }
 
     // Set port brush based on data type compatibility
     std::string data_type = this->get_data_type(k);
-    float       port_radius = style.node.port_radius;
+    float       port_radius = GN_STYLE->node.port_radius;
 
     if (!this->data_type_connecting.empty() && data_type != this->data_type_connecting)
     {
-      painter->setBrush(style.node.color_port_not_selectable);
-      port_radius = style.node.port_radius_not_selectable;
+      painter->setBrush(GN_STYLE->node.color_port_not_selectable);
+      port_radius = GN_STYLE->node.port_radius_not_selectable;
     }
     else
       painter->setBrush(get_color_from_data_type(data_type));

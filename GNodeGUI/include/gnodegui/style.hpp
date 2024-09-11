@@ -14,11 +14,18 @@
 
 #include <QColor>
 
+#define GN_STYLE gngui::Style::get_style()
+
 namespace gngui
 {
 
-struct Style
+class Style
 {
+public:
+  Style() = default;
+
+  static std::shared_ptr<Style> &get_style();
+
   struct Editor
   {
     QColor color_bg = QColor(42, 42, 42, 255);
@@ -52,9 +59,8 @@ struct Style
     QColor color_port_data_default = Qt::lightGray;
     QColor color_port_not_selectable = QColor(102, 102, 102, 255);
 
-    std::map<std::string, QColor> color_port_data = {
-        {"float", QColor(139, 233, 253, 255)},
-        {"int", QColor(189, 147, 249, 255)}};
+    std::map<std::string, QColor> color_port_data = {};
+    std::map<std::string, QColor> color_category = {};
   } node;
 
   struct Link
@@ -91,9 +97,17 @@ struct Style
                                                {"Yellow", QColor(241, 250, 140)},
                                                {"Black", Qt::black}};
   } group;
-};
 
-static Style style;
+private:
+  // Disable copy constructor
+  Style(const Style &) = delete;
+
+  // Disable assignment operator
+  Style &operator=(const Style &) = delete;
+
+  // Static member to hold the singleton instance
+  static std::shared_ptr<Style> instance;
+};
 
 QColor get_color_from_data_type(const std::string &data_type);
 

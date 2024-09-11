@@ -20,19 +20,19 @@ GraphicsLink::GraphicsLink(QColor color, LinkType link_type, QGraphicsItem *pare
   this->setAcceptHoverEvents(true);
 
   if (this->color == QColor(0, 0, 0, 0))
-    this->color = style.link.color_default;
+    this->color = GN_STYLE->link.color_default;
 
-  this->setPen(QPen(this->color, style.link.pen_width));
+  this->setPen(QPen(this->color, GN_STYLE->link.pen_width));
   this->setZValue(-1);
 }
 
 QRectF GraphicsLink::boundingRect() const
 {
   QRectF bbox = this->path().boundingRect();
-  bbox.adjust(-style.link.port_tip_radius,
-              -style.link.port_tip_radius,
-              style.link.port_tip_radius,
-              style.link.port_tip_radius);
+  bbox.adjust(-GN_STYLE->link.port_tip_radius,
+              -GN_STYLE->link.port_tip_radius,
+              GN_STYLE->link.port_tip_radius,
+              GN_STYLE->link.port_tip_radius);
   return bbox;
 }
 
@@ -59,11 +59,11 @@ void GraphicsLink::paint(QPainter                       *painter,
   Q_UNUSED(option);
   Q_UNUSED(widget);
 
-  QColor pcolor = this->isSelected() ? style.link.color_selected : this->color;
+  QColor pcolor = this->isSelected() ? GN_STYLE->link.color_selected : this->color;
   float  pwidth = this->is_link_hovered
-                      ? style.link.pen_width_hovered
-                      : (this->isSelected() ? style.link.pen_width_selected
-                                            : style.link.pen_width);
+                      ? GN_STYLE->link.pen_width_hovered
+                      : (this->isSelected() ? GN_STYLE->link.pen_width_selected
+                                            : GN_STYLE->link.pen_width);
 
   // link
   QPen pen(pcolor);
@@ -96,11 +96,11 @@ void GraphicsLink::paint(QPainter                       *painter,
 
     painter->setBrush(pcolor);
     painter->drawEllipse(start_point,
-                         style.link.port_tip_radius,
-                         style.link.port_tip_radius);
+                         GN_STYLE->link.port_tip_radius,
+                         GN_STYLE->link.port_tip_radius);
     painter->drawEllipse(end_point,
-                         style.link.port_tip_radius,
-                         style.link.port_tip_radius);
+                         GN_STYLE->link.port_tip_radius,
+                         GN_STYLE->link.port_tip_radius);
   }
 }
 
@@ -138,7 +138,7 @@ void GraphicsLink::set_endpoints(const QPointF &start_point, const QPointF &end_
 {
   QPainterPath path(start_point);
 
-  float dx = std::abs(end_point.x() - start_point.x()) * style.link.curvature;
+  float dx = std::abs(end_point.x() - start_point.x()) * GN_STYLE->link.curvature;
 
   QPointF control_point1(start_point.x() + dx, start_point.y());
   QPointF control_point2(end_point.x() - dx, end_point.y());

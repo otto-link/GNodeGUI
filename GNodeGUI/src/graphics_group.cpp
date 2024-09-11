@@ -45,10 +45,10 @@ GraphicsGroup::GraphicsGroup(QGraphicsItem *parent)
   this->caption_item->setFlag(QGraphicsItem::ItemIsSelectable, false);
 
   QFont font = this->caption_item->font();
-  font.setBold(style.group.bold_caption);
+  font.setBold(GN_STYLE->group.bold_caption);
   this->caption_item->setFont(font);
 
-  this->set_color(style.group.color);
+  this->set_color(GN_STYLE->group.color);
   this->update_caption_position();
 }
 
@@ -63,7 +63,7 @@ void GraphicsGroup::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
   // create actions with colored rectangles
   std::vector<QAction *> actions = {};
 
-  for (auto &[name, color] : style.group.color_map)
+  for (auto &[name, color] : GN_STYLE->group.color_map)
   {
     QAction *action = menu.addAction(create_colored_pixmap(color, psize),
                                      QString::fromStdString(name));
@@ -78,7 +78,7 @@ void GraphicsGroup::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
   if (it != actions.end())
   {
     size_t index = std::distance(actions.begin(), it);
-    auto   color_it = std::next(style.group.color_map.begin(), index);
+    auto   color_it = std::next(GN_STYLE->group.color_map.begin(), index);
     this->set_color(color_it->second);
   }
 }
@@ -272,19 +272,20 @@ void GraphicsGroup::paint(QPainter                       *painter,
   Q_UNUSED(widget);
 
   if (this->isSelected())
-    painter->setPen(QPen(style.group.color_selected, style.group.pen_width_selected));
+    painter->setPen(
+        QPen(GN_STYLE->group.color_selected, GN_STYLE->group.pen_width_selected));
   else if (this->is_hovered)
-    painter->setPen(QPen(this->color, style.group.pen_width_hovered));
+    painter->setPen(QPen(this->color, GN_STYLE->group.pen_width_hovered));
   else
-    painter->setPen(QPen(this->color, style.group.pen_width));
+    painter->setPen(QPen(this->color, GN_STYLE->group.pen_width));
 
   QColor fill_color = this->color;
-  fill_color.setAlphaF(style.group.background_fill_alpha);
+  fill_color.setAlphaF(GN_STYLE->group.background_fill_alpha);
   painter->setBrush(fill_color);
 
   painter->drawRoundedRect(this->rect(),
-                           style.group.rounding_radius,
-                           style.group.rounding_radius);
+                           GN_STYLE->group.rounding_radius,
+                           GN_STYLE->group.rounding_radius);
 }
 
 void GraphicsGroup::set_color(const QColor &new_color)

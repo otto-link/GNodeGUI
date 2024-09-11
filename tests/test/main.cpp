@@ -7,6 +7,7 @@
 #include "gnodegui/graphics_node.hpp"
 #include "gnodegui/logger.hpp"
 #include "gnodegui/node_proxy.hpp"
+#include "gnodegui/style.hpp"
 
 // --- node specialization
 
@@ -17,7 +18,7 @@ public:
 
   std::string get_caption() const override { return "NoiseFbm"; }
 
-  std::string get_category() const override { return "Noise/Coherent"; }
+  std::string get_category() const override { return "Primitive/Coherent"; }
 
   std::string get_data_type(int port_index) const override
   {
@@ -104,6 +105,15 @@ int main(int argc, char *argv[])
   app.setFont(font);
 
   SPDLOG->info("Starting test application...");
+
+  SPDLOG->info("Updating graph parameters...");
+
+  GN_STYLE->node.color_port_data["float"] = QColor(139, 233, 253, 255);
+  GN_STYLE->node.color_port_data["int"] = QColor(189, 147, 249, 255);
+
+  GN_STYLE->node.color_category = {{"Math", QColor(0, 43, 54, 255)},
+                                   {"Primitive", QColor(42, 161, 152, 255)},
+                                   {"Texture", QColor(0, 0, 0, 255)}};
 
   gngui::GraphEditor ed = gngui::GraphEditor();
 

@@ -25,7 +25,7 @@ GraphEditor::GraphEditor() : QGraphicsView()
 
   this->setScene(new QGraphicsScene());
 
-  this->setBackgroundBrush(QBrush(gngui::style.editor.color_bg));
+  this->setBackgroundBrush(QBrush(GN_STYLE->editor.color_bg));
 }
 
 void GraphEditor::add_item(QGraphicsItem *item, QPointF scene_pos)

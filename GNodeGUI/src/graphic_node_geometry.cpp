@@ -19,28 +19,28 @@ GraphicsNodeGeometry::GraphicsNodeGeometry(NodeProxy *p_node_proxy, QSizeF widge
   QFont        font;
   QFontMetrics font_metrics(font);
 
-  float dy = style.node.vertical_stretching * font_metrics.height();
-  float margin = 2 * style.node.port_radius;
+  float dy = GN_STYLE->node.vertical_stretching * font_metrics.height();
+  float margin = 2 * GN_STYLE->node.port_radius;
 
   float caption_to_ports_gap = dy;
 
   // get widget size and adjust node width accordingly
-  float node_width = style.node.width;
+  float node_width = GN_STYLE->node.width;
 
   node_width = std::max(node_width,
                         (float)widget_size.width() +
-                            2.f * style.node.padding_widget_width);
+                            2.f * GN_STYLE->node.padding_widget_width);
 
   // node caption
   this->caption_size = font_metrics.size(Qt::TextSingleLine,
                                          this->p_node_proxy->get_caption().c_str());
 
-  this->caption_pos = QPointF(margin + style.node.padding, dy);
+  this->caption_pos = QPointF(margin + GN_STYLE->node.padding, dy);
 
   // Qt graphics item full width and height (including everything,
   // i.e. not only the node body)
   this->full_width = std::max((float)this->caption_size.width() +
-                                  2.f * style.node.padding,
+                                  2.f * GN_STYLE->node.padding,
                               node_width) +
                      2.f * margin;
 
@@ -49,10 +49,11 @@ GraphicsNodeGeometry::GraphicsNodeGeometry(NodeProxy *p_node_proxy, QSizeF widge
 
   // if widget exists add it with some padding (before and after)
   if (widget_size.height() > 0)
-    this->full_height += widget_size.height() + 2.f * style.node.padding_widget_height;
+    this->full_height += widget_size.height() +
+                         2.f * GN_STYLE->node.padding_widget_height;
 
   // node body
-  float ybody = this->caption_pos.y() + style.node.padding;
+  float ybody = this->caption_pos.y() + GN_STYLE->node.padding;
   this->body_rect = QRectF(margin, ybody, node_width, this->full_height - ybody);
 
   // ports bounding box
@@ -60,29 +61,29 @@ GraphicsNodeGeometry::GraphicsNodeGeometry(NodeProxy *p_node_proxy, QSizeF widge
 
   for (int k = 0; k < this->p_node_proxy->get_nports(); k++)
   {
-    float dx = 2.f * style.node.padding;
+    float dx = 2.f * GN_STYLE->node.padding;
 
     this->port_label_rects.push_back(
         QRectF(margin + dx, ypos, node_width - 2.f * dx, dy));
 
     if (this->p_node_proxy->get_port_type(k) == PortType::IN)
       this->port_rects.push_back(
-          QRectF(margin - style.node.port_radius,
-                 ypos + 0.5f * font_metrics.height() - style.node.port_radius,
-                 2 * style.node.port_radius,
-                 2 * style.node.port_radius));
+          QRectF(margin - GN_STYLE->node.port_radius,
+                 ypos + 0.5f * font_metrics.height() - GN_STYLE->node.port_radius,
+                 2 * GN_STYLE->node.port_radius,
+                 2 * GN_STYLE->node.port_radius));
     else
       this->port_rects.push_back(
-          QRectF(margin + node_width - style.node.port_radius,
-                 ypos + 0.5f * font_metrics.height() - style.node.port_radius,
-                 2 * style.node.port_radius,
-                 2 * style.node.port_radius));
+          QRectF(margin + node_width - GN_STYLE->node.port_radius,
+                 ypos + 0.5f * font_metrics.height() - GN_STYLE->node.port_radius,
+                 2 * GN_STYLE->node.port_radius,
+                 2 * GN_STYLE->node.port_radius));
 
     ypos += dy;
   }
 
-  this->widget_pos = QPointF(margin + style.node.padding_widget_width,
-                             ypos + style.node.padding_widget_height);
+  this->widget_pos = QPointF(margin + GN_STYLE->node.padding_widget_width,
+                             ypos + GN_STYLE->node.padding_widget_height);
 }
 
 } // namespace gngui
