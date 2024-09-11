@@ -46,8 +46,8 @@ public:
 
   QWidget *get_qwidget_ref() override
   {
-    if (!this->push_button)
-      this->push_button = new QPushButton("button", this);
+    // if (!this->push_button)
+    //   this->push_button = new QPushButton("button", this);
 
     return (QWidget *)this->push_button;
   }
@@ -116,6 +116,12 @@ int main(int argc, char *argv[])
                                    {"Texture", QColor(0, 0, 0, 255)}};
 
   gngui::GraphEditor ed = gngui::GraphEditor();
+
+  std::map<std::string, std::string> ni = {{"NoiseFbm", "Primitive"},
+                                           {"NoiseIq", "Primitive"},
+                                           {"Clamp very long caption", "Math/Range"},
+                                           {"Smooth", "Filter"}};
+  ed.set_node_inventory(ni);
 
   MyNode   node1("node1");
   LongNode node2("node2");

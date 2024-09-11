@@ -14,6 +14,7 @@
 #include "gnodegui/graphics_node.hpp"
 #include "gnodegui/logger.hpp"
 #include "gnodegui/style.hpp"
+#include "gnodegui/utils.hpp"
 
 namespace gngui
 {
@@ -56,14 +57,7 @@ GraphicsNode::GraphicsNode(NodeProxy *p_node_proxy, QGraphicsItem *parent)
 
 std::vector<std::string> GraphicsNode::get_category_splitted(char delimiter) const
 {
-  std::vector<std::string> result;
-  std::stringstream        ss(this->get_category());
-  std::string              word;
-
-  while (std::getline(ss, word, delimiter))
-    result.push_back(word);
-
-  return result;
+  return split_string(this->get_category(), delimiter);
 }
 
 int GraphicsNode::get_hovered_port_index() const

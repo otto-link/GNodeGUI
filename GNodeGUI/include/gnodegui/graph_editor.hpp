@@ -43,6 +43,11 @@ public:
 
   void save_screenshot(const std::string &fname = "screenshot.png");
 
+  void set_node_inventory(const std::map<std::string, std::string> &new_node_inventory)
+  {
+    this->node_inventory = new_node_inventory;
+  }
+
   void zoom_to_content();
 
 public Q_SLOTS:
@@ -50,6 +55,8 @@ public Q_SLOTS:
 
 Q_SIGNALS:
   void background_right_clicked(QPointF scene_pos);
+
+  void new_node_requested(const std::string &type, QPointF scene_pos);
 
   void node_deleted(const std::string &id);
 
@@ -72,6 +79,8 @@ Q_SIGNALS:
   void connection_started(const std::string &id_from, const std::string &port_id_from);
 
 protected:
+  void contextMenuEvent(QContextMenuEvent *event) override;
+
   void delete_selected_items();
 
   void keyPressEvent(QKeyEvent *event) override;
@@ -98,6 +107,9 @@ private Q_SLOTS:
   void on_connection_started(GraphicsNode *from_node, int port_index);
 
 private:
+  // all nodes available store as a map of (node type, node category)
+  std::map<std::string, std::string> node_inventory;
+
   GraphicsLink *temp_link = nullptr;   // Temporary link
   GraphicsNode *source_node = nullptr; // Source node for the connection
 

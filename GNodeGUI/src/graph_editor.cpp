@@ -5,11 +5,15 @@
 #include <iostream>
 
 #include <QKeyEvent>
+#include <QLineEdit>
+#include <QMenu>
+#include <QWidgetAction>
 
 #include "gnodegui/graph_editor.hpp"
 #include "gnodegui/graphics_group.hpp"
 #include "gnodegui/logger.hpp"
 #include "gnodegui/style.hpp"
+#include "gnodegui/utils.hpp"
 
 namespace gngui
 {
@@ -73,6 +77,130 @@ std::string GraphEditor::add_node(NodeProxy *p_node_proxy, QPointF scene_pos)
   std::ostringstream oss;
   oss << std::to_string((unsigned long long)(void **)p_node);
   return oss.str();
+}
+
+void GraphEditor::contextMenuEvent(QContextMenuEvent *event)
+{
+  // --- skip this if there is an item is under the cursor
+
+  QGraphicsItem *item = this->itemAt(event->pos());
+
+  if (item)
+  {
+    QGraphicsView::contextMenuEvent(event);
+    return;
+  }
+
+  // --- if not keep going
+
+  QMenu *menu = new QMenu(this);
+
+  // add filterbox to the context menu
+  QLineEdit *text_box = new QLineEdit(menu);
+  text_box->setPlaceholderText(QStringLiteral("Filter"));
+  text_box->setClearButtonEnabled(true);
+  // hesiod::resize_font(text_box, -2);
+
+  QWidgetAction *text_box_action = new QWidgetAction(menu);
+  text_box_action->setDefaultWidget(text_box);
+
+  menu->addAction(text_box_action);
+
+  // to keep track of created submenus
+  std::map<std::string, QMenu *> category_map;
+
+  for (auto &[key, cat] : this->node_inventory)
+  {
+    const std::string              &action_name = key;
+    const std::vector<std::string> &action_categories = split_string(cat, '/');
+
+    // // backup actions
+    // std::vector<QAction *> actions = {};
+
+    QMenu *parent_menu = menu;
+
+    // traverse the category hierarchy
+    for (const std::string &category : action_categories)
+    {
+      // create submenu if it does not exist or add
+      if (!category_map.contains(category))
+        category_map[category] = parent_menu->addMenu(category.c_str());
+
+      // and set the submenu as the "current" menu
+      parent_menu = category_map.at(category);
+    }
+
+    // eventually add the action at the deepest category level
+    parent_menu->addAction(action_name.c_str());
+  }
+
+  // setup filtering
+  bool submenu_active = true;
+  bool filtering_active = false;
+
+  connect(
+      text_box,
+      &QLineEdit::textEdited,
+      [this, menu, category_map, &submenu_active, &filtering_active](const QString &text)
+      {
+        // TODO not sure about this one, feels overly brute forcing
+
+        // rebuild the menu from scratch
+        if (submenu_active)
+        {
+          for (auto &[_, submenu] : category_map)
+            menu->removeAction(submenu->menuAction());
+
+          submenu_active = false;
+        }
+
+        // add everything
+        if (!filtering_active)
+        {
+          for (const auto &[key, _] : this->node_inventory)
+            menu->addAction(QString::fromStdString(key));
+
+          filtering_active = true;
+        }
+
+        // determine who's visible
+        std::map<std::string, bool> is_visible = {};
+
+        for (const auto &[key, _] : this->node_inventory)
+        {
+          QString    key_qstr = QString::fromStdString(key);
+          const bool match = key_qstr.contains(text, Qt::CaseInsensitive);
+
+          if (text.isEmpty())
+            is_visible[key] = true;
+          else
+            is_visible[key] = match;
+        }
+
+        // apply visibility
+        for (auto action : menu->actions())
+        {
+          std::string key = action->text().toStdString();
+          if (key != "") // skip text box...
+            action->setVisible(is_visible.at(key));
+        }
+      });
+
+  // make sure the text box gets focus so the user doesn't have to click on it
+  text_box->setFocus();
+
+  QAction *selected_action = menu->exec(event->globalPos());
+
+  if (selected_action)
+  {
+    QPoint  view_pos = this->mapFromGlobal(event->globalPos());
+    QPointF scene_pos = this->mapToScene(view_pos);
+
+    Q_EMIT this->new_node_requested(selected_action->text().toStdString(), scene_pos);
+    qDebug() << selected_action->text();
+  }
+
+  QGraphicsView::contextMenuEvent(event);
 }
 
 void GraphEditor::delete_graphics_link(GraphicsLink *p_link)

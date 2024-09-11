@@ -44,8 +44,7 @@ GraphicsNodeGeometry::GraphicsNodeGeometry(NodeProxy *p_node_proxy, QSizeF widge
                               node_width) +
                      2.f * margin;
 
-  this->full_height = dy * (GN_STYLE->node.header_height_scale +
-                            this->p_node_proxy->get_nports()) +
+  this->full_height = dy * (0.5f + this->p_node_proxy->get_nports()) +
                       caption_to_ports_gap + 2.f * margin;
 
   // if widget exists add it with some padding (before and after)
@@ -62,7 +61,7 @@ GraphicsNodeGeometry::GraphicsNodeGeometry(NodeProxy *p_node_proxy, QSizeF widge
   this->header_rect.setHeight(caption_to_ports_gap);
 
   // ports bounding box
-  float ypos = (1.f + GN_STYLE->node.header_height_scale) * dy + caption_to_ports_gap;
+  float ypos = this->header_rect.bottom() + GN_STYLE->node.padding;
 
   for (int k = 0; k < this->p_node_proxy->get_nports(); k++)
   {
