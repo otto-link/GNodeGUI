@@ -1,11 +1,15 @@
 /* Copyright (c) 2024 Otto Link. Distributed under the terms of the GNU General
  * Public License. The full license is in the file LICENSE, distributed with
  * this software. */
+#include <QAction>
 #include <QGraphicsProxyWidget>
 #include <QGraphicsScene>
 #include <QInputDialog>
 #include <QLineEdit>
+#include <QMenu>
 #include <QPainter>
+#include <QPixmap>
+#include <QStyle>
 
 #include "gnodegui/graphics_group.hpp"
 #include "gnodegui/graphics_link.hpp"
@@ -14,6 +18,17 @@
 
 namespace gngui
 {
+
+QPixmap create_colored_pixmap(const QColor &color, QSize size = QSize(64, 16))
+{
+  QPixmap pixmap(size);
+  pixmap.fill(Qt::transparent); // Transparent background
+  QPainter painter(&pixmap);
+  painter.setBrush(QBrush(color));
+  painter.setPen(Qt::NoPen);
+  painter.drawRect(0, 0, size.width(), size.height());
+  return pixmap;
+}
 
 GraphicsGroup::GraphicsGroup(QGraphicsItem *parent)
     : QGraphicsRectItem(parent), resizing(false), resize_handle_size(20.f)
@@ -25,16 +40,47 @@ GraphicsGroup::GraphicsGroup(QGraphicsItem *parent)
   this->setZValue(-1);
 
   // Create a caption text item at the top middle of the rectangle
-  caption_item = new QGraphicsTextItem("Double-click to edit caption", this);
-  caption_item->setTextInteractionFlags(Qt::NoTextInteraction);
-  caption_item->setFlag(QGraphicsItem::ItemIsSelectable, false);
-  caption_item->setDefaultTextColor(style.group.color_caption);
+  this->caption_item = new QGraphicsTextItem("Double-click to edit caption", this);
+  this->caption_item->setTextInteractionFlags(Qt::NoTextInteraction);
+  this->caption_item->setFlag(QGraphicsItem::ItemIsSelectable, false);
 
-  QFont font = caption_item->font();
+  QFont font = this->caption_item->font();
   font.setBold(style.group.bold_caption);
-  caption_item->setFont(font);
+  this->caption_item->setFont(font);
 
+  this->set_color(style.group.color);
   this->update_caption_position();
+}
+
+void GraphicsGroup::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
+{
+  QMenu menu;
+
+  // get the default icon size for the QMenu
+  int   icon_size = menu.style()->pixelMetric(QStyle::PM_SmallIconSize);
+  QSize psize = QSize(icon_size, icon_size);
+
+  // create actions with colored rectangles
+  std::vector<QAction *> actions = {};
+
+  for (auto &[name, color] : style.group.color_map)
+  {
+    QAction *action = menu.addAction(create_colored_pixmap(color, psize),
+                                     QString::fromStdString(name));
+    actions.push_back(action);
+  }
+
+  // show the menu at the event's position
+  QAction *selected_action = menu.exec(event->screenPos());
+
+  // set the color based on the selected action
+  auto it = std::find(actions.begin(), actions.end(), selected_action);
+  if (it != actions.end())
+  {
+    size_t index = std::distance(actions.begin(), it);
+    auto   color_it = std::next(style.group.color_map.begin(), index);
+    this->set_color(color_it->second);
+  }
 }
 
 GraphicsGroup::Corner GraphicsGroup::get_resize_corner(const QPointF &pos) const
@@ -129,24 +175,30 @@ void GraphicsGroup::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 
 void GraphicsGroup::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
-  // Check if mouse is near a corner or edge for resizing
-  this->current_corner = this->get_resize_corner(event->pos());
-
-  if (this->current_corner != NONE)
+  if (event->button() == Qt::LeftButton)
   {
-    this->resizing = true;
-    this->resize_start_pos = event->pos();
-  }
-  else
-  {
-    // Begin dragging all items inside the rectangle
-    this->dragging = true;
-    this->drag_start_pos = event->scenePos();
+    // --- resizing and dragging
 
-    QRectF bbox = this->rect();
-    bbox.moveTo(this->scenePos());
-    this->selected_items = this->scene()->items(bbox);
+    // check if mouse is near a corner or edge for resizing
+    this->current_corner = this->get_resize_corner(event->pos());
+
+    if (this->current_corner != NONE)
+    {
+      this->resizing = true;
+      this->resize_start_pos = event->pos();
+    }
+    else
+    {
+      // begin dragging all items inside the rectangle
+      this->dragging = true;
+      this->drag_start_pos = event->scenePos();
+
+      QRectF bbox = this->rect();
+      bbox.moveTo(this->scenePos());
+      this->selected_items = this->scene()->items(bbox);
+    }
   }
+
   QGraphicsRectItem::mousePressEvent(event);
 }
 
@@ -193,7 +245,7 @@ void GraphicsGroup::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     for (QGraphicsItem *item : this->selected_items)
       if (item != this)
         if (GraphicsNode *p_node = dynamic_cast<GraphicsNode *>(item))
-          item->moveBy(delta.x(), delta.y());
+          p_node->moveBy(delta.x(), delta.y());
 
     // move the rectangle itself
     this->setPos(pos() + delta);
@@ -220,17 +272,26 @@ void GraphicsGroup::paint(QPainter                       *painter,
   Q_UNUSED(widget);
 
   if (this->isSelected())
-    painter->setPen(QPen(style.group.color_selected, 2));
+    painter->setPen(QPen(style.group.color_selected, style.group.pen_width_selected));
   else if (this->is_hovered)
-    painter->setPen(QPen(Qt::white, 2));
+    painter->setPen(QPen(this->color, style.group.pen_width_hovered));
   else
-    painter->setPen(QPen(Qt::white, 1));
+    painter->setPen(QPen(this->color, style.group.pen_width));
 
-  painter->setBrush(style.group.color_fill);
+  QColor fill_color = this->color;
+  fill_color.setAlphaF(style.group.background_fill_alpha);
+  painter->setBrush(fill_color);
 
   painter->drawRoundedRect(this->rect(),
                            style.group.rounding_radius,
                            style.group.rounding_radius);
+}
+
+void GraphicsGroup::set_color(const QColor &new_color)
+{
+  this->color = new_color;
+  this->caption_item->setDefaultTextColor(this->color);
+  this->update();
 }
 
 void GraphicsGroup::update_caption_position()

@@ -6,6 +6,7 @@
 #include <QKeyEvent>
 
 #include "gnodegui/graph_editor.hpp"
+#include "gnodegui/graphics_group.hpp"
 #include "gnodegui/logger.hpp"
 #include "gnodegui/style.hpp"
 
@@ -211,6 +212,14 @@ void GraphEditor::keyReleaseEvent(QKeyEvent *event)
     //   this->add_node(scene_pos, "test");
     //   break;
     // }
+
+  case Qt::Key_G:
+  {
+    QPoint  view_pos = this->mapFromGlobal(QCursor::pos());
+    QPointF scene_pos = this->mapToScene(view_pos);
+    this->add_item(new GraphicsGroup(), scene_pos);
+    break;
+  }
 
   case Qt::Key_Delete:
     this->delete_selected_items();

@@ -36,6 +36,8 @@ protected:
     BOTTOM_RIGHT,
   } current_corner;
 
+  void contextMenuEvent(QGraphicsSceneContextMenuEvent *event) override;
+
   void hoverEnterEvent(QGraphicsSceneHoverEvent *event) override;
 
   void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) override;
@@ -54,8 +56,11 @@ protected:
                      const QStyleOptionGraphicsItem *option,
                      QWidget                        *widget) override;
 
+  void set_color(const QColor &new_color);
+
 private:
   QGraphicsTextItem *caption_item;
+  QColor             color;
 
   bool is_hovered = false;
 

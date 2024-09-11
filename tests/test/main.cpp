@@ -62,7 +62,7 @@ class LongNode : public gngui::NodeProxy
 public:
   LongNode(std::string id) : gngui::NodeProxy(id) {}
 
-  std::string get_caption() const override { return "Clamp very very long long caption"; }
+  std::string get_caption() const override { return "Clamp very long caption"; }
 
   std::string get_category() const override { return "Math/Range/Bound"; }
 

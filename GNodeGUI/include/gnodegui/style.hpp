@@ -70,15 +70,26 @@ struct Style
 
   struct Group
   {
-    float rounding_radius = 8.f;
+    float pen_width = 1.f;
+    float pen_width_hovered = 1.f;
+    float pen_width_selected = 3.f;
+    float rounding_radius = 16.f;
 
     QColor color = Qt::white;
-    QColor color_fill = QColor(255, 255, 255, 16);
-    QColor color_hovered = Qt::lightGray;
+    float  background_fill_alpha = 0.1f;
     QColor color_selected = QColor(80, 250, 123, 255);
-    QColor color_caption = Qt::white;
 
-    bool bold_caption = false;
+    bool bold_caption = true;
+
+    std::map<std::string, QColor> color_map = {{"White", Qt::white},
+                                               {"Cyan", QColor(139, 233, 253)},
+                                               {"Green", QColor(80, 250, 123)},
+                                               {"Orange", QColor(255, 184, 108)},
+                                               {"Pink", QColor(255, 121, 198)},
+                                               {"Purple", QColor(189, 147, 249)},
+                                               {"Red", QColor(255, 85, 85)},
+                                               {"Yellow", QColor(241, 250, 140)},
+                                               {"Black", Qt::black}};
   } group;
 };
 
