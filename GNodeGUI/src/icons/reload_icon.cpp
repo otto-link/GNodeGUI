@@ -20,11 +20,12 @@ ReloadIcon::ReloadIcon(float width, QColor color, float pen_width, QGraphicsItem
 
 void ReloadIcon::set_path()
 {
-  float radius = 0.5f * this->width;
+  float padding = 0.15f * this->width;
+  float radius = 0.5f * this->width - padding;
 
   // create a circular path
   QPainterPath path;
-  QRectF       circle_rect(0.f, 0.f, 2.f * radius, 2.f * radius);
+  QRectF       circle_rect(padding, padding, 2.f * radius, 2.f * radius);
   float        angle = 20.f;
   path.arcMoveTo(circle_rect, angle);
   path.arcTo(circle_rect, angle, 360.f - 2.f * angle);
