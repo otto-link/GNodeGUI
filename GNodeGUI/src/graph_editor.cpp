@@ -528,7 +528,6 @@ void GraphEditor::on_node_right_clicked(const std::string &id, QPointF scene_pos
 
 void GraphEditor::save_screenshot(const std::string &fname)
 {
-  this->zoom_to_content();
   QPixmap pixMap = this->grab();
   pixMap.save(fname.c_str());
 }

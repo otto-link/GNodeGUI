@@ -16,6 +16,7 @@
 #include "gnodegui/icons/reload_icon.hpp"
 #include "gnodegui/icons/screenshot_icon.hpp"
 #include "gnodegui/icons/select_all_icon.hpp"
+#include "gnodegui/icons/viewport_icon.hpp"
 
 // --- node specialization
 
@@ -135,8 +136,8 @@ int main(int argc, char *argv[])
   LongNode node2("node2");
   MyNode   node3("node3");
 
-  qreal width = 16.f;
-  qreal x = 400.f;
+  qreal width = 32.f;
+  qreal x = 300.f;
   qreal pwidth = 1.f;
   ed.add_item(new gngui::ReloadIcon(width, Qt::white, pwidth),
               QPointF((x += 1.2f * width), 250));
@@ -151,6 +152,8 @@ int main(int argc, char *argv[])
   ed.add_item(new gngui::DotsIcon(width, Qt::white, pwidth),
               QPointF((x += 1.2f * width), 250));
   ed.add_item(new gngui::LockIcon(width, Qt::white, pwidth),
+              QPointF((x += 1.2f * width), 250));
+  ed.add_item(new gngui::ViewportIcon(width, Qt::white, pwidth),
               QPointF((x += 1.2f * width), 250));
 
   ed.add_node(node1.get_proxy_ref(), QPointF(300, 300));
