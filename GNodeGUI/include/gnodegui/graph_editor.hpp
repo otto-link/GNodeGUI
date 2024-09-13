@@ -21,10 +21,6 @@
 namespace gngui
 {
 
-// TODO zoom to node, zoom to selected items
-
-// TODO overlay data type on links
-
 class GraphEditor : public QGraphicsView
 {
   Q_OBJECT
