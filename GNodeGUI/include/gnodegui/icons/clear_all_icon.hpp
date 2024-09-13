@@ -3,7 +3,7 @@
  * this software. */
 
 /**
- * @file reload_icon.hpp
+ * @file clear_all_icon.hpp
  * @author Otto Link (otto.link.bv@gmail.com)
  * @brief
  * @copyright Copyright (c) 2024 Otto Link. Distributed under the terms of the
@@ -11,20 +11,19 @@
  */
 #pragma once
 #include <QGraphicsPathItem>
-#include <QObject>
 
 #include "gnodegui/icons/abstract_icon.hpp"
 
 namespace gngui
 {
 
-class ReloadIcon : public AbstractIcon
+class ClearAllIcon : public AbstractIcon
 {
 public:
-  ReloadIcon(float          width,
-             QColor         color = Qt::black,
-             float          pen_width = 1.f,
-             QGraphicsItem *parent = nullptr);
+  ClearAllIcon(float          width,
+               QColor         color = Qt::black,
+               float          pen_width = 1.f,
+               QGraphicsItem *parent = nullptr);
 
   void set_path() override;
 };

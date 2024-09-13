@@ -3,7 +3,7 @@
  * this software. */
 
 /**
- * @file reload_icon.hpp
+ * @file new_icon.hpp
  * @author Otto Link (otto.link.bv@gmail.com)
  * @brief
  * @copyright Copyright (c) 2024 Otto Link. Distributed under the terms of the
@@ -18,13 +18,13 @@
 namespace gngui
 {
 
-class ReloadIcon : public AbstractIcon
+class NewIcon : public AbstractIcon
 {
 public:
-  ReloadIcon(float          width,
-             QColor         color = Qt::black,
-             float          pen_width = 1.f,
-             QGraphicsItem *parent = nullptr);
+  NewIcon(float          width,
+          QColor         color = Qt::black,
+          float          pen_width = 1.f,
+          QGraphicsItem *parent = nullptr);
 
   void set_path() override;
 };

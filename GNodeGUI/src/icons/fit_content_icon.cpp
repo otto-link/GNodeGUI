@@ -29,7 +29,7 @@ void FitContentIcon::set_path()
   float  lx = 0.4f * this->width;
   float  dx = 0.5f * (this->width - lx);
   QRectF rect(dx, dx, lx, lx);
-  path.addRoundedRect(rect, 0.1f * this->width, 0.1f * this->width);
+  path.addRoundedRect(rect, 0.05f * this->width, 0.05f * this->width);
 
   // triangles
   float lm = 0.5f * this->width;

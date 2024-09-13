@@ -28,6 +28,8 @@ public:
     this->setOpacity(this->pen_opacity);
   }
 
+  void set_tooltip(QString new_tooltip) { this->tooltip = new_tooltip; }
+
 Q_SIGNALS:
   void hit_icon();
 

@@ -9,10 +9,12 @@
 #include "gnodegui/node_proxy.hpp"
 #include "gnodegui/style.hpp"
 
+#include "gnodegui/icons/clear_all_icon.hpp"
 #include "gnodegui/icons/dots_icon.hpp"
 #include "gnodegui/icons/fit_content_icon.hpp"
 #include "gnodegui/icons/group_icon.hpp"
 #include "gnodegui/icons/lock_icon.hpp"
+#include "gnodegui/icons/new_icon.hpp"
 #include "gnodegui/icons/reload_icon.hpp"
 #include "gnodegui/icons/screenshot_icon.hpp"
 #include "gnodegui/icons/select_all_icon.hpp"
@@ -137,23 +139,29 @@ int main(int argc, char *argv[])
   MyNode   node3("node3");
 
   qreal width = 32.f;
-  qreal x = 300.f;
+  qreal x = 200.f;
   qreal pwidth = 1.f;
-  ed.add_item(new gngui::ReloadIcon(width, Qt::white, pwidth),
-              QPointF((x += 1.2f * width), 250));
-  ed.add_item(new gngui::ScreenshotIcon(width, Qt::white, pwidth),
-              QPointF((x += 1.2f * width), 250));
+
+  auto reload = new gngui::ReloadIcon(width, Qt::white, pwidth);
+
+  ed.add_item(reload, QPointF((x += 1.2f * width), 250));
   ed.add_item(new gngui::GroupIcon(width, Qt::white, pwidth),
               QPointF((x += 1.2f * width), 250));
   ed.add_item(new gngui::SelectAllIcon(width, Qt::white, pwidth),
               QPointF((x += 1.2f * width), 250));
+  ed.add_item(new gngui::ClearAllIcon(width, Qt::white, pwidth),
+              QPointF((x += 1.2f * width), 250));
   ed.add_item(new gngui::FitContentIcon(width, Qt::white, pwidth),
+              QPointF((x += 1.2f * width), 250));
+  ed.add_item(new gngui::ScreenshotIcon(width, Qt::white, pwidth),
               QPointF((x += 1.2f * width), 250));
   ed.add_item(new gngui::DotsIcon(width, Qt::white, pwidth),
               QPointF((x += 1.2f * width), 250));
   ed.add_item(new gngui::LockIcon(width, Qt::white, pwidth),
               QPointF((x += 1.2f * width), 250));
   ed.add_item(new gngui::ViewportIcon(width, Qt::white, pwidth),
+              QPointF((x += 1.2f * width), 250));
+  ed.add_item(new gngui::NewIcon(width, Qt::white, pwidth),
               QPointF((x += 1.2f * width), 250));
 
   ed.add_node(node1.get_proxy_ref(), QPointF(300, 300));
