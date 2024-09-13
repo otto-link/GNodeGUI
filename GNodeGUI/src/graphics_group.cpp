@@ -146,6 +146,35 @@ void GraphicsGroup::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
   QGraphicsRectItem::hoverMoveEvent(event);
 }
 
+void GraphicsGroup::json_from(nlohmann::json json)
+{
+  std::vector<float> pos = json["position"];
+  float              width = json["width"];
+  float              height = json["height"];
+  this->setRect(QRectF(pos[0], pos[1], width, height));
+
+  this->set_caption(json["caption"]);
+
+  std::vector<float> cvec = json["color"];
+  this->set_color(QColor(cvec[0], cvec[1], cvec[2], cvec[3]));
+}
+
+nlohmann::json GraphicsGroup::json_to() const
+{
+  nlohmann::json json;
+
+  json["caption"] = this->caption_item->document()->toRawText().toStdString();
+  json["position"] = {this->scenePos().x(), this->scenePos().y()};
+  json["width"] = this->rect().width();
+  json["height"] = this->rect().height();
+  json["color"] = {this->color.red(),
+                   this->color.green(),
+                   this->color.blue(),
+                   this->color.alpha()};
+
+  return json;
+}
+
 void GraphicsGroup::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 {
   // check if double-click is on the caption to start editing
@@ -299,6 +328,12 @@ void GraphicsGroup::paint(QPainter                       *painter,
   painter->drawRoundedRect(this->rect(),
                            GN_STYLE->group.rounding_radius,
                            GN_STYLE->group.rounding_radius);
+}
+
+void GraphicsGroup::set_caption(const std::string &new_caption)
+{
+  this->caption_item->setPlainText(new_caption.c_str());
+  this->update_caption_position();
 }
 
 void GraphicsGroup::set_color(const QColor &new_color)

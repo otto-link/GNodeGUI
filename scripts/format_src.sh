@@ -13,4 +13,4 @@ for D in ${DIRS}; do
 done
 
 cmake-format -i CMakeLists.txt
-# cmake-format -i doc/CMakeLists.txt
+cmake-format -i GNodeGUI/CMakeLists.txt

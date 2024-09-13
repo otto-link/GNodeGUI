@@ -15,6 +15,8 @@
 #include <QGraphicsPathItem>
 #include <QObject>
 
+#include "nlohmann/json.hpp"
+
 #include "gnodegui/graphics_node.hpp"
 
 namespace gngui
@@ -44,6 +46,8 @@ public:
   GraphicsNode *get_node_in() { return this->node_in; }
 
   int get_port_in_index() const { return this->port_in_index; }
+
+  nlohmann::json json_to() const;
 
   void set_endnodes(GraphicsNode *from,
                     int           port_from_index,

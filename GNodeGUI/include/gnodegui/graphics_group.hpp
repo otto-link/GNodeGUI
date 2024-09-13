@@ -12,6 +12,8 @@
 #pragma once
 #include <memory>
 
+#include "nlohmann/json.hpp"
+
 #include <QCursor>
 #include <QGraphicsRectItem>
 #include <QGraphicsSceneMouseEvent>
@@ -25,6 +27,14 @@ class GraphicsGroup : public QGraphicsRectItem
 {
 public:
   GraphicsGroup(QGraphicsItem *parent = nullptr);
+
+  void json_from(nlohmann::json json);
+
+  nlohmann::json json_to() const;
+
+  void set_caption(const std::string &new_caption);
+
+  void set_color(const QColor &new_color);
 
 protected:
   enum Corner
@@ -55,8 +65,6 @@ protected:
   virtual void paint(QPainter                       *painter,
                      const QStyleOptionGraphicsItem *option,
                      QWidget                        *widget) override;
-
-  void set_color(const QColor &new_color);
 
 private:
   QGraphicsTextItem *caption_item;

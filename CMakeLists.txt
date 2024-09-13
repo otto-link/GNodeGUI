@@ -15,10 +15,10 @@ endif()
 
 set(CMAKE_CXX_STANDARD 20)
 
-# --- Dear ImGui
+# ---  dependencies
 find_package(spdlog REQUIRED)
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets)
 
-# add_subdirectory(external)
+add_subdirectory(external)
 add_subdirectory(GNodeGUI)
 add_subdirectory(tests)

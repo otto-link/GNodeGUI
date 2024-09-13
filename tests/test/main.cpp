@@ -119,12 +119,18 @@ int main(int argc, char *argv[])
 
   SPDLOG->info("Updating graph parameters...");
 
-  GN_STYLE->node.color_port_data["float"] = QColor(139, 233, 253, 255);
-  GN_STYLE->node.color_port_data["int"] = QColor(189, 147, 249, 255);
+  // (optional)
+  {
+    GN_STYLE->node.color_port_data["float"] = QColor(139, 233, 253, 255);
+    GN_STYLE->node.color_port_data["int"] = QColor(189, 147, 249, 255);
+  }
 
-  GN_STYLE->node.color_category = {{"Math", QColor(0, 43, 54, 255)},
-                                   {"Primitive", QColor(42, 161, 152, 255)},
-                                   {"Texture", QColor(0, 0, 0, 255)}};
+  // (optional)
+  {
+    GN_STYLE->node.color_category = {{"Math", QColor(0, 43, 54, 255)},
+                                     {"Primitive", QColor(42, 161, 152, 255)},
+                                     {"Texture", QColor(0, 0, 0, 255)}};
+  }
 
   gngui::GraphEditor ed = gngui::GraphEditor();
 
@@ -138,31 +144,31 @@ int main(int argc, char *argv[])
   LongNode node2("node2");
   MyNode   node3("node3");
 
-  qreal width = 32.f;
-  qreal x = 200.f;
-  qreal pwidth = 1.f;
+  // qreal width = 32.f;
+  // qreal x = 200.f;
+  // qreal pwidth = 1.f;
 
-  auto reload = new gngui::ReloadIcon(width, Qt::white, pwidth);
+  // auto reload = new gngui::ReloadIcon(width, Qt::white, pwidth);
 
-  ed.add_item(reload, QPointF((x += 1.2f * width), 250));
-  ed.add_item(new gngui::GroupIcon(width, Qt::white, pwidth),
-              QPointF((x += 1.2f * width), 250));
-  ed.add_item(new gngui::SelectAllIcon(width, Qt::white, pwidth),
-              QPointF((x += 1.2f * width), 250));
-  ed.add_item(new gngui::ClearAllIcon(width, Qt::white, pwidth),
-              QPointF((x += 1.2f * width), 250));
-  ed.add_item(new gngui::FitContentIcon(width, Qt::white, pwidth),
-              QPointF((x += 1.2f * width), 250));
-  ed.add_item(new gngui::ScreenshotIcon(width, Qt::white, pwidth),
-              QPointF((x += 1.2f * width), 250));
-  ed.add_item(new gngui::DotsIcon(width, Qt::white, pwidth),
-              QPointF((x += 1.2f * width), 250));
-  ed.add_item(new gngui::LockIcon(width, Qt::white, pwidth),
-              QPointF((x += 1.2f * width), 250));
-  ed.add_item(new gngui::ViewportIcon(width, Qt::white, pwidth),
-              QPointF((x += 1.2f * width), 250));
-  ed.add_item(new gngui::NewIcon(width, Qt::white, pwidth),
-              QPointF((x += 1.2f * width), 250));
+  // ed.add_item(reload, QPointF((x += 1.2f * width), 250));
+  // ed.add_item(new gngui::GroupIcon(width, Qt::white, pwidth),
+  //             QPointF((x += 1.2f * width), 250));
+  // ed.add_item(new gngui::SelectAllIcon(width, Qt::white, pwidth),
+  //             QPointF((x += 1.2f * width), 250));
+  // ed.add_item(new gngui::ClearAllIcon(width, Qt::white, pwidth),
+  //             QPointF((x += 1.2f * width), 250));
+  // ed.add_item(new gngui::FitContentIcon(width, Qt::white, pwidth),
+  //             QPointF((x += 1.2f * width), 250));
+  // ed.add_item(new gngui::ScreenshotIcon(width, Qt::white, pwidth),
+  //             QPointF((x += 1.2f * width), 250));
+  // ed.add_item(new gngui::DotsIcon(width, Qt::white, pwidth),
+  //             QPointF((x += 1.2f * width), 250));
+  // ed.add_item(new gngui::LockIcon(width, Qt::white, pwidth),
+  //             QPointF((x += 1.2f * width), 250));
+  // ed.add_item(new gngui::ViewportIcon(width, Qt::white, pwidth),
+  //             QPointF((x += 1.2f * width), 250));
+  // ed.add_item(new gngui::NewIcon(width, Qt::white, pwidth),
+  //             QPointF((x += 1.2f * width), 250));
 
   ed.add_node(node1.get_proxy_ref(), QPointF(300, 300));
   ed.add_node(node2.get_proxy_ref(), QPointF(500, 450));
@@ -172,6 +178,8 @@ int main(int argc, char *argv[])
 
   ed.resize(1000, 800);
   ed.show();
+
+  ed.json_to(); //"export.hsd");
 
   return app.exec();
 }

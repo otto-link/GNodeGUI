@@ -52,6 +52,19 @@ void GraphicsLink::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
   QGraphicsPathItem::hoverLeaveEvent(event);
 }
 
+nlohmann::json GraphicsLink::json_to() const
+{
+  nlohmann::json json;
+
+  json["node_out_id"] = this->node_out->get_id();
+  json["node_in_id"] = this->node_in->get_id();
+
+  json["port_out_id"] = this->node_out->get_port_id(this->port_out_index);
+  json["port_in_id"] = this->node_in->get_port_id(this->port_in_index);
+
+  return json;
+}
+
 void GraphicsLink::paint(QPainter                       *painter,
                          const QStyleOptionGraphicsItem *option,
                          QWidget                        *widget)

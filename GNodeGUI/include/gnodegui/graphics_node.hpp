@@ -18,6 +18,8 @@
 #include <QObject>
 #include <QWidget>
 
+#include "nlohmann/json.hpp"
+
 #include "gnodegui/graphics_link.hpp"
 #include "gnodegui/graphics_node_geometry.hpp"
 #include "gnodegui/logger.hpp"
@@ -64,6 +66,18 @@ public:
     return this->p_node_proxy->get_port_id(port_index);
   }
 
+  /**
+   * @brief Retrieves the index of the port corresponding to the given identifier.
+   *
+   * This function searches for the port that matches the provided string identifier and
+   * returns its index. If the identifier does not match any existing ports, it may return
+   * a sentinel value (e.g., -1).
+   *
+   * @param id The string identifier of the port.
+   * @return int The index of the port, or a sentinel value if the port is not found.
+   */
+  int get_port_index(const std::string &id) const;
+
   PortType get_port_type(int port_index) const
   {
     return this->p_node_proxy->get_port_type(port_index);
@@ -76,6 +90,8 @@ public:
   // always returns true for outputs since we accept multiple links from one output to
   // multiple inputs
   bool is_port_available(int port_index);
+
+  nlohmann::json json_to() const;
 
   // set to nullptr to flag a disconnect port
   void set_is_port_connected(int port_index, GraphicsLink *p_link)

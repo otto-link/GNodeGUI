@@ -10,9 +10,13 @@
  * GNU General Public License. See the file LICENSE for the full license.
  */
 #pragma once
+#include <functional>
 
 #include <QGraphicsItem>
 #include <QGraphicsView>
+#include <QJsonObject>
+
+#include "nlohmann/json.hpp"
 
 #include "gnodegui/graphics_link.hpp"
 #include "gnodegui/graphics_node.hpp"
@@ -26,9 +30,9 @@ class GraphEditor : public QGraphicsView
   Q_OBJECT
 
 public:
-  GraphEditor();
+  GraphEditor(std::string id = "graph");
 
-  void add_item(QGraphicsItem *item, QPointF scene_pos);
+  void add_item(QGraphicsItem *item, QPointF scene_pos = QPointF(0.f, 0.f));
 
   // returns a unique ID for the node
   std::string add_node(NodeProxy *p_node_proxy, QPointF scene_pos);
@@ -37,7 +41,19 @@ public:
   // export.dot -Tsvg > output.svg
   void export_to_graphviz(const std::string &fname = "export.dot");
 
+  std::string get_id() const { return this->id; }
+
+  GraphicsNode *get_graphics_node_by_id(const std::string &id);
+
+  void json_from(nlohmann::json json);
+
+  nlohmann::json json_to() const;
+
+  void load_json(const std::string &fname = "export.json");
+
   void save_screenshot(const std::string &fname = "screenshot.png");
+
+  void save_json(const std::string &fname = "export.json");
 
   void set_node_inventory(const std::map<std::string, std::string> &new_node_inventory)
   {
@@ -55,6 +71,10 @@ Q_SIGNALS:
   void background_right_clicked(QPointF scene_pos);
 
   void new_node_requested(const std::string &type, QPointF scene_pos);
+
+  void new_node_requested(const std::string &type,
+                          const std::string &id,
+                          QPointF            scene_pos);
 
   void node_deleted(const std::string &id);
 
@@ -78,7 +98,7 @@ Q_SIGNALS:
 
   void connection_started(const std::string &id_from, const std::string &port_id_from);
 
-protected:
+protected: // Qt events
   void contextMenuEvent(QContextMenuEvent *event) override;
 
   void delete_selected_items();
@@ -107,11 +127,15 @@ private Q_SLOTS:
   void on_connection_started(GraphicsNode *from_node, int port_index);
 
 private:
+  std::string id;
+
   // all nodes available store as a map of (node type, node category)
   std::map<std::string, std::string> node_inventory;
 
   GraphicsLink *temp_link = nullptr;   // Temporary link
   GraphicsNode *source_node = nullptr; // Source node for the connection
+
+  void clear();
 
   void delete_graphics_link(GraphicsLink *p_link);
 

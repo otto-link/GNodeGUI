@@ -97,6 +97,15 @@ std::string GraphicsNode::get_main_category() const
   return node_category.substr(0, pos);
 }
 
+int GraphicsNode::get_port_index(const std::string &id) const
+{
+  for (int k = 0; k < this->get_nports(); k++)
+    if (this->get_port_id(k) == id)
+      return k;
+
+  return -1;
+}
+
 void GraphicsNode::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 {
   this->is_node_hovered = true;
@@ -131,6 +140,17 @@ bool GraphicsNode::is_port_available(int port_index)
     return true;
   else
     return !this->connected_link_ref[port_index];
+}
+
+nlohmann::json GraphicsNode::json_to() const
+{
+  nlohmann::json json;
+
+  json["id"] = this->get_id();
+  json["caption"] = this->get_caption();
+  json["position"] = {this->scenePos().x(), this->scenePos().y()};
+
+  return json;
 }
 
 void GraphicsNode::mousePressEvent(QGraphicsSceneMouseEvent *event)

@@ -18,7 +18,7 @@
 namespace gngui
 {
 
-GraphEditor::GraphEditor() : QGraphicsView()
+GraphEditor::GraphEditor(std::string id) : QGraphicsView(), id(id)
 {
   SPDLOG->trace("GraphEditor::GraphEditor");
   this->setRenderHint(QPainter::Antialiasing);
@@ -82,6 +82,12 @@ std::string GraphEditor::add_node(NodeProxy *p_node_proxy, QPointF scene_pos)
   std::ostringstream oss;
   oss << std::to_string((unsigned long long)(void **)p_node);
   return oss.str();
+}
+
+void GraphEditor::clear()
+{
+  this->scene()->clear();
+  this->viewport()->update();
 }
 
 void GraphEditor::contextMenuEvent(QContextMenuEvent *event)
@@ -214,7 +220,7 @@ void GraphEditor::delete_graphics_link(GraphicsLink *p_link)
 
   if (!p_link)
   {
-    SPDLOG->warn("GraphEditor::delete_graphics_link: invalid link provided.");
+    SPDLOG->error("GraphEditor::delete_graphics_link: invalid link provided.");
     return;
   }
 
@@ -246,7 +252,7 @@ void GraphEditor::delete_graphics_node(GraphicsNode *p_node)
 
   if (!p_node)
   {
-    SPDLOG->warn("GraphEditor::delete_graphics_node: invalid node provided.");
+    SPDLOG->error("GraphEditor::delete_graphics_node: invalid node provided.");
     return;
   }
 
@@ -326,6 +332,111 @@ void GraphEditor::export_to_graphviz(const std::string &fname)
   file << "}\n";
 }
 
+GraphicsNode *GraphEditor::get_graphics_node_by_id(const std::string &id)
+{
+  for (QGraphicsItem *item : this->scene()->items())
+    if (GraphicsNode *p_node = dynamic_cast<GraphicsNode *>(item))
+      if (p_node->get_id() == id)
+        return p_node;
+
+  return nullptr;
+}
+
+void GraphEditor::json_from(nlohmann::json json)
+{
+  // check that the graph ID is indeed available
+  if (!json["GraphEditor"].contains(this->id))
+  {
+    SPDLOG->error("GraphEditor::json_from, could not file graph ID {} in the json data",
+                  this->id);
+    return;
+  }
+
+  // generate graph from json data
+  this->clear();
+
+  if (!json["GraphEditor"][this->id]["groups"].is_null())
+  {
+    for (auto &json_group : json["GraphEditor"][this->id]["groups"])
+    {
+      GraphicsGroup *p_group = new GraphicsGroup();
+      this->add_item(p_group);
+      p_group->json_from(json_group);
+    }
+  }
+
+  if (!json["GraphEditor"][this->id]["nodes"].is_null())
+  {
+    for (auto &json_node : json["GraphEditor"][this->id]["nodes"])
+    {
+      std::string        caption = json_node["caption"];
+      std::string        nid = json_node["id"];
+      std::vector<float> pos = json_node["position"];
+
+      // nodes are not generated in this class, it is outsourced to the
+      // outter headless nodes manager
+      Q_EMIT this->new_node_requested(caption, nid, QPointF(pos[0], pos[1]));
+    }
+  }
+
+  if (!json["GraphEditor"][this->id]["links"].is_null())
+  {
+    for (auto &json_link : json["GraphEditor"][this->id]["links"])
+    {
+      std::string node_out_id = json_link["node_out_id"];
+      std::string node_in_id = json_link["node_in_id"];
+      std::string port_out_id = json_link["port_out_id"];
+      std::string port_in_id = json_link["port_in_id"];
+
+      // same here, the graphic links are generated but the data
+      // connection itself is outsourced to the outter headless nodes
+      // manager
+      this->temp_link = new GraphicsLink();
+
+      GraphicsNode *from_node = this->get_graphics_node_by_id(node_out_id);
+      GraphicsNode *to_node = this->get_graphics_node_by_id(node_in_id);
+
+      if (from_node && to_node)
+      {
+        int port_from_index = from_node->get_port_index(port_out_id);
+        int port_to_index = from_node->get_port_index(port_in_id);
+
+        this->on_connection_finished(from_node, port_from_index, to_node, port_to_index);
+      }
+      else
+        SPDLOG->error(
+            "GraphEditor::json_from, nodes instance cannot be found, IDs: {} and/or {}",
+            node_out_id,
+            node_in_id);
+    }
+  }
+}
+
+nlohmann::json GraphEditor::json_to() const
+{
+  nlohmann::json json;
+
+  std::vector<nlohmann::json> json_node_list = {};
+  std::vector<nlohmann::json> json_link_list = {};
+  std::vector<nlohmann::json> json_group_list = {};
+
+  for (QGraphicsItem *item : this->scene()->items())
+  {
+    if (GraphicsNode *p_node = dynamic_cast<GraphicsNode *>(item))
+      json_node_list.push_back(p_node->json_to());
+    else if (GraphicsLink *p_link = dynamic_cast<GraphicsLink *>(item))
+      json_link_list.push_back(p_link->json_to());
+    else if (GraphicsGroup *p_group = dynamic_cast<GraphicsGroup *>(item))
+      json_group_list.push_back(p_group->json_to());
+  }
+
+  json["nodes"] = json_node_list;
+  json["links"] = json_link_list;
+  json["groups"] = json_group_list;
+
+  return json;
+}
+
 void GraphEditor::keyPressEvent(QKeyEvent *event)
 {
   if (event->key() == Qt::Key_Shift)
@@ -366,6 +477,14 @@ void GraphEditor::keyReleaseEvent(QKeyEvent *event)
     this->export_to_graphviz();
     break;
 
+  case Qt::Key_J:
+    this->save_json();
+    break;
+
+  case Qt::Key_L:
+    this->load_json();
+    break;
+
   case Qt::Key_S:
     this->save_screenshot();
     break;
@@ -376,6 +495,25 @@ void GraphEditor::keyReleaseEvent(QKeyEvent *event)
   }
 
   QGraphicsView::keyReleaseEvent(event);
+}
+
+void GraphEditor::load_json(const std::string &fname)
+{
+  SPDLOG->trace("GraphEditor::load_json");
+
+  std::ifstream  file(fname);
+  nlohmann::json json;
+
+  if (file.is_open())
+  {
+    file >> json;
+    file.close();
+  }
+  else
+    SPDLOG->error("GraphEditor::load_json, problem while saving file: {}", fname);
+
+  // regenerate graph
+  this->json_from(json);
 }
 
 void GraphEditor::mouseMoveEvent(QMouseEvent *event)
@@ -535,6 +673,26 @@ void GraphEditor::on_node_reload_requested(const std::string &id)
 void GraphEditor::on_node_right_clicked(const std::string &id, QPointF scene_pos)
 {
   Q_EMIT this->node_right_clicked(id, scene_pos);
+}
+
+void GraphEditor::save_json(const std::string &fname)
+{
+  SPDLOG->trace("GraphEditor::save_json");
+
+  // current data
+  nlohmann::json json;
+  json["GraphEditor"][this->get_id()] = this->json_to();
+
+  // save file
+  std::ofstream file(fname);
+
+  if (file.is_open())
+  {
+    file << json.dump(4);
+    file.close();
+  }
+  else
+    SPDLOG->error("GraphEditor::save_json, problem while saving file: {}", fname);
 }
 
 void GraphEditor::save_screenshot(const std::string &fname)
