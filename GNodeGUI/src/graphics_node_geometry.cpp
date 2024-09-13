@@ -60,6 +60,15 @@ GraphicsNodeGeometry::GraphicsNodeGeometry(NodeProxy *p_node_proxy, QSizeF widge
   this->header_rect = this->body_rect;
   this->header_rect.setHeight(caption_to_ports_gap);
 
+  // buttons
+  float button_width = 0.7f * caption_to_ports_gap;
+  float button_padding = 0.5f * (caption_to_ports_gap - button_width);
+  this->reload_rect = QRectF(this->body_rect.right() - button_width -
+                                 2.f * button_padding,
+                             this->header_rect.top() + button_padding,
+                             button_width,
+                             button_width);
+
   // ports bounding box
   float ypos = this->header_rect.bottom() + GN_STYLE->node.padding;
 

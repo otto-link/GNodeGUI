@@ -73,6 +73,11 @@ std::string GraphEditor::add_node(NodeProxy *p_node_proxy, QPointF scene_pos)
                 this,
                 &GraphEditor::on_connection_dropped);
 
+  this->connect(p_node,
+                &GraphicsNode::reload_requested,
+                this,
+                &GraphEditor::on_node_reload_requested);
+
   // generate a unique id based on the object address
   std::ostringstream oss;
   oss << std::to_string((unsigned long long)(void **)p_node);
@@ -519,6 +524,12 @@ void GraphEditor::on_connection_started(GraphicsNode *from_node, int port_index)
 
   Q_EMIT this->connection_started(from_node->get_id(),
                                   from_node->get_port_id(port_index));
+}
+
+void GraphEditor::on_node_reload_requested(const std::string &id)
+{
+  SPDLOG->trace("GraphEditor::on_node_reload_requested {}", id);
+  Q_EMIT this->node_reload_requested(id);
 }
 
 void GraphEditor::on_node_right_clicked(const std::string &id, QPointF scene_pos)

@@ -51,6 +51,8 @@ public:
   void zoom_to_content();
 
 public Q_SLOTS:
+  void on_node_reload_requested(const std::string &id);
+
   void on_node_right_clicked(const std::string &id, QPointF scene_pos);
 
 Q_SIGNALS:
@@ -59,6 +61,8 @@ Q_SIGNALS:
   void new_node_requested(const std::string &type, QPointF scene_pos);
 
   void node_deleted(const std::string &id);
+
+  void node_reload_requested(const std::string &id);
 
   void node_right_clicked(const std::string &id, QPointF scene_pos);
 

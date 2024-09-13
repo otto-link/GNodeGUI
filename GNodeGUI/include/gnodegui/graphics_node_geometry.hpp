@@ -26,6 +26,7 @@ public:
   QSizeF  caption_size;
   QPointF caption_pos;
   QPointF widget_pos;
+  QRectF  reload_rect;
   QRectF  body_rect;
   QRectF  header_rect;
   int     full_width;

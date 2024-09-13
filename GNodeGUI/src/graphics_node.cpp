@@ -12,6 +12,7 @@
 
 #include "gnodegui/graphics_link.hpp"
 #include "gnodegui/graphics_node.hpp"
+#include "gnodegui/icons/reload_icon.hpp"
 #include "gnodegui/logger.hpp"
 #include "gnodegui/style.hpp"
 #include "gnodegui/utils.hpp"
@@ -37,6 +38,21 @@ GraphicsNode::GraphicsNode(NodeProxy *p_node_proxy, QGraphicsItem *parent)
   this->geometry = GraphicsNodeGeometry(this->p_node_proxy);
   this->setRect(0.f, 0.f, this->geometry.full_width, this->geometry.full_height);
 
+  // add buttons
+  if (GN_STYLE->node.reload_button)
+  {
+    gngui::ReloadIcon *reload = new gngui::ReloadIcon(this->geometry.reload_rect.width(),
+                                                      GN_STYLE->node.color_bg_light,
+                                                      GN_STYLE->node.pen_width,
+                                                      this);
+    reload->setPos(this->geometry.reload_rect.topLeft());
+
+    this->connect(reload,
+                  &ReloadIcon::hit_icon,
+                  [this]() { Q_EMIT this->reload_requested(this->get_id()); });
+  }
+
+  // add widget
   if (QWidget *widget = this->p_node_proxy->get_qwidget_ref())
   {
     // ensure it's a top-level widget
