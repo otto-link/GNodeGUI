@@ -256,8 +256,6 @@ void GraphViewer::delete_graphics_node(GraphicsNode *p_node)
     return;
   }
 
-  GUILOG->trace("GraphicsNode removing, id: {}", p_node->get_id());
-
   // remove any connected links
   for (QGraphicsItem *item : this->scene()->items())
     if (GraphicsLink *p_link = dynamic_cast<GraphicsLink *>(item))
@@ -673,6 +671,14 @@ void GraphViewer::on_node_reload_request(const std::string &id)
 void GraphViewer::on_node_right_clicked(const std::string &id, QPointF scene_pos)
 {
   Q_EMIT this->node_right_clicked(id, scene_pos);
+}
+
+void GraphViewer::remove_node(const std::string &node_id)
+{
+  for (QGraphicsItem *item : this->scene()->items())
+    if (GraphicsNode *p_node = dynamic_cast<GraphicsNode *>(item))
+      if (p_node->get_id() == node_id)
+        this->delete_graphics_node(p_node);
 }
 
 void GraphViewer::save_json(const std::string &fname)
