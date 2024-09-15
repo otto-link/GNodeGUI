@@ -33,7 +33,7 @@
  *
  * @see gnode::Logger
  */
-#define SPDLOG gngui::Logger::get_logger()
+#define GLOG gngui::Logger::get_logger()
 
 namespace gngui
 {

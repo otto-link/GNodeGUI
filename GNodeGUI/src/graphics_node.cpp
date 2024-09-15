@@ -161,7 +161,7 @@ void GraphicsNode::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
     if (hovered_port_index >= 0)
     {
-      SPDLOG->trace("connection_started {}:{}", this->get_id(), hovered_port_index);
+      GLOG->trace("connection_started {}:{}", this->get_id(), hovered_port_index);
 
       this->has_connection_started = true;
       this->setFlag(QGraphicsItem::ItemIsMovable, false);
@@ -202,7 +202,7 @@ void GraphicsNode::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 
           if (hovered_port_index >= 0)
           {
-            SPDLOG->trace("connection_finished {}:{}",
+            GLOG->trace("connection_finished {}:{}",
                           target_node->get_id(),
                           hovered_port_index);
 
@@ -226,7 +226,7 @@ void GraphicsNode::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 
       if (is_dropped)
       {
-        SPDLOG->trace("GraphicsNode::mouseReleaseEvent connection_dropped {}",
+        GLOG->trace("GraphicsNode::mouseReleaseEvent connection_dropped {}",
                       this->get_id());
         Q_EMIT connection_dropped(this, this->port_index_from, event->scenePos());
       }

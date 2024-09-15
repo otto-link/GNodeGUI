@@ -115,9 +115,9 @@ int main(int argc, char *argv[])
   font.setPointSize(10);
   app.setFont(font);
 
-  SPDLOG->info("Starting test application...");
+  GLOG->info("Starting test application...");
 
-  SPDLOG->info("Updating graph parameters...");
+  GLOG->info("Updating graph parameters...");
 
   // (optional)
   {

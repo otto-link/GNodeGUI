@@ -20,7 +20,7 @@ namespace gngui
 
 GraphEditor::GraphEditor(std::string id) : QGraphicsView(), id(id)
 {
-  SPDLOG->trace("GraphEditor::GraphEditor");
+  GLOG->trace("GraphEditor::GraphEditor");
   this->setRenderHint(QPainter::Antialiasing);
   this->setRenderHint(QPainter::SmoothPixmapTransform);
   this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -216,11 +216,11 @@ void GraphEditor::contextMenuEvent(QContextMenuEvent *event)
 
 void GraphEditor::delete_graphics_link(GraphicsLink *p_link)
 {
-  SPDLOG->trace("GraphicsLink removing");
+  GLOG->trace("GraphicsLink removing");
 
   if (!p_link)
   {
-    SPDLOG->error("GraphEditor::delete_graphics_link: invalid link provided.");
+    GLOG->error("GraphEditor::delete_graphics_link: invalid link provided.");
     return;
   }
 
@@ -229,7 +229,7 @@ void GraphEditor::delete_graphics_link(GraphicsLink *p_link)
   int           port_out = p_link->get_port_out_index();
   int           port_in = p_link->get_port_in_index();
 
-  SPDLOG->trace("GraphEditor::delete_graphics_link, {}:{} -> {}:{}",
+  GLOG->trace("GraphEditor::delete_graphics_link, {}:{} -> {}:{}",
                 node_out->get_id(),
                 node_out->get_port_id(port_out),
                 node_in->get_id(),
@@ -248,15 +248,15 @@ void GraphEditor::delete_graphics_link(GraphicsLink *p_link)
 
 void GraphEditor::delete_graphics_node(GraphicsNode *p_node)
 {
-  SPDLOG->trace("GraphicsNode removing, id: {}", p_node->get_id());
+  GLOG->trace("GraphicsNode removing, id: {}", p_node->get_id());
 
   if (!p_node)
   {
-    SPDLOG->error("GraphEditor::delete_graphics_node: invalid node provided.");
+    GLOG->error("GraphEditor::delete_graphics_node: invalid node provided.");
     return;
   }
 
-  SPDLOG->trace("GraphicsNode removing, id: {}", p_node->get_id());
+  GLOG->trace("GraphicsNode removing, id: {}", p_node->get_id());
 
   // remove any connected links
   for (QGraphicsItem *item : this->scene()->items())
@@ -290,7 +290,7 @@ void GraphEditor::delete_selected_items()
         this->delete_graphics_link(p_link);
       else
       {
-        SPDLOG->trace("item removed");
+        GLOG->trace("item removed");
         delete item;
       }
     }
@@ -301,7 +301,7 @@ void GraphEditor::export_to_graphviz(const std::string &fname)
 {
   // after export: to convert, command line: dot export.dot -Tsvg > output.svg
 
-  SPDLOG->trace("exporting to graphviz format...");
+  GLOG->trace("exporting to graphviz format...");
 
   std::ofstream file(fname);
 
@@ -347,7 +347,7 @@ void GraphEditor::json_from(nlohmann::json json)
   // check that the graph ID is indeed available
   if (!json["GraphEditor"].contains(this->id))
   {
-    SPDLOG->error("GraphEditor::json_from, could not file graph ID {} in the json data",
+    GLOG->error("GraphEditor::json_from, could not file graph ID {} in the json data",
                   this->id);
     return;
   }
@@ -404,7 +404,7 @@ void GraphEditor::json_from(nlohmann::json json)
         this->on_connection_finished(from_node, port_from_index, to_node, port_to_index);
       }
       else
-        SPDLOG->error(
+        GLOG->error(
             "GraphEditor::json_from, nodes instance cannot be found, IDs: {} and/or {}",
             node_out_id,
             node_in_id);
@@ -499,7 +499,7 @@ void GraphEditor::keyReleaseEvent(QKeyEvent *event)
 
 void GraphEditor::load_json(const std::string &fname)
 {
-  SPDLOG->trace("GraphEditor::load_json");
+  GLOG->trace("GraphEditor::load_json");
 
   std::ifstream  file(fname);
   nlohmann::json json;
@@ -510,7 +510,7 @@ void GraphEditor::load_json(const std::string &fname)
     file.close();
   }
   else
-    SPDLOG->error("GraphEditor::load_json, problem while saving file: {}", fname);
+    GLOG->error("GraphEditor::load_json, problem while saving file: {}", fname);
 
   // regenerate graph
   this->json_from(json);
@@ -571,7 +571,7 @@ void GraphEditor::on_connection_dropped(GraphicsNode *from,
     delete this->temp_link;
     this->temp_link = nullptr;
 
-    SPDLOG->trace("GraphEditor::on_connection_dropped connection_dropped {}:{}",
+    GLOG->trace("GraphEditor::on_connection_dropped connection_dropped {}:{}",
                   from->get_id(),
                   from->get_port_id(port_index));
 
@@ -619,7 +619,7 @@ void GraphEditor::on_connection_finished(GraphicsNode *from_node,
         node_out->set_is_port_connected(port_out, this->temp_link);
         node_in->set_is_port_connected(port_in, this->temp_link);
 
-        SPDLOG->trace("GraphEditor::on_connection_finished, {}:{} -> {}:{}",
+        GLOG->trace("GraphEditor::on_connection_finished, {}:{} -> {}:{}",
                       node_out->get_id(),
                       node_out->get_port_id(port_out),
                       node_in->get_id(),
@@ -666,7 +666,7 @@ void GraphEditor::on_connection_started(GraphicsNode *from_node, int port_index)
 
 void GraphEditor::on_node_reload_requested(const std::string &id)
 {
-  SPDLOG->trace("GraphEditor::on_node_reload_requested {}", id);
+  GLOG->trace("GraphEditor::on_node_reload_requested {}", id);
   Q_EMIT this->node_reload_requested(id);
 }
 
@@ -677,7 +677,7 @@ void GraphEditor::on_node_right_clicked(const std::string &id, QPointF scene_pos
 
 void GraphEditor::save_json(const std::string &fname)
 {
-  SPDLOG->trace("GraphEditor::save_json");
+  GLOG->trace("GraphEditor::save_json");
 
   // current data
   nlohmann::json json;
@@ -692,7 +692,7 @@ void GraphEditor::save_json(const std::string &fname)
     file.close();
   }
   else
-    SPDLOG->error("GraphEditor::save_json, problem while saving file: {}", fname);
+    GLOG->error("GraphEditor::save_json, problem while saving file: {}", fname);
 }
 
 void GraphEditor::save_screenshot(const std::string &fname)
