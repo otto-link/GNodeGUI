@@ -101,7 +101,7 @@ public:
    *
    * @return A string representing the ID of the node.
    */
-  std::string get_id() const { return this->id; }
+  virtual std::string get_id() const { return this->id; }
 
   /**
    * @brief Get the number of ports in the node.
@@ -195,7 +195,7 @@ public:
    *
    * @param new_id A new string representing the ID to assign to the node.
    */
-  void set_id(const std::string &new_id) { this->id = new_id; }
+  virtual void set_id(const std::string &new_id) { this->id = new_id; }
 
 private:
   std::string id; ///< The unique ID of the node.
