@@ -109,7 +109,7 @@ Q_SIGNALS:
 
   void connection_started(GraphicsNode *from, int port_index);
 
-  void reload_requested(const std::string &id);
+  void reload_request(const std::string &id);
 
   void right_clicked(const std::string &id, QPointF scene_pos);
 

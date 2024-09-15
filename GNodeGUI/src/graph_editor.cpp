@@ -74,9 +74,9 @@ std::string GraphEditor::add_node(NodeProxy *p_node_proxy, QPointF scene_pos)
                 &GraphEditor::on_connection_dropped);
 
   this->connect(p_node,
-                &GraphicsNode::reload_requested,
+                &GraphicsNode::reload_request,
                 this,
-                &GraphEditor::on_node_reload_requested);
+                &GraphEditor::on_node_reload_request);
 
   // generate a unique id based on the object address
   std::ostringstream oss;
@@ -207,7 +207,7 @@ void GraphEditor::contextMenuEvent(QContextMenuEvent *event)
     QPoint  view_pos = this->mapFromGlobal(event->globalPos());
     QPointF scene_pos = this->mapToScene(view_pos);
 
-    Q_EMIT this->new_node_requested(selected_action->text().toStdString(), scene_pos);
+    Q_EMIT this->new_node_request(selected_action->text().toStdString(), scene_pos);
     qDebug() << selected_action->text();
   }
 
@@ -375,7 +375,7 @@ void GraphEditor::json_from(nlohmann::json json)
 
       // nodes are not generated in this class, it is outsourced to the
       // outter headless nodes manager
-      Q_EMIT this->new_node_requested(caption, nid, QPointF(pos[0], pos[1]));
+      Q_EMIT this->new_node_request(caption, nid, QPointF(pos[0], pos[1]));
     }
   }
 
@@ -664,10 +664,10 @@ void GraphEditor::on_connection_started(GraphicsNode *from_node, int port_index)
                                   from_node->get_port_id(port_index));
 }
 
-void GraphEditor::on_node_reload_requested(const std::string &id)
+void GraphEditor::on_node_reload_request(const std::string &id)
 {
-  GLOG->trace("GraphEditor::on_node_reload_requested {}", id);
-  Q_EMIT this->node_reload_requested(id);
+  GLOG->trace("GraphEditor::on_node_reload_request {}", id);
+  Q_EMIT this->node_reload_request(id);
 }
 
 void GraphEditor::on_node_right_clicked(const std::string &id, QPointF scene_pos)

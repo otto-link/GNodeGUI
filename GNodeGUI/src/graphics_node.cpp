@@ -49,7 +49,7 @@ GraphicsNode::GraphicsNode(NodeProxy *p_node_proxy, QGraphicsItem *parent)
 
     this->connect(reload,
                   &ReloadIcon::hit_icon,
-                  [this]() { Q_EMIT this->reload_requested(this->get_id()); });
+                  [this]() { Q_EMIT this->reload_request(this->get_id()); });
   }
 
   // add widget
