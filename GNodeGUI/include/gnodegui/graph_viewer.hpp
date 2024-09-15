@@ -25,12 +25,12 @@
 namespace gngui
 {
 
-class GraphEditor : public QGraphicsView
+class GraphViewer : public QGraphicsView
 {
   Q_OBJECT
 
 public:
-  GraphEditor(std::string id = "graph");
+  GraphViewer(std::string id = "graph");
 
   void add_item(QGraphicsItem *item, QPointF scene_pos = QPointF(0.f, 0.f));
 

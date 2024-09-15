@@ -9,7 +9,7 @@
 #include <QMenu>
 #include <QWidgetAction>
 
-#include "gnodegui/graph_editor.hpp"
+#include "gnodegui/graph_viewer.hpp"
 #include "gnodegui/graphics_group.hpp"
 #include "gnodegui/logger.hpp"
 #include "gnodegui/style.hpp"
@@ -18,9 +18,9 @@
 namespace gngui
 {
 
-GraphEditor::GraphEditor(std::string id) : QGraphicsView(), id(id)
+GraphViewer::GraphViewer(std::string id) : QGraphicsView(), id(id)
 {
-  GLOG->trace("GraphEditor::GraphEditor");
+  GLOG->trace("GraphViewer::GraphViewer");
   this->setRenderHint(QPainter::Antialiasing);
   this->setRenderHint(QPainter::SmoothPixmapTransform);
   this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -29,10 +29,10 @@ GraphEditor::GraphEditor(std::string id) : QGraphicsView(), id(id)
 
   this->setScene(new QGraphicsScene());
 
-  this->setBackgroundBrush(QBrush(GN_STYLE->editor.color_bg));
+  this->setBackgroundBrush(QBrush(GN_STYLE->viewer.color_bg));
 }
 
-void GraphEditor::add_item(QGraphicsItem *item, QPointF scene_pos)
+void GraphViewer::add_item(QGraphicsItem *item, QPointF scene_pos)
 {
   item->setPos(scene_pos);
   this->scene()->addItem(item);
@@ -48,7 +48,7 @@ void GraphEditor::add_item(QGraphicsItem *item, QPointF scene_pos)
         }
 }
 
-std::string GraphEditor::add_node(NodeProxy *p_node_proxy, QPointF scene_pos)
+std::string GraphViewer::add_node(NodeProxy *p_node_proxy, QPointF scene_pos)
 {
   GraphicsNode *p_node = new GraphicsNode(p_node_proxy);
   this->add_item(p_node, scene_pos);
@@ -56,27 +56,27 @@ std::string GraphEditor::add_node(NodeProxy *p_node_proxy, QPointF scene_pos)
   this->connect(p_node,
                 &GraphicsNode::right_clicked,
                 this,
-                &GraphEditor::on_node_right_clicked);
+                &GraphViewer::on_node_right_clicked);
 
   this->connect(p_node,
                 &GraphicsNode::connection_started,
                 this,
-                &GraphEditor::on_connection_started);
+                &GraphViewer::on_connection_started);
 
   this->connect(p_node,
                 &GraphicsNode::connection_finished,
                 this,
-                &GraphEditor::on_connection_finished);
+                &GraphViewer::on_connection_finished);
 
   this->connect(p_node,
                 &GraphicsNode::connection_dropped,
                 this,
-                &GraphEditor::on_connection_dropped);
+                &GraphViewer::on_connection_dropped);
 
   this->connect(p_node,
                 &GraphicsNode::reload_request,
                 this,
-                &GraphEditor::on_node_reload_request);
+                &GraphViewer::on_node_reload_request);
 
   // generate a unique id based on the object address
   std::ostringstream oss;
@@ -84,13 +84,13 @@ std::string GraphEditor::add_node(NodeProxy *p_node_proxy, QPointF scene_pos)
   return oss.str();
 }
 
-void GraphEditor::clear()
+void GraphViewer::clear()
 {
   this->scene()->clear();
   this->viewport()->update();
 }
 
-void GraphEditor::contextMenuEvent(QContextMenuEvent *event)
+void GraphViewer::contextMenuEvent(QContextMenuEvent *event)
 {
   // --- skip this if there is an item is under the cursor
 
@@ -214,13 +214,13 @@ void GraphEditor::contextMenuEvent(QContextMenuEvent *event)
   QGraphicsView::contextMenuEvent(event);
 }
 
-void GraphEditor::delete_graphics_link(GraphicsLink *p_link)
+void GraphViewer::delete_graphics_link(GraphicsLink *p_link)
 {
   GLOG->trace("GraphicsLink removing");
 
   if (!p_link)
   {
-    GLOG->error("GraphEditor::delete_graphics_link: invalid link provided.");
+    GLOG->error("GraphViewer::delete_graphics_link: invalid link provided.");
     return;
   }
 
@@ -229,7 +229,7 @@ void GraphEditor::delete_graphics_link(GraphicsLink *p_link)
   int           port_out = p_link->get_port_out_index();
   int           port_in = p_link->get_port_in_index();
 
-  GLOG->trace("GraphEditor::delete_graphics_link, {}:{} -> {}:{}",
+  GLOG->trace("GraphViewer::delete_graphics_link, {}:{} -> {}:{}",
               node_out->get_id(),
               node_out->get_port_id(port_out),
               node_in->get_id(),
@@ -246,13 +246,13 @@ void GraphEditor::delete_graphics_link(GraphicsLink *p_link)
                                   node_in->get_port_id(port_in));
 }
 
-void GraphEditor::delete_graphics_node(GraphicsNode *p_node)
+void GraphViewer::delete_graphics_node(GraphicsNode *p_node)
 {
   GLOG->trace("GraphicsNode removing, id: {}", p_node->get_id());
 
   if (!p_node)
   {
-    GLOG->error("GraphEditor::delete_graphics_node: invalid node provided.");
+    GLOG->error("GraphViewer::delete_graphics_node: invalid node provided.");
     return;
   }
 
@@ -269,7 +269,7 @@ void GraphEditor::delete_graphics_node(GraphicsNode *p_node)
   Q_EMIT this->node_deleted(p_node->get_id());
 }
 
-void GraphEditor::delete_selected_items()
+void GraphViewer::delete_selected_items()
 {
   QGraphicsScene *scene = this->scene();
 
@@ -297,7 +297,7 @@ void GraphEditor::delete_selected_items()
   }
 }
 
-void GraphEditor::export_to_graphviz(const std::string &fname)
+void GraphViewer::export_to_graphviz(const std::string &fname)
 {
   // after export: to convert, command line: dot export.dot -Tsvg > output.svg
 
@@ -309,7 +309,7 @@ void GraphEditor::export_to_graphviz(const std::string &fname)
     throw std::runtime_error("Failed to open file: " + fname);
 
   file << "digraph root {\n";
-  file << "label=\"" << "GraphEditor::export_to_graphviz" << "\";\n";
+  file << "label=\"" << "GraphViewer::export_to_graphviz" << "\";\n";
   file << "labelloc=\"t\";\n";
   file << "rankdir=TD;\n";
   file << "ranksep=0.5;\n";
@@ -332,7 +332,7 @@ void GraphEditor::export_to_graphviz(const std::string &fname)
   file << "}\n";
 }
 
-GraphicsNode *GraphEditor::get_graphics_node_by_id(const std::string &id)
+GraphicsNode *GraphViewer::get_graphics_node_by_id(const std::string &id)
 {
   for (QGraphicsItem *item : this->scene()->items())
     if (GraphicsNode *p_node = dynamic_cast<GraphicsNode *>(item))
@@ -342,12 +342,12 @@ GraphicsNode *GraphEditor::get_graphics_node_by_id(const std::string &id)
   return nullptr;
 }
 
-void GraphEditor::json_from(nlohmann::json json)
+void GraphViewer::json_from(nlohmann::json json)
 {
   // check that the graph ID is indeed available
-  if (!json["GraphEditor"].contains(this->id))
+  if (!json["GraphViewer"].contains(this->id))
   {
-    GLOG->error("GraphEditor::json_from, could not file graph ID {} in the json data",
+    GLOG->error("GraphViewer::json_from, could not file graph ID {} in the json data",
                 this->id);
     return;
   }
@@ -355,9 +355,9 @@ void GraphEditor::json_from(nlohmann::json json)
   // generate graph from json data
   this->clear();
 
-  if (!json["GraphEditor"][this->id]["groups"].is_null())
+  if (!json["GraphViewer"][this->id]["groups"].is_null())
   {
-    for (auto &json_group : json["GraphEditor"][this->id]["groups"])
+    for (auto &json_group : json["GraphViewer"][this->id]["groups"])
     {
       GraphicsGroup *p_group = new GraphicsGroup();
       this->add_item(p_group);
@@ -365,9 +365,9 @@ void GraphEditor::json_from(nlohmann::json json)
     }
   }
 
-  if (!json["GraphEditor"][this->id]["nodes"].is_null())
+  if (!json["GraphViewer"][this->id]["nodes"].is_null())
   {
-    for (auto &json_node : json["GraphEditor"][this->id]["nodes"])
+    for (auto &json_node : json["GraphViewer"][this->id]["nodes"])
     {
       std::string        caption = json_node["caption"];
       std::string        nid = json_node["id"];
@@ -379,9 +379,9 @@ void GraphEditor::json_from(nlohmann::json json)
     }
   }
 
-  if (!json["GraphEditor"][this->id]["links"].is_null())
+  if (!json["GraphViewer"][this->id]["links"].is_null())
   {
-    for (auto &json_link : json["GraphEditor"][this->id]["links"])
+    for (auto &json_link : json["GraphViewer"][this->id]["links"])
     {
       std::string node_out_id = json_link["node_out_id"];
       std::string node_in_id = json_link["node_in_id"];
@@ -405,14 +405,14 @@ void GraphEditor::json_from(nlohmann::json json)
       }
       else
         GLOG->error(
-            "GraphEditor::json_from, nodes instance cannot be found, IDs: {} and/or {}",
+            "GraphViewer::json_from, nodes instance cannot be found, IDs: {} and/or {}",
             node_out_id,
             node_in_id);
     }
   }
 }
 
-nlohmann::json GraphEditor::json_to() const
+nlohmann::json GraphViewer::json_to() const
 {
   nlohmann::json json;
 
@@ -437,7 +437,7 @@ nlohmann::json GraphEditor::json_to() const
   return json;
 }
 
-void GraphEditor::keyPressEvent(QKeyEvent *event)
+void GraphViewer::keyPressEvent(QKeyEvent *event)
 {
   if (event->key() == Qt::Key_Shift)
     this->setDragMode(QGraphicsView::RubberBandDrag);
@@ -445,7 +445,7 @@ void GraphEditor::keyPressEvent(QKeyEvent *event)
   QGraphicsView::keyPressEvent(event);
 }
 
-void GraphEditor::keyReleaseEvent(QKeyEvent *event)
+void GraphViewer::keyReleaseEvent(QKeyEvent *event)
 {
   switch (event->key())
   {
@@ -497,9 +497,9 @@ void GraphEditor::keyReleaseEvent(QKeyEvent *event)
   QGraphicsView::keyReleaseEvent(event);
 }
 
-void GraphEditor::load_json(const std::string &fname)
+void GraphViewer::load_json(const std::string &fname)
 {
-  GLOG->trace("GraphEditor::load_json");
+  GLOG->trace("GraphViewer::load_json");
 
   std::ifstream  file(fname);
   nlohmann::json json;
@@ -510,13 +510,13 @@ void GraphEditor::load_json(const std::string &fname)
     file.close();
   }
   else
-    GLOG->error("GraphEditor::load_json, problem while saving file: {}", fname);
+    GLOG->error("GraphViewer::load_json, problem while saving file: {}", fname);
 
   // regenerate graph
   this->json_from(json);
 }
 
-void GraphEditor::mouseMoveEvent(QMouseEvent *event)
+void GraphViewer::mouseMoveEvent(QMouseEvent *event)
 {
   if (this->temp_link)
   {
@@ -528,7 +528,7 @@ void GraphEditor::mouseMoveEvent(QMouseEvent *event)
   QGraphicsView::mouseMoveEvent(event);
 }
 
-void GraphEditor::mousePressEvent(QMouseEvent *event)
+void GraphViewer::mousePressEvent(QMouseEvent *event)
 {
   if (event->button() == Qt::LeftButton && (event->modifiers() & Qt::ShiftModifier))
     this->setDragMode(QGraphicsView::RubberBandDrag);
@@ -552,7 +552,7 @@ void GraphEditor::mousePressEvent(QMouseEvent *event)
   QGraphicsView::mousePressEvent(event);
 }
 
-void GraphEditor::mouseReleaseEvent(QMouseEvent *event)
+void GraphViewer::mouseReleaseEvent(QMouseEvent *event)
 {
   if (event->button() == Qt::LeftButton)
     this->setDragMode(QGraphicsView::NoDrag);
@@ -560,7 +560,7 @@ void GraphEditor::mouseReleaseEvent(QMouseEvent *event)
   QGraphicsView::mouseReleaseEvent(event);
 }
 
-void GraphEditor::on_connection_dropped(GraphicsNode *from,
+void GraphViewer::on_connection_dropped(GraphicsNode *from,
                                         int           port_index,
                                         QPointF       scene_pos)
 {
@@ -571,7 +571,7 @@ void GraphEditor::on_connection_dropped(GraphicsNode *from,
     delete this->temp_link;
     this->temp_link = nullptr;
 
-    GLOG->trace("GraphEditor::on_connection_dropped connection_dropped {}:{}",
+    GLOG->trace("GraphViewer::on_connection_dropped connection_dropped {}:{}",
                 from->get_id(),
                 from->get_port_id(port_index));
 
@@ -581,7 +581,7 @@ void GraphEditor::on_connection_dropped(GraphicsNode *from,
   }
 }
 
-void GraphEditor::on_connection_finished(GraphicsNode *from_node,
+void GraphViewer::on_connection_finished(GraphicsNode *from_node,
                                          int           port_from_index,
                                          GraphicsNode *to_node,
                                          int           port_to_index)
@@ -619,7 +619,7 @@ void GraphEditor::on_connection_finished(GraphicsNode *from_node,
         node_out->set_is_port_connected(port_out, this->temp_link);
         node_in->set_is_port_connected(port_in, this->temp_link);
 
-        GLOG->trace("GraphEditor::on_connection_finished, {}:{} -> {}:{}",
+        GLOG->trace("GraphViewer::on_connection_finished, {}:{} -> {}:{}",
                     node_out->get_id(),
                     node_out->get_port_id(port_out),
                     node_in->get_id(),
@@ -647,7 +647,7 @@ void GraphEditor::on_connection_finished(GraphicsNode *from_node,
   this->source_node = nullptr;
 }
 
-void GraphEditor::on_connection_started(GraphicsNode *from_node, int port_index)
+void GraphViewer::on_connection_started(GraphicsNode *from_node, int port_index)
 {
   this->source_node = from_node;
 
@@ -664,24 +664,24 @@ void GraphEditor::on_connection_started(GraphicsNode *from_node, int port_index)
                                   from_node->get_port_id(port_index));
 }
 
-void GraphEditor::on_node_reload_request(const std::string &id)
+void GraphViewer::on_node_reload_request(const std::string &id)
 {
-  GLOG->trace("GraphEditor::on_node_reload_request {}", id);
+  GLOG->trace("GraphViewer::on_node_reload_request {}", id);
   Q_EMIT this->node_reload_request(id);
 }
 
-void GraphEditor::on_node_right_clicked(const std::string &id, QPointF scene_pos)
+void GraphViewer::on_node_right_clicked(const std::string &id, QPointF scene_pos)
 {
   Q_EMIT this->node_right_clicked(id, scene_pos);
 }
 
-void GraphEditor::save_json(const std::string &fname)
+void GraphViewer::save_json(const std::string &fname)
 {
-  GLOG->trace("GraphEditor::save_json");
+  GLOG->trace("GraphViewer::save_json");
 
   // current data
   nlohmann::json json;
-  json["GraphEditor"][this->get_id()] = this->json_to();
+  json["GraphViewer"][this->get_id()] = this->json_to();
 
   // save file
   std::ofstream file(fname);
@@ -692,16 +692,16 @@ void GraphEditor::save_json(const std::string &fname)
     file.close();
   }
   else
-    GLOG->error("GraphEditor::save_json, problem while saving file: {}", fname);
+    GLOG->error("GraphViewer::save_json, problem while saving file: {}", fname);
 }
 
-void GraphEditor::save_screenshot(const std::string &fname)
+void GraphViewer::save_screenshot(const std::string &fname)
 {
   QPixmap pixMap = this->grab();
   pixMap.save(fname.c_str());
 }
 
-void GraphEditor::wheelEvent(QWheelEvent *event)
+void GraphViewer::wheelEvent(QWheelEvent *event)
 {
   const float factor = 1.2f;
   QPointF     mouse_scene_pos = this->mapToScene(event->position().toPoint());
@@ -719,7 +719,7 @@ void GraphEditor::wheelEvent(QWheelEvent *event)
   event->accept();
 }
 
-void GraphEditor::zoom_to_content()
+void GraphViewer::zoom_to_content()
 {
   this->fitInView(this->scene()->itemsBoundingRect(), Qt::KeepAspectRatio);
 }

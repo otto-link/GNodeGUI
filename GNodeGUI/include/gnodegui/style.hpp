@@ -26,10 +26,10 @@ public:
 
   static std::shared_ptr<Style> &get_style();
 
-  struct Editor
+  struct Viewer
   {
     QColor color_bg = QColor(42, 42, 42, 255);
-  } editor;
+  } viewer;
 
   struct Node
   {

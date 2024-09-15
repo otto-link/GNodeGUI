@@ -2,7 +2,7 @@
 #include <QFont>
 #include <QPushButton>
 
-#include "gnodegui/graph_editor.hpp"
+#include "gnodegui/graph_viewer.hpp"
 #include "gnodegui/graphics_group.hpp"
 #include "gnodegui/graphics_node.hpp"
 #include "gnodegui/logger.hpp"
@@ -132,7 +132,7 @@ int main(int argc, char *argv[])
                                      {"Texture", QColor(0, 0, 0, 255)}};
   }
 
-  gngui::GraphEditor ed = gngui::GraphEditor();
+  gngui::GraphViewer ed = gngui::GraphViewer();
 
   std::map<std::string, std::string> ni = {{"NoiseFbm", "Primitive"},
                                            {"NoiseIq", "Primitive"},
