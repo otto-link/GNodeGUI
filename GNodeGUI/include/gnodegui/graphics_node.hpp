@@ -85,7 +85,7 @@ public:
 
   NodeProxy *get_proxy_ref() { return this->p_node_proxy; }
 
-  virtual QWidget *get_qwidget_ref() { return nullptr; }
+  virtual QWidget *get_qwidget_ref() { return this->p_node_proxy->get_qwidget_ref(); }
 
   // always returns true for outputs since we accept multiple links from one output to
   // multiple inputs

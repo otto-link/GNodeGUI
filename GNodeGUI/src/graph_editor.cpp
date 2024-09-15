@@ -230,10 +230,10 @@ void GraphEditor::delete_graphics_link(GraphicsLink *p_link)
   int           port_in = p_link->get_port_in_index();
 
   GLOG->trace("GraphEditor::delete_graphics_link, {}:{} -> {}:{}",
-                node_out->get_id(),
-                node_out->get_port_id(port_out),
-                node_in->get_id(),
-                node_in->get_port_id(port_in));
+              node_out->get_id(),
+              node_out->get_port_id(port_out),
+              node_in->get_id(),
+              node_in->get_port_id(port_in));
 
   node_out->set_is_port_connected(port_out, nullptr);
   node_in->set_is_port_connected(port_in, nullptr);
@@ -348,7 +348,7 @@ void GraphEditor::json_from(nlohmann::json json)
   if (!json["GraphEditor"].contains(this->id))
   {
     GLOG->error("GraphEditor::json_from, could not file graph ID {} in the json data",
-                  this->id);
+                this->id);
     return;
   }
 
@@ -572,8 +572,8 @@ void GraphEditor::on_connection_dropped(GraphicsNode *from,
     this->temp_link = nullptr;
 
     GLOG->trace("GraphEditor::on_connection_dropped connection_dropped {}:{}",
-                  from->get_id(),
-                  from->get_port_id(port_index));
+                from->get_id(),
+                from->get_port_id(port_index));
 
     Q_EMIT this->connection_dropped(from->get_id(),
                                     from->get_port_id(port_index),
@@ -620,10 +620,10 @@ void GraphEditor::on_connection_finished(GraphicsNode *from_node,
         node_in->set_is_port_connected(port_in, this->temp_link);
 
         GLOG->trace("GraphEditor::on_connection_finished, {}:{} -> {}:{}",
-                      node_out->get_id(),
-                      node_out->get_port_id(port_out),
-                      node_in->get_id(),
-                      node_in->get_port_id(port_in));
+                    node_out->get_id(),
+                    node_out->get_port_id(port_out),
+                    node_in->get_id(),
+                    node_in->get_port_id(port_in));
 
         Q_EMIT this->connection_finished(node_out->get_id(),
                                          node_out->get_port_id(port_out),

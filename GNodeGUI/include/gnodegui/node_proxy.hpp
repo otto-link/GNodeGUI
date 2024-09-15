@@ -47,7 +47,7 @@ enum PortType
  * such as the node ID, labels, port counts, and port types. This is an abstract class,
  * so it cannot be instantiated directly.
  */
-class NodeProxy : public QWidget
+class NodeProxy // : public QWidget
 {
   // Q_OBJECT
 public:
@@ -177,16 +177,21 @@ public:
   virtual QWidget *get_qwidget_ref() { return nullptr; }
 
   /**
-   * @brief Get the preferred size of the embedded QWidget.
+   * @brief Retrieves the preferred size of the associated QWidget.
    *
-   * This method can be overridden in derived classes to return a specific size
-   * for the QWidget associated with this object. By default, it returns the
-   * size hint of the widget, which is a recommended size based on its contents.
+   * This method provides a way to define a custom preferred size for the embedded
+   * QWidget in derived classes. The default implementation returns a QSize object
+   * with negative dimensions (-1, -1), which typically indicates that the QWidget
+   * should use its size hint.
    *
-   * @return QSize The preferred size of the QWidget. If not overridden,
-   * it returns the size hint as determined by the widget's layout and content.
+   * Derived classes can override this method to specify a concrete size that
+   * fits their particular requirements.
+   *
+   * @return QSize The preferred size of the QWidget. The default implementation
+   * returns QSize(-1, -1), signaling that the widget's size hint (usually based
+   * on its layout and content) should be used.
    */
-  virtual QSize get_qwidget_size() { return this->sizeHint(); }
+  virtual QSize get_qwidget_size() { return QSize(-1, -1); }
 
   /**
    * @brief Set the ID of the node.

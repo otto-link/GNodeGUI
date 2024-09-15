@@ -57,8 +57,8 @@ public:
 
   QWidget *get_qwidget_ref() override
   {
-    // if (!this->push_button)
-    //   this->push_button = new QPushButton("button", this);
+    if (!this->push_button)
+      this->push_button = new QPushButton("button");
 
     return (QWidget *)this->push_button;
   }

@@ -203,8 +203,8 @@ void GraphicsNode::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
           if (hovered_port_index >= 0)
           {
             GLOG->trace("connection_finished {}:{}",
-                          target_node->get_id(),
-                          hovered_port_index);
+                        target_node->get_id(),
+                        hovered_port_index);
 
             Q_EMIT connection_finished(this,
                                        this->port_index_from,
@@ -227,7 +227,7 @@ void GraphicsNode::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
       if (is_dropped)
       {
         GLOG->trace("GraphicsNode::mouseReleaseEvent connection_dropped {}",
-                      this->get_id());
+                    this->get_id());
         Q_EMIT connection_dropped(this, this->port_index_from, event->scenePos());
       }
 
