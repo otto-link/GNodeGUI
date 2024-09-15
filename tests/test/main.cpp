@@ -115,9 +115,9 @@ int main(int argc, char *argv[])
   font.setPointSize(10);
   app.setFont(font);
 
-  GLOG->info("Starting test application...");
+  GUILOG->info("Starting test application...");
 
-  GLOG->info("Updating graph parameters...");
+  GUILOG->info("Updating graph parameters...");
 
   // (optional)
   {

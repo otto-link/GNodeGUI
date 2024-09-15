@@ -48,7 +48,7 @@ void AbstractIcon::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
   if (event->button() == Qt::LeftButton)
   {
-    GLOG->trace("AbstractIcon::mousePressEvent");
+    GUILOG->trace("AbstractIcon::mousePressEvent");
 
     QPen pen = this->pen();
     pen.setWidth(this->pen_width + 1.f);

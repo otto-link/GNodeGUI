@@ -10,17 +10,17 @@ namespace gngui
 
 void NodeProxy::log_debug()
 {
-  GLOG->trace("NodeProxy::log_debug, node {}({})", this->get_caption(), this->get_id());
-  GLOG->trace("category: {}", this->get_category());
-  GLOG->trace("nports: {}", this->get_nports());
+  GUILOG->trace("NodeProxy::log_debug, node {}({})", this->get_caption(), this->get_id());
+  GUILOG->trace("category: {}", this->get_category());
+  GUILOG->trace("nports: {}", this->get_nports());
 
   for (int k = 0; k < this->get_nports(); k++)
   {
-    GLOG->trace("- port #: {}", k);
-    GLOG->trace("  - caption: {}", this->get_port_caption(k));
-    GLOG->trace("  - id: {}", this->get_port_id(k));
-    GLOG->trace("  - type: {}", this->get_port_type(k));
-    GLOG->trace("  - data_type: {}", this->get_data_type(k));
+    GUILOG->trace("- port #: {}", k);
+    GUILOG->trace("  - caption: {}", this->get_port_caption(k));
+    GUILOG->trace("  - id: {}", this->get_port_id(k));
+    GUILOG->trace("  - type: {}", this->get_port_type(k));
+    GUILOG->trace("  - data_type: {}", this->get_data_type(k));
   }
 }
 

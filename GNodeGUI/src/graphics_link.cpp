@@ -124,7 +124,7 @@ void GraphicsLink::set_endnodes(GraphicsNode *from,
 {
   if (!from || !to)
   {
-    GLOG->warn("GraphicsLink::set_endnodes: invalid nodes provided.");
+    GUILOG->warn("GraphicsLink::set_endnodes: invalid nodes provided.");
     return;
   }
 

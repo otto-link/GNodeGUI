@@ -13,7 +13,7 @@ namespace gngui
 GraphicsNodeGeometry::GraphicsNodeGeometry(NodeProxy *p_node_proxy, QSizeF widget_size)
     : p_node_proxy(p_node_proxy)
 {
-  GLOG->trace("GraphicsNodeGeometry::GraphicsNodeGeometry");
+  GUILOG->trace("GraphicsNodeGeometry::GraphicsNodeGeometry");
 
   // base increment
   QFont        font;
