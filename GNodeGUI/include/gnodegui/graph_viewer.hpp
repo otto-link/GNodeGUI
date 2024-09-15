@@ -37,6 +37,8 @@ public:
   // returns a unique ID for the node
   std::string add_node(NodeProxy *p_node_proxy, QPointF scene_pos);
 
+  void clear();
+
   // useful for debugging graph actual state, after export: to convert, command line: dot
   // export.dot -Tsvg > output.svg
   void export_to_graphviz(const std::string &fname = "export.dot");
@@ -134,8 +136,6 @@ private:
 
   GraphicsLink *temp_link = nullptr;   // Temporary link
   GraphicsNode *source_node = nullptr; // Source node for the connection
-
-  void clear();
 
   void delete_graphics_link(GraphicsLink *p_link);
 
