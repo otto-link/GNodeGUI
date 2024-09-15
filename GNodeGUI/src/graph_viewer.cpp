@@ -208,7 +208,6 @@ void GraphViewer::contextMenuEvent(QContextMenuEvent *event)
     QPointF scene_pos = this->mapToScene(view_pos);
 
     Q_EMIT this->new_node_request(selected_action->text().toStdString(), scene_pos);
-    qDebug() << selected_action->text();
   }
 
   QGraphicsView::contextMenuEvent(event);
