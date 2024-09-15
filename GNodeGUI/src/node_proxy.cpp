@@ -10,7 +10,7 @@ namespace gngui
 
 void NodeProxy::log_debug()
 {
-  GLOG->trace("NodeProxy::log_debug, node {}()", this->get_caption(), this->get_id());
+  GLOG->trace("NodeProxy::log_debug, node {}({})", this->get_caption(), this->get_id());
   GLOG->trace("category: {}", this->get_category());
   GLOG->trace("nports: {}", this->get_nports());
 
