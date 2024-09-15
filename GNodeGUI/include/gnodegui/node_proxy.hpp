@@ -191,6 +191,11 @@ public:
   virtual QSize get_qwidget_size() { return QSize(-1, -1); }
 
   /**
+   * @brief Displays debugging informations about the current Node instance.
+   */
+  void log_debug();
+
+  /**
    * @brief Set the ID of the node.
    *
    * @param new_id A new string representing the ID to assign to the node.

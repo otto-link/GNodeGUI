@@ -144,6 +144,8 @@ int main(int argc, char *argv[])
   LongNode node2("node2");
   MyNode   node3("node3");
 
+  node1.get_proxy_ref()->log_debug();
+
   // qreal width = 32.f;
   // qreal x = 200.f;
   // qreal pwidth = 1.f;
