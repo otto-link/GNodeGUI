@@ -55,6 +55,8 @@ public:
 
   void save_json(const std::string &fname = "export.json");
 
+  void set_id(const std::string &new_id) { this->id = new_id; }
+
   void set_node_inventory(const std::map<std::string, std::string> &new_node_inventory)
   {
     this->node_inventory = new_node_inventory;
