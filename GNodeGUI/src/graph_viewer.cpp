@@ -375,7 +375,7 @@ void GraphViewer::json_from(nlohmann::json json)
 
       // nodes are not generated in this class, it is outsourced to the
       // outter headless nodes manager
-      Q_EMIT this->new_node_request(caption, nid, QPointF(pos[0], pos[1]));
+      Q_EMIT this->new_node_request(caption, QPointF(pos[0], pos[1]));
     }
   }
 

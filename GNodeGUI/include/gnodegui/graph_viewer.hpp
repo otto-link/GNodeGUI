@@ -74,10 +74,6 @@ Q_SIGNALS:
 
   void new_node_request(const std::string &type, QPointF scene_pos);
 
-  void new_node_request(const std::string &type,
-                        const std::string &id,
-                        QPointF            scene_pos);
-
   void node_deleted(const std::string &id);
 
   void node_reload_request(const std::string &id);
