@@ -52,12 +52,9 @@ class NodeProxy // : public QWidget
   // Q_OBJECT
 public:
   /**
-   * @brief Deleted default constructor.
-   *
-   * The default constructor is deleted to ensure that the `NodeProxy`
-   * cannot be instantiated without an ID.
+   * @brief Default constructor.
    */
-  NodeProxy() = delete;
+  NodeProxy() = default;
 
   /**
    * @brief Constructor that initializes the node with a unique ID.
