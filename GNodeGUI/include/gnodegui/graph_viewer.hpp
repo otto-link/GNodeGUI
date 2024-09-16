@@ -51,13 +51,9 @@ public:
 
   nlohmann::json json_to() const;
 
-  void load_json(const std::string &fname = "export.json");
-
   void remove_node(const std::string &node_id);
 
   void save_screenshot(const std::string &fname = "screenshot.png");
-
-  void save_json(const std::string &fname = "export.json");
 
   void set_id(const std::string &new_id) { this->id = new_id; }
 

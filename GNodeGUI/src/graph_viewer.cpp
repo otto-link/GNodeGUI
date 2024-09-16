@@ -479,14 +479,6 @@ void GraphViewer::keyReleaseEvent(QKeyEvent *event)
     this->export_to_graphviz();
     break;
 
-  case Qt::Key_J:
-    this->save_json();
-    break;
-
-  case Qt::Key_L:
-    this->load_json();
-    break;
-
   case Qt::Key_S:
     this->save_screenshot();
     break;
@@ -497,25 +489,6 @@ void GraphViewer::keyReleaseEvent(QKeyEvent *event)
   }
 
   QGraphicsView::keyReleaseEvent(event);
-}
-
-void GraphViewer::load_json(const std::string &fname)
-{
-  GUILOG->trace("GraphViewer::load_json");
-
-  std::ifstream  file(fname);
-  nlohmann::json json;
-
-  if (file.is_open())
-  {
-    file >> json;
-    file.close();
-  }
-  else
-    GUILOG->error("GraphViewer::load_json, problem while saving file: {}", fname);
-
-  // regenerate graph
-  this->json_from(json);
 }
 
 void GraphViewer::mouseMoveEvent(QMouseEvent *event)
@@ -689,26 +662,6 @@ void GraphViewer::remove_node(const std::string &node_id)
     if (GraphicsNode *p_node = dynamic_cast<GraphicsNode *>(item))
       if (p_node->get_id() == node_id)
         this->delete_graphics_node(p_node);
-}
-
-void GraphViewer::save_json(const std::string &fname)
-{
-  GUILOG->trace("GraphViewer::save_json");
-
-  // current data
-  nlohmann::json json;
-  json["GraphViewer"][this->get_id()] = this->json_to();
-
-  // save file
-  std::ofstream file(fname);
-
-  if (file.is_open())
-  {
-    file << json.dump(4);
-    file.close();
-  }
-  else
-    GUILOG->error("GraphViewer::save_json, problem while saving file: {}", fname);
 }
 
 void GraphViewer::save_screenshot(const std::string &fname)
