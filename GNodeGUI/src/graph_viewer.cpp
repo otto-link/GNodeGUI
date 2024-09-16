@@ -198,7 +198,11 @@ void GraphViewer::add_toolbar(QPoint window_pos)
 
   this->connect(clear_all_icon,
                 &AbstractIcon::hit_icon,
-                [this]() { Q_EMIT this->graph_clear_request(); });
+                [this]()
+                {
+                  GUILOG->trace("here");
+                  Q_EMIT this->graph_clear_request();
+                });
 
   this->connect(new_icon,
                 &AbstractIcon::hit_icon,
@@ -207,7 +211,13 @@ void GraphViewer::add_toolbar(QPoint window_pos)
 
 void GraphViewer::clear()
 {
-  this->scene()->clear();
+  for (QGraphicsItem *item : this->scene()->items())
+    if (!this->is_item_static(item))
+    {
+      this->scene()->removeItem(item);
+      delete item;
+    }
+
   this->viewport()->update();
 }
 
