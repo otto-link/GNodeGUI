@@ -18,6 +18,7 @@
 #include "gnodegui/icons/reload_icon.hpp"
 #include "gnodegui/icons/screenshot_icon.hpp"
 #include "gnodegui/icons/select_all_icon.hpp"
+#include "gnodegui/icons/show_settings_icon.hpp"
 #include "gnodegui/icons/viewport_icon.hpp"
 
 // --- node specialization
@@ -146,31 +147,33 @@ int main(int argc, char *argv[])
 
   node1.get_proxy_ref()->log_debug();
 
-  // qreal width = 32.f;
-  // qreal x = 200.f;
-  // qreal pwidth = 1.f;
+  qreal width = 32.f;
+  qreal x = 200.f;
+  qreal pwidth = 1.f;
 
-  // auto reload = new gngui::ReloadIcon(width, Qt::white, pwidth);
+  auto reload = new gngui::ReloadIcon(width, Qt::white, pwidth);
 
-  // ed.add_item(reload, QPointF((x += 1.2f * width), 250));
-  // ed.add_item(new gngui::GroupIcon(width, Qt::white, pwidth),
-  //             QPointF((x += 1.2f * width), 250));
-  // ed.add_item(new gngui::SelectAllIcon(width, Qt::white, pwidth),
-  //             QPointF((x += 1.2f * width), 250));
-  // ed.add_item(new gngui::ClearAllIcon(width, Qt::white, pwidth),
-  //             QPointF((x += 1.2f * width), 250));
-  // ed.add_item(new gngui::FitContentIcon(width, Qt::white, pwidth),
-  //             QPointF((x += 1.2f * width), 250));
-  // ed.add_item(new gngui::ScreenshotIcon(width, Qt::white, pwidth),
-  //             QPointF((x += 1.2f * width), 250));
-  // ed.add_item(new gngui::DotsIcon(width, Qt::white, pwidth),
-  //             QPointF((x += 1.2f * width), 250));
-  // ed.add_item(new gngui::LockIcon(width, Qt::white, pwidth),
-  //             QPointF((x += 1.2f * width), 250));
-  // ed.add_item(new gngui::ViewportIcon(width, Qt::white, pwidth),
-  //             QPointF((x += 1.2f * width), 250));
-  // ed.add_item(new gngui::NewIcon(width, Qt::white, pwidth),
-  //             QPointF((x += 1.2f * width), 250));
+  ed.add_item(reload, QPointF((x += 1.2f * width), 250));
+  ed.add_item(new gngui::GroupIcon(width, Qt::white, pwidth),
+              QPointF((x += 1.2f * width), 250));
+  ed.add_item(new gngui::SelectAllIcon(width, Qt::white, pwidth),
+              QPointF((x += 1.2f * width), 250));
+  ed.add_item(new gngui::ClearAllIcon(width, Qt::white, pwidth),
+              QPointF((x += 1.2f * width), 250));
+  ed.add_item(new gngui::FitContentIcon(width, Qt::white, pwidth),
+              QPointF((x += 1.2f * width), 250));
+  ed.add_item(new gngui::ScreenshotIcon(width, Qt::white, pwidth),
+              QPointF((x += 1.2f * width), 250));
+  ed.add_item(new gngui::DotsIcon(width, Qt::white, pwidth),
+              QPointF((x += 1.2f * width), 250));
+  ed.add_item(new gngui::LockIcon(width, Qt::white, pwidth),
+              QPointF((x += 1.2f * width), 250));
+  ed.add_item(new gngui::ViewportIcon(width, Qt::white, pwidth),
+              QPointF((x += 1.2f * width), 250));
+  ed.add_item(new gngui::NewIcon(width, Qt::white, pwidth),
+              QPointF((x += 1.2f * width), 250));
+  ed.add_item(new gngui::ShowSettingsIcon(width, Qt::white, pwidth),
+              QPointF((x += 1.2f * width), 250));
 
   ed.add_node(node1.get_proxy_ref(), QPointF(300, 300));
   ed.add_node(node2.get_proxy_ref(), QPointF(500, 450));
