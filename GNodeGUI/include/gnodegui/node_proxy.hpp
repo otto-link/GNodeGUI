@@ -97,6 +97,20 @@ public:
   virtual std::string get_data_type(int port_index) const = 0;
 
   /**
+   * @brief Get a reference to the data of a specific port (input or output).
+   *
+   * This function provides access to the internal data associated with a specific port
+   * (either input or output) of the node. It returns a pointer to the data, allowing
+   * for external access. By default, this function returns `nullptr`, and derived
+   * classes should override it to provide meaningful data access.
+   *
+   * @param port_index The index of the port from which to retrieve the data reference.
+   * @return A void pointer (`void*`) to the data associated with the given port, or
+   * `nullptr` if not applicable.
+   */
+  virtual void *get_data_ref(int /*port_index*/) { return nullptr; };
+
+  /**
    * @brief Get the ID of the node.
    *
    * @return A string representing the ID of the node.

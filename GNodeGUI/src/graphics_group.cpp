@@ -37,7 +37,7 @@ GraphicsGroup::GraphicsGroup(QGraphicsItem *parent)
   this->setFlag(QGraphicsItem::ItemIsMovable, true);
   this->setAcceptHoverEvents(true);
   this->setRect(0.f, 0.f, 256.f, 128.f);
-  this->setZValue(-1);
+  this->setZValue(-2);
 
   // Create a caption text item at the top middle of the rectangle
   this->caption_item = new QGraphicsTextItem("Double-click to edit caption", this);
