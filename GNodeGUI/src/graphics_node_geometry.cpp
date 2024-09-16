@@ -63,8 +63,15 @@ GraphicsNodeGeometry::GraphicsNodeGeometry(NodeProxy *p_node_proxy, QSizeF widge
   // buttons
   float button_width = 0.7f * caption_to_ports_gap;
   float button_padding = 0.5f * (caption_to_ports_gap - button_width);
-  this->reload_rect = QRectF(this->body_rect.right() - button_width -
-                                 2.f * button_padding,
+
+  this->settings_rect = QRectF(this->body_rect.right() - button_width -
+                                   2.f * button_padding,
+                               this->header_rect.top() + button_padding,
+                               button_width,
+                               button_width);
+
+  this->reload_rect = QRectF(this->body_rect.right() - 2.f * button_width -
+                                 3.f * button_padding,
                              this->header_rect.top() + button_padding,
                              button_width,
                              button_width);

@@ -44,6 +44,7 @@ public:
     float header_height_scale = 1.2f;
 
     bool reload_button = true;
+    bool settings_button = true;
 
     QColor color_bg = QColor(102, 102, 102, 255);
     QColor color_bg_light = QColor(108, 108, 108, 255);

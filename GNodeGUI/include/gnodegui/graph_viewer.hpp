@@ -71,18 +71,12 @@ public:
 public Q_SLOTS:
   void on_node_reload_request(const std::string &id);
 
+  void on_node_settings_request(const std::string &id);
+
   void on_node_right_clicked(const std::string &id, QPointF scene_pos);
 
 Q_SIGNALS:
   void background_right_clicked(QPointF scene_pos);
-
-  void new_node_request(const std::string &type, QPointF scene_pos);
-
-  void node_deleted(const std::string &id);
-
-  void node_reload_request(const std::string &id);
-
-  void node_right_clicked(const std::string &id, QPointF scene_pos);
 
   void connection_deleted(const std::string &id_out,
                           const std::string &port_id_out,
@@ -99,6 +93,20 @@ Q_SIGNALS:
                            const std::string &port_id_in);
 
   void connection_started(const std::string &id_from, const std::string &port_id_from);
+
+  void graph_clear_request();
+
+  void graph_reload_request();
+
+  void new_node_request(const std::string &type, QPointF scene_pos);
+
+  void node_deleted(const std::string &id);
+
+  void node_reload_request(const std::string &id);
+
+  void node_settings_request(const std::string &id);
+
+  void node_right_clicked(const std::string &id, QPointF scene_pos);
 
 protected: // Qt events
   void contextMenuEvent(QContextMenuEvent *event) override;

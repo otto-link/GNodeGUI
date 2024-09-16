@@ -113,6 +113,8 @@ Q_SIGNALS:
 
   void right_clicked(const std::string &id, QPointF scene_pos);
 
+  void settings_request(const std::string &id);
+
 protected:
   void hoverEnterEvent(QGraphicsSceneHoverEvent *event) override;
 

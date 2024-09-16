@@ -78,6 +78,11 @@ std::string GraphViewer::add_node(NodeProxy *p_node_proxy, QPointF scene_pos)
                 this,
                 &GraphViewer::on_node_reload_request);
 
+  this->connect(p_node,
+                &GraphicsNode::settings_request,
+                this,
+                &GraphViewer::on_node_settings_request);
+
   // generate a unique id based on the object address
   std::ostringstream oss;
   oss << std::to_string((unsigned long long)(void **)p_node);
@@ -665,6 +670,12 @@ void GraphViewer::on_node_reload_request(const std::string &id)
 {
   GUILOG->trace("GraphViewer::on_node_reload_request {}", id);
   Q_EMIT this->node_reload_request(id);
+}
+
+void GraphViewer::on_node_settings_request(const std::string &id)
+{
+  GUILOG->trace("GraphViewer::on_node_settings_request {}", id);
+  Q_EMIT this->node_settings_request(id);
 }
 
 void GraphViewer::on_node_right_clicked(const std::string &id, QPointF scene_pos)

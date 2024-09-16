@@ -13,6 +13,7 @@
 #include "gnodegui/graphics_link.hpp"
 #include "gnodegui/graphics_node.hpp"
 #include "gnodegui/icons/reload_icon.hpp"
+#include "gnodegui/icons/show_settings_icon.hpp"
 #include "gnodegui/logger.hpp"
 #include "gnodegui/style.hpp"
 #include "gnodegui/utils.hpp"
@@ -50,6 +51,20 @@ GraphicsNode::GraphicsNode(NodeProxy *p_node_proxy, QGraphicsItem *parent)
     this->connect(reload,
                   &ReloadIcon::hit_icon,
                   [this]() { Q_EMIT this->reload_request(this->get_id()); });
+  }
+
+  if (GN_STYLE->node.settings_button)
+  {
+    gngui::ShowSettingsIcon *settings = new gngui::ShowSettingsIcon(
+        this->geometry.settings_rect.width(),
+        GN_STYLE->node.color_icon,
+        GN_STYLE->node.pen_width,
+        this);
+    settings->setPos(this->geometry.settings_rect.topLeft());
+
+    this->connect(settings,
+                  &ShowSettingsIcon::hit_icon,
+                  [this]() { Q_EMIT this->settings_request(this->get_id()); });
   }
 
   // add widget
