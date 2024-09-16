@@ -42,7 +42,7 @@ GraphicsNode::GraphicsNode(NodeProxy *p_node_proxy, QGraphicsItem *parent)
   if (GN_STYLE->node.reload_button)
   {
     gngui::ReloadIcon *reload = new gngui::ReloadIcon(this->geometry.reload_rect.width(),
-                                                      GN_STYLE->node.color_bg_light,
+                                                      GN_STYLE->node.color_icon,
                                                       GN_STYLE->node.pen_width,
                                                       this);
     reload->setPos(this->geometry.reload_rect.topLeft());
