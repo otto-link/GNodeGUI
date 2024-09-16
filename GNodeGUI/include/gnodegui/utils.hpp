@@ -13,9 +13,14 @@
 #include <string>
 #include <vector>
 
+#include <QGraphicsItem>
+#include <QRectF>
+
 namespace gngui
 {
 
+QRectF compute_bounding_rect(const std::vector<QGraphicsItem *> &items);
+
 std::vector<std::string> split_string(const std::string &string, char delimiter);
 
-}
+} // namespace gngui

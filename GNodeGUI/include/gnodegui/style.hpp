@@ -13,6 +13,7 @@
 #include <map>
 
 #include <QColor>
+#include <QPoint>
 
 #define GN_STYLE gngui::Style::get_style()
 
@@ -29,6 +30,11 @@ public:
   struct Viewer
   {
     QColor color_bg = QColor(42, 42, 42, 255);
+    QColor color_toolbar = Qt::lightGray;
+
+    bool   add_toolbar = true;
+    QPoint toolbar_window_pos = QPoint(10, 40);
+    float  toolbar_width = 32.f;
   } viewer;
 
   struct Node

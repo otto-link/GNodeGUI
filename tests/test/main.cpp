@@ -9,18 +9,6 @@
 #include "gnodegui/node_proxy.hpp"
 #include "gnodegui/style.hpp"
 
-#include "gnodegui/icons/clear_all_icon.hpp"
-#include "gnodegui/icons/dots_icon.hpp"
-#include "gnodegui/icons/fit_content_icon.hpp"
-#include "gnodegui/icons/group_icon.hpp"
-#include "gnodegui/icons/lock_icon.hpp"
-#include "gnodegui/icons/new_icon.hpp"
-#include "gnodegui/icons/reload_icon.hpp"
-#include "gnodegui/icons/screenshot_icon.hpp"
-#include "gnodegui/icons/select_all_icon.hpp"
-#include "gnodegui/icons/show_settings_icon.hpp"
-#include "gnodegui/icons/viewport_icon.hpp"
-
 // --- node specialization
 
 class MyNode : public gngui::NodeProxy
@@ -145,36 +133,6 @@ int main(int argc, char *argv[])
   LongNode node2("node2");
   MyNode   node3("node3");
 
-  node1.get_proxy_ref()->log_debug();
-
-  qreal width = 32.f;
-  qreal x = 200.f;
-  qreal pwidth = 1.f;
-
-  auto reload = new gngui::ReloadIcon(width, Qt::white, pwidth);
-
-  ed.add_item(reload, QPointF((x += 1.2f * width), 250));
-  ed.add_item(new gngui::GroupIcon(width, Qt::white, pwidth),
-              QPointF((x += 1.2f * width), 250));
-  ed.add_item(new gngui::SelectAllIcon(width, Qt::white, pwidth),
-              QPointF((x += 1.2f * width), 250));
-  ed.add_item(new gngui::ClearAllIcon(width, Qt::white, pwidth),
-              QPointF((x += 1.2f * width), 250));
-  ed.add_item(new gngui::FitContentIcon(width, Qt::white, pwidth),
-              QPointF((x += 1.2f * width), 250));
-  ed.add_item(new gngui::ScreenshotIcon(width, Qt::white, pwidth),
-              QPointF((x += 1.2f * width), 250));
-  ed.add_item(new gngui::DotsIcon(width, Qt::white, pwidth),
-              QPointF((x += 1.2f * width), 250));
-  ed.add_item(new gngui::LockIcon(width, Qt::white, pwidth),
-              QPointF((x += 1.2f * width), 250));
-  ed.add_item(new gngui::ViewportIcon(width, Qt::white, pwidth),
-              QPointF((x += 1.2f * width), 250));
-  ed.add_item(new gngui::NewIcon(width, Qt::white, pwidth),
-              QPointF((x += 1.2f * width), 250));
-  ed.add_item(new gngui::ShowSettingsIcon(width, Qt::white, pwidth),
-              QPointF((x += 1.2f * width), 250));
-
   ed.add_node(node1.get_proxy_ref(), QPointF(300, 300));
   ed.add_node(node2.get_proxy_ref(), QPointF(500, 450));
   ed.add_node(node3.get_proxy_ref(), QPointF(700, 250));
@@ -184,7 +142,7 @@ int main(int argc, char *argv[])
   ed.resize(1000, 800);
   ed.show();
 
-  ed.json_to(); //"export.hsd");
+  ed.json_to();
 
   return app.exec();
 }

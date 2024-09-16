@@ -1,6 +1,7 @@
 /* Copyright (c) 2024 Otto Link. Distributed under the terms of the GNU General
  * Public License. The full license is in the file LICENSE, distributed with
  * this software. */
+#include <QGraphicsDropShadowEffect>
 #include <QGraphicsSceneMouseEvent>
 #include <QPainterPath>
 #include <QPen>
@@ -26,6 +27,12 @@ AbstractIcon::AbstractIcon(float          width,
   pen.setWidth(this->pen_width);
   pen.setCapStyle(Qt::RoundCap);
   this->setPen(pen);
+
+  auto effect = new QGraphicsDropShadowEffect;
+  effect->setOffset(4, 4);
+  effect->setBlurRadius(20);
+  effect->setColor(Qt::black);
+  this->setGraphicsEffect(effect);
 }
 
 void AbstractIcon::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
@@ -48,8 +55,6 @@ void AbstractIcon::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
   if (event->button() == Qt::LeftButton)
   {
-    GUILOG->trace("AbstractIcon::mousePressEvent");
-
     QPen pen = this->pen();
     pen.setWidth(this->pen_width + 1.f);
     this->setPen(pen);

@@ -37,6 +37,10 @@ public:
   // returns a unique ID for the node
   std::string add_node(NodeProxy *p_node_proxy, QPointF scene_pos);
 
+  void add_static_item(QGraphicsItem *item, QPoint window_pos);
+
+  void add_toolbar(QPoint window_pos);
+
   void clear();
 
   // useful for debugging graph actual state, after export: to convert, command line: dot
@@ -92,6 +96,8 @@ Q_SIGNALS:
 
   void graph_clear_request();
 
+  void graph_new_request();
+
   void graph_reload_request();
 
   void new_node_request(const std::string &type, QPointF scene_pos);
@@ -109,6 +115,8 @@ protected: // Qt events
 
   void delete_selected_items();
 
+  void drawForeground(QPainter *painter, const QRectF &rect) override;
+
   void keyPressEvent(QKeyEvent *event) override;
 
   void keyReleaseEvent(QKeyEvent *event) override;
@@ -118,6 +126,8 @@ protected: // Qt events
   void mousePressEvent(QMouseEvent *event) override;
 
   void mouseReleaseEvent(QMouseEvent *event) override;
+
+  void resizeEvent(QResizeEvent *event) override;
 
   void wheelEvent(QWheelEvent *event) override;
 
@@ -135,6 +145,9 @@ private Q_SLOTS:
 private:
   std::string id;
 
+  std::vector<QGraphicsItem *> static_items;
+  std::vector<QPoint>          static_items_positions;
+
   // all nodes available store as a map of (node type, node category)
   std::map<std::string, std::string> node_inventory;
 
@@ -144,6 +157,8 @@ private:
   void delete_graphics_link(GraphicsLink *p_link);
 
   void delete_graphics_node(GraphicsNode *p_node);
+
+  bool is_item_static(QGraphicsItem *item);
 };
 
 } // namespace gngui

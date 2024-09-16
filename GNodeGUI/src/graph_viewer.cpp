@@ -15,6 +15,16 @@
 #include "gnodegui/style.hpp"
 #include "gnodegui/utils.hpp"
 
+#include "gnodegui/icons/clear_all_icon.hpp"
+#include "gnodegui/icons/fit_content_icon.hpp"
+#include "gnodegui/icons/group_icon.hpp"
+#include "gnodegui/icons/new_icon.hpp"
+#include "gnodegui/icons/reload_icon.hpp"
+#include "gnodegui/icons/screenshot_icon.hpp"
+#include "gnodegui/icons/select_all_icon.hpp"
+
+#define MAX_SIZE 40000
+
 namespace gngui
 {
 
@@ -28,8 +38,12 @@ GraphViewer::GraphViewer(std::string id) : QGraphicsView(), id(id)
   this->setDragMode(QGraphicsView::NoDrag);
 
   this->setScene(new QGraphicsScene());
+  this->scene()->setSceneRect(-MAX_SIZE, -MAX_SIZE, (MAX_SIZE * 2), (MAX_SIZE * 2));
 
   this->setBackgroundBrush(QBrush(GN_STYLE->viewer.color_bg));
+
+  if (GN_STYLE->viewer.add_toolbar)
+    this->add_toolbar(GN_STYLE->viewer.toolbar_window_pos);
 }
 
 void GraphViewer::add_item(QGraphicsItem *item, QPointF scene_pos)
@@ -87,6 +101,108 @@ std::string GraphViewer::add_node(NodeProxy *p_node_proxy, QPointF scene_pos)
   std::ostringstream oss;
   oss << std::to_string((unsigned long long)(void **)p_node);
   return oss.str();
+}
+
+void GraphViewer::add_static_item(QGraphicsItem *item, QPoint window_pos)
+{
+  item->setFlag(QGraphicsItem::ItemIgnoresTransformations, true);
+  item->setFlag(QGraphicsItem::ItemIsMovable, false);
+
+  this->add_item(item);
+  this->static_items.push_back(item);
+  this->static_items_positions.push_back(window_pos);
+}
+
+void GraphViewer::add_toolbar(QPoint window_pos)
+{
+  float  width = GN_STYLE->viewer.toolbar_width;
+  QColor color = GN_STYLE->viewer.color_toolbar;
+  qreal  pen_width = 1.f;
+
+  int padding = (int)(0.2f * width);
+  int x = window_pos.x();
+  int y = window_pos.y();
+  int dy = width + padding;
+
+  auto group_icon = new gngui::GroupIcon(width, color, pen_width);
+  this->add_static_item(group_icon, QPoint(x, y));
+  y += dy;
+
+  auto reload_icon = new gngui::ReloadIcon(width, color, pen_width);
+  this->add_static_item(reload_icon, QPoint(x, y));
+  y += dy;
+
+  auto fit_content_icon = new gngui::FitContentIcon(width, color, pen_width);
+  this->add_static_item(fit_content_icon, QPoint(x, y));
+  y += dy;
+
+  auto screenshot_icon = new gngui::ScreenshotIcon(width, color, pen_width);
+  this->add_static_item(screenshot_icon, QPoint(x, y));
+  y += dy;
+
+  auto select_all_icon = new gngui::SelectAllIcon(width, color, pen_width);
+  this->add_static_item(select_all_icon, QPoint(x, y));
+  y += dy;
+
+  auto clear_all_icon = new gngui::ClearAllIcon(width, color, pen_width);
+  this->add_static_item(clear_all_icon, QPoint(x, y));
+  y += dy;
+
+  y += 2.f * padding;
+  auto new_icon = new gngui::NewIcon(width, color, pen_width);
+  this->add_static_item(new_icon, QPoint(x, y));
+  y += dy;
+
+  // add background
+  QGraphicsRectItem *background = new QGraphicsRectItem(0.f,
+                                                        0.f,
+                                                        width + 2.f * padding,
+                                                        y - dy + padding);
+  background->setZValue(-1);
+  background->setPen(QPen(QColor(0, 0, 0, 0)));
+  background->setBrush(QBrush(QColor(0, 0, 0, 64)));
+
+  QPoint pos = QPoint(window_pos.x() - padding, window_pos.y() - padding);
+  this->add_static_item(background, pos);
+
+  // add connections
+  this->connect(group_icon,
+                &AbstractIcon::hit_icon,
+                [this]()
+                {
+                  QPoint  pos = QCursor::pos();
+                  QPointF scene_pos = this->mapToScene(pos);
+                  this->add_item(new gngui::GraphicsGroup(), scene_pos);
+                });
+
+  this->connect(reload_icon,
+                &AbstractIcon::hit_icon,
+                [this]() { Q_EMIT this->graph_reload_request(); });
+
+  this->connect(fit_content_icon,
+                &AbstractIcon::hit_icon,
+                [this]() { this->zoom_to_content(); });
+
+  this->connect(screenshot_icon,
+                &AbstractIcon::hit_icon,
+                [this]() { this->save_screenshot(); });
+
+  this->connect(select_all_icon,
+                &AbstractIcon::hit_icon,
+                [this]()
+                {
+                  for (QGraphicsItem *item : this->scene()->items())
+                    if (!is_item_static(item))
+                      item->setSelected(true);
+                });
+
+  this->connect(clear_all_icon,
+                &AbstractIcon::hit_icon,
+                [this]() { Q_EMIT this->graph_clear_request(); });
+
+  this->connect(new_icon,
+                &AbstractIcon::hit_icon,
+                [this]() { Q_EMIT this->graph_new_request(); });
 }
 
 void GraphViewer::clear()
@@ -299,6 +415,19 @@ void GraphViewer::delete_selected_items()
   }
 }
 
+void GraphViewer::drawForeground(QPainter *painter, const QRectF &rect)
+{
+  QGraphicsView::drawForeground(painter, rect);
+
+  for (size_t k = 0; k < this->static_items.size(); k++)
+  {
+    // Keep the static item at a fixed position
+    QPointF scene_pos = this->mapToScene(this->viewport()->rect().topLeft() +
+                                         this->static_items_positions[k]);
+    this->static_items[k]->setPos(scene_pos);
+  }
+}
+
 void GraphViewer::export_to_graphviz(const std::string &fname)
 {
   // after export: to convert, command line: dot export.dot -Tsvg > output.svg
@@ -342,6 +471,12 @@ GraphicsNode *GraphViewer::get_graphics_node_by_id(const std::string &id)
         return p_node;
 
   return nullptr;
+}
+
+bool GraphViewer::is_item_static(QGraphicsItem *item)
+{
+  return !(std::find(this->static_items.begin(), this->static_items.end(), item) ==
+           this->static_items.end());
 }
 
 void GraphViewer::json_from(nlohmann::json json)
@@ -449,43 +584,19 @@ void GraphViewer::keyPressEvent(QKeyEvent *event)
 
 void GraphViewer::keyReleaseEvent(QKeyEvent *event)
 {
-  switch (event->key())
+  if (event->key() == Qt::Key_Shift)
   {
-  case Qt::Key_Shift:
     this->setDragMode(QGraphicsView::NoDrag);
-    break;
-
-    // case Qt::Key_A:
-    // {
-    //   QPoint  view_pos = this->mapFromGlobal(QCursor::pos());
-    //   QPointF scene_pos = this->mapToScene(view_pos);
-    //   this->add_node(scene_pos, "test");
-    //   break;
-    // }
-
-  case Qt::Key_G:
+  }
+  else if (event->modifiers() == Qt::ControlModifier && event->key() == Qt::Key_G)
   {
     QPoint  view_pos = this->mapFromGlobal(QCursor::pos());
     QPointF scene_pos = this->mapToScene(view_pos);
     this->add_item(new GraphicsGroup(), scene_pos);
-    break;
   }
-
-  case Qt::Key_Delete:
+  else if (event->key() == Qt::Key_Delete)
+  {
     this->delete_selected_items();
-    break;
-
-  case Qt::Key_E:
-    this->export_to_graphviz();
-    break;
-
-  case Qt::Key_S:
-    this->save_screenshot();
-    break;
-
-  case Qt::Key_Z:
-    this->zoom_to_content();
-    break;
   }
 
   QGraphicsView::keyReleaseEvent(event);
@@ -664,6 +775,20 @@ void GraphViewer::remove_node(const std::string &node_id)
         this->delete_graphics_node(p_node);
 }
 
+void GraphViewer::resizeEvent(QResizeEvent *event)
+{
+  QGraphicsView::resizeEvent(event);
+
+  for (size_t k = 0; k < this->static_items.size(); k++)
+  {
+    // Map the desired position in the view to the scene coordinates
+    // and set the position relative to the view
+    QPointF scene_pos = this->mapToScene(this->viewport()->rect().topLeft() +
+                                         this->static_items_positions[k]);
+    this->static_items[k]->setPos(scene_pos);
+  }
+}
+
 void GraphViewer::save_screenshot(const std::string &fname)
 {
   QPixmap pixMap = this->grab();
@@ -690,7 +815,27 @@ void GraphViewer::wheelEvent(QWheelEvent *event)
 
 void GraphViewer::zoom_to_content()
 {
-  this->fitInView(this->scene()->itemsBoundingRect(), Qt::KeepAspectRatio);
+  QRectF bbox;
+
+  // if there are no static items, the built-in scene bounding
+  // rectangle is used. If not, the bounding box is recomputed with the
+  // static items excluded
+  if (this->static_items.empty())
+    bbox = this->scene()->itemsBoundingRect();
+  else
+  {
+    std::vector<QGraphicsItem *> items_not_static;
+
+    for (QGraphicsItem *item : this->scene()->items())
+    {
+      if (!this->is_item_static(item))
+        items_not_static.push_back(item);
+
+      bbox = compute_bounding_rect(items_not_static);
+    }
+  }
+
+  this->fitInView(bbox, Qt::KeepAspectRatio);
 }
 
 } // namespace gngui
