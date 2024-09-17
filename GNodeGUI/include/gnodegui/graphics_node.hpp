@@ -91,6 +91,8 @@ public:
   // multiple inputs
   bool is_port_available(int port_index);
 
+  void json_from(nlohmann::json json);
+
   nlohmann::json json_to() const;
 
   // set to nullptr to flag a disconnect port

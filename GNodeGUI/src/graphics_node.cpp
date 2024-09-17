@@ -174,13 +174,26 @@ bool GraphicsNode::is_port_available(int port_index)
     return !this->connected_link_ref[port_index];
 }
 
+void GraphicsNode::json_from(nlohmann::json json)
+{
+  this->get_id() = json["id"];
+  this->get_caption() = json["caption"];
+  this->is_widget_visible = json["is_widget_visible"];
+
+  float x = json["scene_position.x"];
+  float y = json["scene_position.y"];
+  this->setPos(QPointF(x, y));
+}
+
 nlohmann::json GraphicsNode::json_to() const
 {
   nlohmann::json json;
 
   json["id"] = this->get_id();
   json["caption"] = this->get_caption();
-  json["position"] = {this->scenePos().x(), this->scenePos().y()};
+  json["is_widget_visible"] = this->is_widget_visible;
+  json["scene_position.x"] = this->scenePos().x();
+  json["scene_position.y"] = this->scenePos().y();
 
   return json;
 }
