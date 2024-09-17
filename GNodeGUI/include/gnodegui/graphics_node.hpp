@@ -101,6 +101,8 @@ public:
     this->connected_link_ref[port_index] = p_link;
   }
 
+  void set_qwidget_visibility(bool is_visible);
+
 Q_SIGNALS:
   void connection_dropped(GraphicsNode *from, int port_index, QPointF scene_pos);
 

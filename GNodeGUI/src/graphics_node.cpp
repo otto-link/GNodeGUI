@@ -70,19 +70,7 @@ GraphicsNode::GraphicsNode(NodeProxy *p_node_proxy, QGraphicsItem *parent)
                   [this]()
                   {
                     this->is_widget_visible = !this->is_widget_visible;
-
-                    // recompute geometry based on widget visiblity status
-                    QWidget *widget = this->get_qwidget_ref();
-
-                    QSizeF widget_size = QSizeF(-1.f, -1.f);
-
-                    if (widget && this->is_widget_visible)
-                      widget_size = widget->size();
-
-                    widget->setVisible(this->is_widget_visible);
-
-                    this->update_geometry(widget_size);
-                    this->update();
+                    this->set_qwidget_visibility(this->is_widget_visible);
                   });
   }
 
@@ -459,6 +447,24 @@ bool GraphicsNode::sceneEventFilter(QGraphicsItem *watched, QEvent *event)
   }
 
   return QGraphicsRectItem::sceneEventFilter(watched, event);
+}
+
+void GraphicsNode::set_qwidget_visibility(bool is_visible)
+{
+  // recompute geometry based on widget visiblity status
+  QWidget *widget = this->get_qwidget_ref();
+  QSizeF   widget_size = QSizeF(-1.f, -1.f);
+
+  if (widget)
+  {
+    if (is_visible)
+      widget_size = widget->size();
+
+    widget->setVisible(is_visible);
+  }
+
+  this->update_geometry(widget_size);
+  this->update();
 }
 
 void GraphicsNode::update_geometry(QSizeF widget_size)
