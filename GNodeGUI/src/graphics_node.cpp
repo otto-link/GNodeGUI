@@ -208,7 +208,11 @@ void GraphicsNode::mousePressEvent(QGraphicsSceneMouseEvent *event)
   }
 
   else if (event->button() == Qt::RightButton)
-    Q_EMIT this->right_clicked(this->get_id(), this->scenePos());
+  {
+    QPointF pos = event->pos();
+    QPointF scene_pos = this->mapToScene(pos);
+    Q_EMIT this->right_clicked(this->get_id(), scene_pos);
+  }
 
   QGraphicsRectItem::mousePressEvent(event);
 }
