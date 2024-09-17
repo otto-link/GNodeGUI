@@ -36,8 +36,7 @@ GraphicsNode::GraphicsNode(NodeProxy *p_node_proxy, QGraphicsItem *parent)
   this->is_port_hovered.resize(this->get_nports());
   this->connected_link_ref.resize(this->get_nports());
 
-  this->geometry = GraphicsNodeGeometry(this->p_node_proxy);
-  this->setRect(0.f, 0.f, this->geometry.full_width, this->geometry.full_height);
+  this->update_geometry();
 
   // add buttons
   if (GN_STYLE->node.reload_button)
@@ -64,7 +63,27 @@ GraphicsNode::GraphicsNode(NodeProxy *p_node_proxy, QGraphicsItem *parent)
 
     this->connect(settings,
                   &ShowSettingsIcon::hit_icon,
-                  [this]() { Q_EMIT this->settings_request(this->get_id()); });
+                  [this]() { Q_EMIT this->toggle_widget_visibility(this->get_id()); });
+
+    this->connect(settings,
+                  &ShowSettingsIcon::hit_icon,
+                  [this]()
+                  {
+                    this->is_widget_visible = !this->is_widget_visible;
+
+                    // recompute geometry based on widget visiblity status
+                    QWidget *widget = this->get_qwidget_ref();
+
+                    QSizeF widget_size = QSizeF(-1.f, -1.f);
+
+                    if (widget && this->is_widget_visible)
+                      widget_size = widget->size();
+
+                    widget->setVisible(this->is_widget_visible);
+
+                    this->update_geometry(widget_size);
+                    this->update();
+                  });
   }
 
   // add widget
@@ -79,9 +98,7 @@ GraphicsNode::GraphicsNode(NodeProxy *p_node_proxy, QGraphicsItem *parent)
     QSizeF widget_size = proxy_widget->size();
 
     // update the geometry
-    this->geometry = GraphicsNodeGeometry(this->p_node_proxy, widget_size);
-    this->setRect(0.f, 0.f, this->geometry.full_width, this->geometry.full_height);
-
+    this->update_geometry(widget_size);
     proxy_widget->setPos(this->geometry.widget_pos);
   }
 }
@@ -429,6 +446,12 @@ bool GraphicsNode::sceneEventFilter(QGraphicsItem *watched, QEvent *event)
   }
 
   return QGraphicsRectItem::sceneEventFilter(watched, event);
+}
+
+void GraphicsNode::update_geometry(QSizeF widget_size)
+{
+  this->geometry = GraphicsNodeGeometry(this->p_node_proxy, widget_size);
+  this->setRect(0.f, 0.f, this->geometry.full_width, this->geometry.full_height);
 }
 
 bool GraphicsNode::update_is_port_hovered(QPointF item_pos)

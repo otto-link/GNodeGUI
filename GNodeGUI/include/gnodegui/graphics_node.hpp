@@ -113,7 +113,7 @@ Q_SIGNALS:
 
   void right_clicked(const std::string &id, QPointF scene_pos);
 
-  void settings_request(const std::string &id);
+  void toggle_widget_visibility(const std::string &id);
 
 protected:
   void hoverEnterEvent(QGraphicsSceneHoverEvent *event) override;
@@ -140,11 +140,15 @@ private:
   std::vector<bool>           is_port_hovered;
   std::vector<GraphicsLink *> connected_link_ref;
 
+  bool is_widget_visible = true;
+
   bool        has_connection_started = false;
   int         port_index_from;
   std::string data_type_connecting = "";
 
   int get_hovered_port_index() const;
+
+  void update_geometry(QSizeF widget_size = QSizeF(-1.f, -1.f));
 
   // true any port has changed its hover state
   bool update_is_port_hovered(QPointF scene_pos);

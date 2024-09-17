@@ -93,7 +93,7 @@ std::string GraphViewer::add_node(NodeProxy *p_node_proxy, QPointF scene_pos)
                 &GraphViewer::on_node_reload_request);
 
   this->connect(p_node,
-                &GraphicsNode::settings_request,
+                &GraphicsNode::toggle_widget_visibility,
                 this,
                 &GraphViewer::on_node_settings_request);
 
