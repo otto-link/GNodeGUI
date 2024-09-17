@@ -18,7 +18,7 @@ ShowSettingsIcon::ShowSettingsIcon(float          width,
     : AbstractIcon(width, color, pen_width, parent)
 {
   this->set_path();
-  this->tooltip = "Show settings";
+  this->tooltip = "Show/hide";
 }
 
 void ShowSettingsIcon::set_path()
