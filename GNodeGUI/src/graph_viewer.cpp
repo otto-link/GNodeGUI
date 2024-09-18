@@ -62,7 +62,9 @@ void GraphViewer::add_item(QGraphicsItem *item, QPointF scene_pos)
         }
 }
 
-std::string GraphViewer::add_node(NodeProxy *p_node_proxy, QPointF scene_pos)
+std::string GraphViewer::add_node(NodeProxy         *p_node_proxy,
+                                  QPointF            scene_pos,
+                                  const std::string &node_id)
 {
   GraphicsNode *p_node = new GraphicsNode(p_node_proxy);
   this->add_item(p_node, scene_pos);
@@ -97,10 +99,19 @@ std::string GraphViewer::add_node(NodeProxy *p_node_proxy, QPointF scene_pos)
                 this,
                 &GraphViewer::on_node_settings_request);
 
-  // generate a unique id based on the object address
-  std::ostringstream oss;
-  oss << std::to_string((unsigned long long)(void **)p_node);
-  return oss.str();
+  // if nothing provided, generate a unique id based on the object address
+  std::string nid = node_id;
+
+  if (node_id == "")
+  {
+    std::ostringstream oss;
+    oss << std::to_string((unsigned long long)(void **)p_node);
+    nid = oss.str();
+  }
+
+  p_node_proxy->set_id(nid);
+
+  return nid;
 }
 
 void GraphViewer::add_static_item(QGraphicsItem *item, QPoint window_pos)

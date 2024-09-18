@@ -139,6 +139,7 @@ int main(int argc, char *argv[])
 
   ed.add_item(new gngui::GraphicsGroup(), QPointF(400, 300));
 
+  ed.zoom_to_content();
   ed.resize(1000, 800);
   ed.show();
 

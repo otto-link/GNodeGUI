@@ -103,6 +103,11 @@ public:
 
   void set_qwidget_visibility(bool is_visible);
 
+public Q_SLOTS:
+  void on_compute_finished();
+
+  void on_compute_started();
+
 Q_SIGNALS:
   void connection_dropped(GraphicsNode *from, int port_index, QPointF scene_pos);
 
@@ -143,6 +148,7 @@ private:
   bool                        is_node_hovered = false;
   std::vector<bool>           is_port_hovered;
   std::vector<GraphicsLink *> connected_link_ref;
+  bool                        is_node_computing = false;
 
   bool is_widget_visible = true;
 

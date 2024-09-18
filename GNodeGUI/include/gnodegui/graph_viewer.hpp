@@ -35,7 +35,9 @@ public:
   void add_item(QGraphicsItem *item, QPointF scene_pos = QPointF(0.f, 0.f));
 
   // returns a unique ID for the node
-  std::string add_node(NodeProxy *p_node_proxy, QPointF scene_pos);
+  std::string add_node(NodeProxy         *p_node_proxy,
+                       QPointF            scene_pos,
+                       const std::string &node_id = "");
 
   void add_static_item(QGraphicsItem *item, QPoint window_pos);
 

@@ -286,6 +286,18 @@ void GraphicsNode::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
   QGraphicsRectItem::mouseReleaseEvent(event);
 }
 
+void GraphicsNode::on_compute_finished()
+{
+  GUILOG->trace("GraphicsNode::on_compute_finished, node {}", this->get_caption());
+  this->is_node_computing = false;
+}
+
+void GraphicsNode::on_compute_started()
+{
+  GUILOG->trace("GraphicsNode::on_compute_started, node {}", this->get_caption());
+  this->is_node_computing = true;
+}
+
 void GraphicsNode::paint(QPainter                       *painter,
                          const QStyleOptionGraphicsItem *option,
                          QWidget                        *widget)
@@ -315,6 +327,9 @@ void GraphicsNode::paint(QPainter                       *painter,
     painter->setBrush(GN_STYLE->node.color_category.at(main_category));
   else
     painter->setBrush(GN_STYLE->node.color_bg_light);
+
+  if (this->is_node_computing)
+    painter->setBrush(Qt::BDiagPattern);
 
   painter->setPen(Qt::NoPen);
 
