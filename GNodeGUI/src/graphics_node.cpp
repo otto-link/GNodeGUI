@@ -333,8 +333,6 @@ void GraphicsNode::paint(QPainter                       *painter,
   if (this->is_node_computing)
     painter->setBrush(Qt::BDiagPattern);
 
-  GUILOG->trace("HERE");
-
   painter->setPen(Qt::NoPen);
 
   QPainterPath path;
