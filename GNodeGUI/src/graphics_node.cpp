@@ -290,12 +290,14 @@ void GraphicsNode::on_compute_finished()
 {
   GUILOG->trace("GraphicsNode::on_compute_finished, node {}", this->get_caption());
   this->is_node_computing = false;
+  this->update();
 }
 
 void GraphicsNode::on_compute_started()
 {
   GUILOG->trace("GraphicsNode::on_compute_started, node {}", this->get_caption());
   this->is_node_computing = true;
+  this->update();
 }
 
 void GraphicsNode::paint(QPainter                       *painter,
@@ -330,6 +332,8 @@ void GraphicsNode::paint(QPainter                       *painter,
 
   if (this->is_node_computing)
     painter->setBrush(Qt::BDiagPattern);
+
+  GUILOG->trace("HERE");
 
   painter->setPen(Qt::NoPen);
 
