@@ -54,6 +54,14 @@ GraphicsGroup::GraphicsGroup(QGraphicsItem *parent)
 
 void GraphicsGroup::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 {
+  // first check that there is no node underneath, if so, nothing is
+  // done and priority is given to the node context menu
+  for (auto &item : this->scene()->items())
+    if (GraphicsNode *p_node = dynamic_cast<GraphicsNode *>(item))
+      if (p_node->contains(event->scenePos() - p_node->scenePos()))
+        return;
+
+  // if not, generate the context menu
   QMenu menu;
 
   // get the default icon size for the QMenu
