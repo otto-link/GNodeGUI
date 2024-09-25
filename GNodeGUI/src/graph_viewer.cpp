@@ -617,7 +617,6 @@ void GraphViewer::keyReleaseEvent(QKeyEvent *event)
   }
   else if (event->modifiers() == Qt::ControlModifier && event->key() == Qt::Key_S)
   {
-    this->json_to();
     Q_EMIT this->graph_save_request();
   }
   else if (event->key() == Qt::Key_Delete)
