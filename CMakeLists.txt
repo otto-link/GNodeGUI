@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 project(gnodegui-root VERSION 0.0.0)
 
-set(GNODEGUI_ENABLE_TESTS on)
+option(GNODEGUI_ENABLE_TESTS "" ON)
 
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
 
