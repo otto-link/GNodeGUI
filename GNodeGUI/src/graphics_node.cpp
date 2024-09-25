@@ -280,8 +280,6 @@ void GraphicsNode::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
           node->update();
         }
 
-      // this->data_type_connecting = "";
-
       this->setFlag(QGraphicsItem::ItemIsMovable, true);
     }
   }

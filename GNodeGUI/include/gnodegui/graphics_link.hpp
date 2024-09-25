@@ -26,7 +26,11 @@ class GraphicsNode;
 
 enum LinkType
 {
+  BROKEN_LINE,
+  CIRCUIT,
   CUBIC,
+  LINEAR,
+  MIX,
 };
 
 class GraphicsLink : public QObject, public QGraphicsPathItem
