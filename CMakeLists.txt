@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
 project(gnodegui-root VERSION 0.0.0)
 
+set(GNODEGUI_ENABLE_TESTS on)
+
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
@@ -21,4 +23,7 @@ find_package(Qt6 REQUIRED COMPONENTS Core Widgets)
 
 add_subdirectory(external)
 add_subdirectory(GNodeGUI)
-add_subdirectory(tests)
+
+if(GNODEGUI_ENABLE_TESTS)
+  add_subdirectory(tests)
+endif()
