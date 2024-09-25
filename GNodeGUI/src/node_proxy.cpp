@@ -10,17 +10,19 @@ namespace gngui
 
 void NodeProxy::log_debug()
 {
-  GUILOG->trace("NodeProxy::log_debug, node {}({})", this->get_caption(), this->get_id());
-  GUILOG->trace("category: {}", this->get_category());
-  GUILOG->trace("nports: {}", this->get_nports());
+  Logger::log()->trace("NodeProxy::log_debug, node {}({})",
+                       this->get_caption(),
+                       this->get_id());
+  Logger::log()->trace("category: {}", this->get_category());
+  Logger::log()->trace("nports: {}", this->get_nports());
 
   for (int k = 0; k < this->get_nports(); k++)
   {
-    GUILOG->trace("- port #: {}", k);
-    GUILOG->trace("  - caption: {}", this->get_port_caption(k));
-    GUILOG->trace("  - id: {}", this->get_port_id(k));
-    GUILOG->trace("  - type: {}", this->get_port_type(k));
-    GUILOG->trace("  - data_type: {}", this->get_data_type(k));
+    Logger::log()->trace("- port #: {}", k);
+    Logger::log()->trace("  - caption: {}", this->get_port_caption(k));
+    Logger::log()->trace("  - id: {}", this->get_port_id(k));
+    Logger::log()->trace("  - type: {}", this->get_port_type(k));
+    Logger::log()->trace("  - data_type: {}", this->get_data_type(k));
   }
 }
 

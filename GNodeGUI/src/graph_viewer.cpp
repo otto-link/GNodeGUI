@@ -30,7 +30,7 @@ namespace gngui
 
 GraphViewer::GraphViewer(std::string id) : QGraphicsView(), id(id)
 {
-  GUILOG->trace("GraphViewer::GraphViewer");
+  Logger::log()->trace("GraphViewer::GraphViewer");
   this->setRenderHint(QPainter::Antialiasing);
   this->setRenderHint(QPainter::SmoothPixmapTransform);
   this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -211,7 +211,7 @@ void GraphViewer::add_toolbar(QPoint window_pos)
                 &AbstractIcon::hit_icon,
                 [this]()
                 {
-                  GUILOG->trace("here");
+                  Logger::log()->trace("here");
                   Q_EMIT this->graph_clear_request();
                 });
 
@@ -357,11 +357,11 @@ void GraphViewer::contextMenuEvent(QContextMenuEvent *event)
 
 void GraphViewer::delete_graphics_link(GraphicsLink *p_link)
 {
-  GUILOG->trace("GraphicsLink removing");
+  Logger::log()->trace("GraphicsLink removing");
 
   if (!p_link)
   {
-    GUILOG->error("GraphViewer::delete_graphics_link: invalid link provided.");
+    Logger::log()->error("GraphViewer::delete_graphics_link: invalid link provided.");
     return;
   }
 
@@ -370,11 +370,11 @@ void GraphViewer::delete_graphics_link(GraphicsLink *p_link)
   int           port_out = p_link->get_port_out_index();
   int           port_in = p_link->get_port_in_index();
 
-  GUILOG->trace("GraphViewer::delete_graphics_link, {}:{} -> {}:{}",
-                node_out->get_id(),
-                node_out->get_port_id(port_out),
-                node_in->get_id(),
-                node_in->get_port_id(port_in));
+  Logger::log()->trace("GraphViewer::delete_graphics_link, {}:{} -> {}:{}",
+                       node_out->get_id(),
+                       node_out->get_port_id(port_out),
+                       node_in->get_id(),
+                       node_in->get_port_id(port_in));
 
   node_out->set_is_port_connected(port_out, nullptr);
   node_in->set_is_port_connected(port_in, nullptr);
@@ -389,11 +389,11 @@ void GraphViewer::delete_graphics_link(GraphicsLink *p_link)
 
 void GraphViewer::delete_graphics_node(GraphicsNode *p_node)
 {
-  GUILOG->trace("GraphicsNode removing, id: {}", p_node->get_id());
+  Logger::log()->trace("GraphicsNode removing, id: {}", p_node->get_id());
 
   if (!p_node)
   {
-    GUILOG->error("GraphViewer::delete_graphics_node: invalid node provided.");
+    Logger::log()->error("GraphViewer::delete_graphics_node: invalid node provided.");
     return;
   }
 
@@ -429,7 +429,7 @@ void GraphViewer::delete_selected_items()
         this->delete_graphics_link(p_link);
       else
       {
-        GUILOG->trace("item removed");
+        Logger::log()->trace("item removed");
         delete item;
       }
     }
@@ -453,7 +453,7 @@ void GraphViewer::export_to_graphviz(const std::string &fname)
 {
   // after export: to convert, command line: dot export.dot -Tsvg > output.svg
 
-  GUILOG->trace("exporting to graphviz format...");
+  Logger::log()->trace("exporting to graphviz format...");
 
   std::ofstream file(fname);
 
@@ -505,8 +505,9 @@ void GraphViewer::json_from(nlohmann::json json)
   // check that the graph ID is indeed available
   if (!json["GraphViewer"].contains(this->id))
   {
-    GUILOG->error("GraphViewer::json_from, could not file graph ID {} in the json data",
-                  this->id);
+    Logger::log()->error(
+        "GraphViewer::json_from, could not file graph ID {} in the json data",
+        this->id);
     return;
   }
 
@@ -562,7 +563,7 @@ void GraphViewer::json_from(nlohmann::json json)
         this->on_connection_finished(from_node, port_from_index, to_node, port_to_index);
       }
       else
-        GUILOG->error(
+        Logger::log()->error(
             "GraphViewer::json_from, nodes instance cannot be found, IDs: {} and/or {}",
             node_out_id,
             node_in_id);
@@ -678,9 +679,9 @@ void GraphViewer::on_connection_dropped(GraphicsNode *from,
     delete this->temp_link;
     this->temp_link = nullptr;
 
-    GUILOG->trace("GraphViewer::on_connection_dropped connection_dropped {}:{}",
-                  from->get_id(),
-                  from->get_port_id(port_index));
+    Logger::log()->trace("GraphViewer::on_connection_dropped connection_dropped {}:{}",
+                         from->get_id(),
+                         from->get_port_id(port_index));
 
     Q_EMIT this->connection_dropped(from->get_id(),
                                     from->get_port_id(port_index),
@@ -726,11 +727,11 @@ void GraphViewer::on_connection_finished(GraphicsNode *from_node,
         node_out->set_is_port_connected(port_out, this->temp_link);
         node_in->set_is_port_connected(port_in, this->temp_link);
 
-        GUILOG->trace("GraphViewer::on_connection_finished, {}:{} -> {}:{}",
-                      node_out->get_id(),
-                      node_out->get_port_id(port_out),
-                      node_in->get_id(),
-                      node_in->get_port_id(port_in));
+        Logger::log()->trace("GraphViewer::on_connection_finished, {}:{} -> {}:{}",
+                             node_out->get_id(),
+                             node_out->get_port_id(port_out),
+                             node_in->get_id(),
+                             node_in->get_port_id(port_in));
 
         Q_EMIT this->connection_finished(node_out->get_id(),
                                          node_out->get_port_id(port_out),
@@ -773,13 +774,13 @@ void GraphViewer::on_connection_started(GraphicsNode *from_node, int port_index)
 
 void GraphViewer::on_node_reload_request(const std::string &id)
 {
-  GUILOG->trace("GraphViewer::on_node_reload_request {}", id);
+  Logger::log()->trace("GraphViewer::on_node_reload_request {}", id);
   Q_EMIT this->node_reload_request(id);
 }
 
 void GraphViewer::on_node_settings_request(const std::string &id)
 {
-  GUILOG->trace("GraphViewer::on_node_settings_request {}", id);
+  Logger::log()->trace("GraphViewer::on_node_settings_request {}", id);
   Q_EMIT this->node_settings_request(id);
 }
 

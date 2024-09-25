@@ -104,9 +104,9 @@ int main(int argc, char *argv[])
   font.setPointSize(10);
   app.setFont(font);
 
-  GUILOG->info("Starting test application...");
+  gngui::Logger::log()->info("Starting test application...");
 
-  GUILOG->info("Updating graph parameters...");
+  gngui::Logger::log()->info("Updating graph parameters...");
 
   // (optional)
   {
