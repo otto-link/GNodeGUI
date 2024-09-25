@@ -502,19 +502,10 @@ bool GraphViewer::is_item_static(QGraphicsItem *item)
 
 void GraphViewer::json_from(nlohmann::json json)
 {
-  // check that the graph ID is indeed available
-  if (!json["GraphViewer"].contains(this->id))
-  {
-    Logger::log()->error(
-        "GraphViewer::json_from, could not file graph ID {} in the json data",
-        this->id);
-    return;
-  }
-
   // generate graph from json data
   this->clear();
 
-  if (!json["GraphViewer"][this->id]["groups"].is_null())
+  if (json[this->id]["groups"].is_null())
   {
     for (auto &json_group : json["GraphViewer"][this->id]["groups"])
     {
@@ -524,7 +515,7 @@ void GraphViewer::json_from(nlohmann::json json)
     }
   }
 
-  if (!json["GraphViewer"][this->id]["nodes"].is_null())
+  if (json[this->id]["nodes"].is_null())
   {
     for (auto &json_node : json["GraphViewer"][this->id]["nodes"])
     {
@@ -538,7 +529,7 @@ void GraphViewer::json_from(nlohmann::json json)
     }
   }
 
-  if (!json["GraphViewer"][this->id]["links"].is_null())
+  if (json[this->id]["links"].is_null())
   {
     for (auto &json_link : json["GraphViewer"][this->id]["links"])
     {
@@ -575,6 +566,8 @@ nlohmann::json GraphViewer::json_to() const
 {
   nlohmann::json json;
 
+  json["id"] = this->id;
+
   std::vector<nlohmann::json> json_node_list = {};
   std::vector<nlohmann::json> json_link_list = {};
   std::vector<nlohmann::json> json_group_list = {};
@@ -592,6 +585,8 @@ nlohmann::json GraphViewer::json_to() const
   json["nodes"] = json_node_list;
   json["links"] = json_link_list;
   json["groups"] = json_group_list;
+
+  Logger::log()->trace("{}", json.dump(4));
 
   return json;
 }
@@ -615,6 +610,15 @@ void GraphViewer::keyReleaseEvent(QKeyEvent *event)
     QPoint  view_pos = this->mapFromGlobal(QCursor::pos());
     QPointF scene_pos = this->mapToScene(view_pos);
     this->add_item(new GraphicsGroup(), scene_pos);
+  }
+  else if (event->modifiers() == Qt::ControlModifier && event->key() == Qt::Key_O)
+  {
+    Q_EMIT this->graph_load_request();
+  }
+  else if (event->modifiers() == Qt::ControlModifier && event->key() == Qt::Key_S)
+  {
+    this->json_to();
+    Q_EMIT this->graph_save_request();
   }
   else if (event->key() == Qt::Key_Delete)
   {

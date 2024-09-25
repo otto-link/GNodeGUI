@@ -98,9 +98,13 @@ Q_SIGNALS:
 
   void graph_clear_request();
 
+  void graph_load_request();
+
   void graph_new_request();
 
   void graph_reload_request();
+
+  void graph_save_request();
 
   void new_node_request(const std::string &type, QPointF scene_pos);
 
