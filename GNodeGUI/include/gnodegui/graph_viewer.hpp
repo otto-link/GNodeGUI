@@ -104,6 +104,8 @@ Q_SIGNALS:
 
   void graph_reload_request();
 
+  void graph_save_as_request();
+
   void graph_save_request();
 
   void new_node_request(const std::string &type, QPointF scene_pos);
@@ -115,6 +117,8 @@ Q_SIGNALS:
   void node_settings_request(const std::string &id);
 
   void node_right_clicked(const std::string &id, QPointF scene_pos);
+
+  void quit_request();
 
 protected: // Qt events
   void contextMenuEvent(QContextMenuEvent *event) override;

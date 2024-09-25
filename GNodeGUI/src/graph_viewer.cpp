@@ -615,16 +615,23 @@ void GraphViewer::keyReleaseEvent(QKeyEvent *event)
   {
     Q_EMIT this->graph_load_request();
   }
+  else if (event->modifiers() == (Qt::ControlModifier | Qt::ShiftModifier) &&
+           event->key() == Qt::Key_S)
+  {
+    Q_EMIT this->graph_save_as_request();
+  }
   else if (event->modifiers() == Qt::ControlModifier && event->key() == Qt::Key_S)
   {
     Q_EMIT this->graph_save_request();
+  }
+  else if (event->modifiers() == Qt::ControlModifier && event->key() == Qt::Key_Q)
+  {
+    this->quit_request();
   }
   else if (event->key() == Qt::Key_Delete)
   {
     this->delete_selected_items();
   }
-
-  QGraphicsView::keyReleaseEvent(event);
 }
 
 void GraphViewer::mouseMoveEvent(QMouseEvent *event)
