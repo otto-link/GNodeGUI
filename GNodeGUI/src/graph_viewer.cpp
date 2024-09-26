@@ -18,6 +18,7 @@
 #include "gnodegui/icons/clear_all_icon.hpp"
 #include "gnodegui/icons/fit_content_icon.hpp"
 #include "gnodegui/icons/group_icon.hpp"
+#include "gnodegui/icons/link_type_icon.hpp"
 #include "gnodegui/icons/new_icon.hpp"
 #include "gnodegui/icons/reload_icon.hpp"
 #include "gnodegui/icons/screenshot_icon.hpp"
@@ -135,32 +136,36 @@ void GraphViewer::add_toolbar(QPoint window_pos)
   int y = window_pos.y();
   int dy = width + padding;
 
-  auto group_icon = new gngui::GroupIcon(width, color, pen_width);
+  auto group_icon = new GroupIcon(width, color, pen_width);
   this->add_static_item(group_icon, QPoint(x, y));
   y += dy;
 
-  auto reload_icon = new gngui::ReloadIcon(width, color, pen_width);
+  auto link_type_icon = new LinkTypeIcon(width, color, pen_width);
+  this->add_static_item(link_type_icon, QPoint(x, y));
+  y += dy;
+
+  auto reload_icon = new ReloadIcon(width, color, pen_width);
   this->add_static_item(reload_icon, QPoint(x, y));
   y += dy;
 
-  auto fit_content_icon = new gngui::FitContentIcon(width, color, pen_width);
+  auto fit_content_icon = new FitContentIcon(width, color, pen_width);
   this->add_static_item(fit_content_icon, QPoint(x, y));
   y += dy;
 
-  auto screenshot_icon = new gngui::ScreenshotIcon(width, color, pen_width);
+  auto screenshot_icon = new ScreenshotIcon(width, color, pen_width);
   this->add_static_item(screenshot_icon, QPoint(x, y));
   y += dy;
 
-  auto select_all_icon = new gngui::SelectAllIcon(width, color, pen_width);
+  auto select_all_icon = new SelectAllIcon(width, color, pen_width);
   this->add_static_item(select_all_icon, QPoint(x, y));
   y += dy;
 
-  auto clear_all_icon = new gngui::ClearAllIcon(width, color, pen_width);
+  auto clear_all_icon = new ClearAllIcon(width, color, pen_width);
   this->add_static_item(clear_all_icon, QPoint(x, y));
   y += dy;
 
   y += 2.f * padding;
-  auto new_icon = new gngui::NewIcon(width, color, pen_width);
+  auto new_icon = new NewIcon(width, color, pen_width);
   this->add_static_item(new_icon, QPoint(x, y));
   y += dy;
 
@@ -183,12 +188,16 @@ void GraphViewer::add_toolbar(QPoint window_pos)
                 {
                   QPoint  pos = QCursor::pos();
                   QPointF scene_pos = this->mapToScene(pos);
-                  this->add_item(new gngui::GraphicsGroup(), scene_pos);
+                  this->add_item(new GraphicsGroup(), scene_pos);
                 });
 
   this->connect(reload_icon,
                 &AbstractIcon::hit_icon,
                 [this]() { Q_EMIT this->graph_reload_request(); });
+
+  this->connect(link_type_icon,
+                &AbstractIcon::hit_icon,
+                [this]() { this->toggle_link_type(); });
 
   this->connect(fit_content_icon,
                 &AbstractIcon::hit_icon,
@@ -613,9 +622,7 @@ void GraphViewer::keyReleaseEvent(QKeyEvent *event)
   }
   else if (event->modifiers() == Qt::ControlModifier && event->key() == Qt::Key_L)
   {
-    for (QGraphicsItem *item : this->scene()->items())
-      if (GraphicsLink *p_link = dynamic_cast<GraphicsLink *>(item))
-        this->current_link_type = p_link->toggle_link_type();
+    this->toggle_link_type();
   }
   else if (event->modifiers() == Qt::ControlModifier && event->key() == Qt::Key_O)
   {
@@ -832,6 +839,13 @@ void GraphViewer::save_screenshot(const std::string &fname)
 {
   QPixmap pixMap = this->grab();
   pixMap.save(fname.c_str());
+}
+
+void GraphViewer::toggle_link_type()
+{
+  for (QGraphicsItem *item : this->scene()->items())
+    if (GraphicsLink *p_link = dynamic_cast<GraphicsLink *>(item))
+      this->current_link_type = p_link->toggle_link_type();
 }
 
 void GraphViewer::wheelEvent(QWheelEvent *event)

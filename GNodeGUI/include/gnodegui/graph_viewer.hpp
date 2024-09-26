@@ -68,6 +68,8 @@ public:
     this->node_inventory = new_node_inventory;
   }
 
+  void toggle_link_type();
+
   void zoom_to_content();
 
 public Q_SLOTS:
