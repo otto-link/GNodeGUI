@@ -29,8 +29,8 @@ enum LinkType
   BROKEN_LINE,
   CIRCUIT,
   CUBIC,
+  DEPORTED,
   LINEAR,
-  MIX,
 };
 
 class GraphicsLink : public QObject, public QGraphicsPathItem
@@ -91,8 +91,8 @@ private:
   bool is_link_hovered = false;
 
   std::vector<LinkType> link_types = {LinkType::BROKEN_LINE,
-                                      LinkType::CIRCUIT,
                                       LinkType::CUBIC,
+                                      LinkType::DEPORTED,
                                       LinkType::LINEAR};
 
   // link infos

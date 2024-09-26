@@ -174,21 +174,19 @@ void GraphicsLink::set_endpoints(const QPointF &start_point, const QPointF &end_
     QPointF control_point2(end_point.x() - dx, end_point.y());
     new_path.cubicTo(control_point1, control_point2, end_point);
   }
+  else if (this->link_type == LinkType::DEPORTED)
+  {
+    QPointF mid_point = QPointF(0.5f * (start_point.x() + end_point.x()),
+                                start_point.y());
+    new_path.lineTo(mid_point);
+
+    float   dx = std::abs(end_point.x() - mid_point.x()) * GN_STYLE->link.curvature;
+    QPointF control_point1(mid_point.x() + dx, mid_point.y());
+    QPointF control_point2(end_point.x() - dx, end_point.y());
+    new_path.cubicTo(control_point1, control_point2, end_point);
+  }
   else if (this->link_type == LinkType::LINEAR)
   {
-    new_path.lineTo(end_point);
-  }
-  else if (this->link_type == LinkType::MIX)
-  {
-    float dc = std::copysign(20.f, end_point.x() - start_point.x());
-    new_path.lineTo(QPointF(start_point.x() + dc, start_point.y()));
-
-    float   dx = std::abs(end_point.x() - start_point.x()) * GN_STYLE->link.curvature;
-    QPointF control_point1(start_point.x() + dx, start_point.y());
-    QPointF control_point2(end_point.x() - dx, end_point.y());
-    new_path.cubicTo(control_point1,
-                     control_point2,
-                     QPointF(end_point.x() - dc, end_point.y()));
     new_path.lineTo(end_point);
   }
 
