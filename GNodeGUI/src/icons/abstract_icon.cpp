@@ -47,6 +47,11 @@ void AbstractIcon::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
 {
   Q_UNUSED(event);
   this->setOpacity(this->pen_opacity);
+
+  QPen pen = this->pen();
+  pen.setWidth(this->pen_width);
+  this->setPen(pen);
+
   QToolTip::hideText();
   QGraphicsPathItem::hoverLeaveEvent(event);
 }
