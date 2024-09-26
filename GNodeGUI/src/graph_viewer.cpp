@@ -19,8 +19,10 @@
 #include "gnodegui/icons/fit_content_icon.hpp"
 #include "gnodegui/icons/group_icon.hpp"
 #include "gnodegui/icons/link_type_icon.hpp"
+#include "gnodegui/icons/load_icon.hpp"
 #include "gnodegui/icons/new_icon.hpp"
 #include "gnodegui/icons/reload_icon.hpp"
+#include "gnodegui/icons/save_icon.hpp"
 #include "gnodegui/icons/screenshot_icon.hpp"
 #include "gnodegui/icons/select_all_icon.hpp"
 
@@ -169,6 +171,14 @@ void GraphViewer::add_toolbar(QPoint window_pos)
   this->add_static_item(new_icon, QPoint(x, y));
   y += dy;
 
+  auto load_icon = new LoadIcon(width, color, pen_width);
+  this->add_static_item(load_icon, QPoint(x, y));
+  y += dy;
+
+  auto save_icon = new SaveIcon(width, color, pen_width);
+  this->add_static_item(save_icon, QPoint(x, y));
+  y += dy;
+
   // add background
   QGraphicsRectItem *background = new QGraphicsRectItem(0.f,
                                                         0.f,
@@ -227,6 +237,14 @@ void GraphViewer::add_toolbar(QPoint window_pos)
   this->connect(new_icon,
                 &AbstractIcon::hit_icon,
                 [this]() { Q_EMIT this->graph_new_request(); });
+
+  this->connect(load_icon,
+                &AbstractIcon::hit_icon,
+                [this]() { Q_EMIT this->graph_load_request(); });
+
+  this->connect(save_icon,
+                &AbstractIcon::hit_icon,
+                [this]() { Q_EMIT this->graph_save_as_request(); });
 }
 
 void GraphViewer::clear()
