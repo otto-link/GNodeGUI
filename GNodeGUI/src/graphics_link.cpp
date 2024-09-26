@@ -62,6 +62,8 @@ nlohmann::json GraphicsLink::json_to() const
   json["port_out_id"] = this->node_out->get_port_id(this->port_out_index);
   json["port_in_id"] = this->node_in->get_port_id(this->port_in_index);
 
+  json["link_type"] = this->link_type;
+
   return json;
 }
 
@@ -205,6 +207,23 @@ QPainterPath GraphicsLink::shape() const
   stroker.setWidth(40);
   QPainterPath widened_path = stroker.createStroke(path());
   return widened_path.united(path());
+}
+
+LinkType GraphicsLink::toggle_link_type()
+{
+  // current link type in the list
+  auto it = find(this->link_types.begin(), this->link_types.end(), this->link_type);
+
+  size_t type_index;
+
+  if (it == this->link_types.end() - 1)
+    type_index = 0;
+  else
+    type_index = it - this->link_types.begin() + 1;
+
+  this->set_link_type(this->link_types[type_index]);
+
+  return this->link_types[type_index];
 }
 
 } // namespace gngui

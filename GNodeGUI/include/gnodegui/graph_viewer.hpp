@@ -164,6 +164,8 @@ private:
   GraphicsLink *temp_link = nullptr;   // Temporary link
   GraphicsNode *source_node = nullptr; // Source node for the connection
 
+  LinkType current_link_type = LinkType::CUBIC;
+
   void delete_graphics_link(GraphicsLink *p_link);
 
   void delete_graphics_node(GraphicsNode *p_node);

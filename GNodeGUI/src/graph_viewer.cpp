@@ -541,7 +541,7 @@ void GraphViewer::json_from(nlohmann::json json)
       // same here, the graphic links are generated but the data
       // connection itself is outsourced to the outter headless nodes
       // manager
-      this->temp_link = new GraphicsLink();
+      this->temp_link = new GraphicsLink(QColor(0, 0, 0, 0), this->current_link_type);
 
       GraphicsNode *from_node = this->get_graphics_node_by_id(node_out_id);
       GraphicsNode *to_node = this->get_graphics_node_by_id(node_in_id);
@@ -610,6 +610,12 @@ void GraphViewer::keyReleaseEvent(QKeyEvent *event)
     QPoint  view_pos = this->mapFromGlobal(QCursor::pos());
     QPointF scene_pos = this->mapToScene(view_pos);
     this->add_item(new GraphicsGroup(), scene_pos);
+  }
+  else if (event->modifiers() == Qt::ControlModifier && event->key() == Qt::Key_L)
+  {
+    for (QGraphicsItem *item : this->scene()->items())
+      if (GraphicsLink *p_link = dynamic_cast<GraphicsLink *>(item))
+        this->current_link_type = p_link->toggle_link_type();
   }
   else if (event->modifiers() == Qt::ControlModifier && event->key() == Qt::Key_O)
   {
@@ -770,7 +776,8 @@ void GraphViewer::on_connection_started(GraphicsNode *from_node, int port_index)
   this->source_node = from_node;
 
   this->temp_link = new GraphicsLink(
-      get_color_from_data_type(from_node->get_data_type(port_index)));
+      get_color_from_data_type(from_node->get_data_type(port_index)),
+      this->current_link_type);
 
   QPointF port_pos = from_node->scenePos() +
                      from_node->get_geometry_ref()->port_rects[port_index].center();

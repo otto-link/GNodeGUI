@@ -38,7 +38,6 @@ class GraphicsLink : public QObject, public QGraphicsPathItem
   Q_OBJECT
 
 public:
-  // TODO fix zbuffer and selection
   GraphicsLink(QColor         color = QColor(0, 0, 0, 0),
                LinkType       link_type = LinkType::CUBIC,
                QGraphicsItem *parent = nullptr);
@@ -67,6 +66,8 @@ public:
     this->pen_style = new_pen_style;
   }
 
+  LinkType toggle_link_type();
+
 protected:
   // add some margin to take into account additional items painted around the link
   QRectF boundingRect() const override;
@@ -88,6 +89,11 @@ private:
   Qt::PenStyle pen_style = Qt::DashLine;
 
   bool is_link_hovered = false;
+
+  std::vector<LinkType> link_types = {LinkType::BROKEN_LINE,
+                                      LinkType::CIRCUIT,
+                                      LinkType::CUBIC,
+                                      LinkType::LINEAR};
 
   // link infos
   GraphicsNode *node_out = nullptr;
