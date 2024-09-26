@@ -35,6 +35,7 @@ public:
     bool   add_toolbar = true;
     QPoint toolbar_window_pos = QPoint(10, 40);
     float  toolbar_width = 32.f;
+    bool   add_viewport_icon = true;
   } viewer;
 
   struct Node

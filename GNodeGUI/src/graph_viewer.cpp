@@ -25,6 +25,7 @@
 #include "gnodegui/icons/save_icon.hpp"
 #include "gnodegui/icons/screenshot_icon.hpp"
 #include "gnodegui/icons/select_all_icon.hpp"
+#include "gnodegui/icons/viewport_icon.hpp"
 
 #define MAX_SIZE 40000
 
@@ -179,6 +180,14 @@ void GraphViewer::add_toolbar(QPoint window_pos)
   this->add_static_item(save_icon, QPoint(x, y));
   y += dy;
 
+  auto viewport_icon = new ViewportIcon(width, color, pen_width);
+  if (GN_STYLE->viewer.add_viewport_icon)
+  {
+    y += 2.f * padding;
+    this->add_static_item(viewport_icon, QPoint(x, y));
+    y += dy;
+  }
+
   // add background
   QGraphicsRectItem *background = new QGraphicsRectItem(0.f,
                                                         0.f,
@@ -245,6 +254,13 @@ void GraphViewer::add_toolbar(QPoint window_pos)
   this->connect(save_icon,
                 &AbstractIcon::hit_icon,
                 [this]() { Q_EMIT this->graph_save_as_request(); });
+
+  if (GN_STYLE->viewer.add_viewport_icon)
+  {
+    this->connect(viewport_icon,
+                  &AbstractIcon::hit_icon,
+                  [this]() { Q_EMIT this->viewport_request(); });
+  }
 }
 
 void GraphViewer::clear()

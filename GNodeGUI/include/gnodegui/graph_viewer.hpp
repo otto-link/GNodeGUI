@@ -124,6 +124,8 @@ Q_SIGNALS:
 
   void quit_request();
 
+  void viewport_request();
+
 protected: // Qt events
   void contextMenuEvent(QContextMenuEvent *event) override;
 
