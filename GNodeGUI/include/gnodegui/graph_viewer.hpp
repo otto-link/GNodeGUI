@@ -110,6 +110,8 @@ Q_SIGNALS:
 
   void graph_save_request();
 
+  void new_graphics_node_request(const std::string &id, QPointF scene_pos);
+
   void new_node_request(const std::string &type, QPointF scene_pos);
 
   void node_deleted(const std::string &id);

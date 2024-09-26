@@ -517,9 +517,9 @@ void GraphViewer::json_from(nlohmann::json json)
   this->id = json["id"];
   this->current_link_type = json["current_link_type"].get<LinkType>();
 
-  if (json[this->id]["groups"].is_null())
+  if (!json["groups"].is_null())
   {
-    for (auto &json_group : json["GraphViewer"][this->id]["groups"])
+    for (auto &json_group : json["groups"])
     {
       GraphicsGroup *p_group = new GraphicsGroup();
       this->add_item(p_group);
@@ -527,23 +527,29 @@ void GraphViewer::json_from(nlohmann::json json)
     }
   }
 
-  if (json[this->id]["nodes"].is_null())
+  if (!json["nodes"].is_null())
   {
-    for (auto &json_node : json["GraphViewer"][this->id]["nodes"])
+    for (auto &json_node : json["nodes"])
     {
-      std::string        caption = json_node["caption"];
-      std::string        nid = json_node["id"];
-      std::vector<float> pos = json_node["position"];
+      std::string nid = json_node["id"];
+
+      float x = json_node["scene_position.x"];
+      float y = json_node["scene_position.y"];
 
       // nodes are not generated in this class, it is outsourced to the
       // outter headless nodes manager
-      Q_EMIT this->new_node_request(caption, QPointF(pos[0], pos[1]));
+      Q_EMIT this->new_graphics_node_request(nid, QPointF(x, y));
+
+      this->get_graphics_node_by_id(nid)->json_from(json_node);
+
+      Logger::log()->trace("{}", json_node["caption"]);
+      Logger::log()->trace("{}", this->get_graphics_node_by_id(nid)->get_nports());
     }
   }
 
-  if (json[this->id]["links"].is_null())
+  if (!json["links"].is_null())
   {
-    for (auto &json_link : json["GraphViewer"][this->id]["links"])
+    for (auto &json_link : json["links"])
     {
       std::string node_out_id = json_link["node_out_id"];
       std::string node_in_id = json_link["node_in_id"];
@@ -554,6 +560,7 @@ void GraphViewer::json_from(nlohmann::json json)
       // connection itself is outsourced to the outter headless nodes
       // manager
       this->temp_link = new GraphicsLink(QColor(0, 0, 0, 0), this->current_link_type);
+      this->scene()->addItem(this->temp_link);
 
       GraphicsNode *from_node = this->get_graphics_node_by_id(node_out_id);
       GraphicsNode *to_node = this->get_graphics_node_by_id(node_in_id);
@@ -561,7 +568,7 @@ void GraphViewer::json_from(nlohmann::json json)
       if (from_node && to_node)
       {
         int port_from_index = from_node->get_port_index(port_out_id);
-        int port_to_index = from_node->get_port_index(port_in_id);
+        int port_to_index = to_node->get_port_index(port_in_id);
 
         this->on_connection_finished(from_node, port_from_index, to_node, port_to_index);
       }
@@ -598,8 +605,6 @@ nlohmann::json GraphViewer::json_to() const
   json["nodes"] = json_node_list;
   json["links"] = json_link_list;
   json["groups"] = json_group_list;
-
-  Logger::log()->trace("{}", json.dump(4));
 
   return json;
 }
