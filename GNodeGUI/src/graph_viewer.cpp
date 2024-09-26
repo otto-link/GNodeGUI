@@ -514,6 +514,9 @@ void GraphViewer::json_from(nlohmann::json json)
   // generate graph from json data
   this->clear();
 
+  this->id = json["id"];
+  this->current_link_type = json["current_link_type"].get<LinkType>();
+
   if (json[this->id]["groups"].is_null())
   {
     for (auto &json_group : json["GraphViewer"][this->id]["groups"])
@@ -576,6 +579,7 @@ nlohmann::json GraphViewer::json_to() const
   nlohmann::json json;
 
   json["id"] = this->id;
+  json["current_link_type"] = this->current_link_type;
 
   std::vector<nlohmann::json> json_node_list = {};
   std::vector<nlohmann::json> json_link_list = {};
