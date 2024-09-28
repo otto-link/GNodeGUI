@@ -118,9 +118,13 @@ Q_SIGNALS:
 
   void connection_started(GraphicsNode *from, int port_index);
 
+  void deselected(const std::string &id);
+
   void reload_request(const std::string &id);
 
   void right_clicked(const std::string &id, QPointF scene_pos);
+
+  void selected(const std::string &id);
 
   void toggle_widget_visibility(const std::string &id);
 
@@ -130,6 +134,8 @@ protected:
   void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) override;
 
   void hoverMoveEvent(QGraphicsSceneHoverEvent *event) override;
+
+  QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
 
   void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
 

@@ -162,6 +162,19 @@ bool GraphicsNode::is_port_available(int port_index)
     return !this->connected_link_ref[port_index];
 }
 
+QVariant GraphicsNode::itemChange(GraphicsItemChange change, const QVariant &value)
+{
+  if (change == QGraphicsItem::ItemSelectedChange)
+  {
+    if (this->isSelected())
+      Q_EMIT this->deselected(this->get_id());
+    else
+      Q_EMIT this->selected(this->get_id());
+  }
+
+  return QGraphicsItem::itemChange(change, value);
+}
+
 void GraphicsNode::json_from(nlohmann::json json)
 {
   this->get_id() = json["id"];

@@ -116,7 +116,11 @@ Q_SIGNALS:
 
   void node_deleted(const std::string &id);
 
+  void node_deselected(const std::string &id);
+
   void node_reload_request(const std::string &id);
+
+  void node_selected(const std::string &id);
 
   void node_settings_request(const std::string &id);
 
