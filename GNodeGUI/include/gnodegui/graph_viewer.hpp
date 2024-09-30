@@ -126,6 +126,14 @@ Q_SIGNALS:
 
   void node_right_clicked(const std::string &id, QPointF scene_pos);
 
+  void nodes_copy_request(const std::vector<std::string> &id_list,
+                          const std::vector<QPointF>     &scene_pos_list);
+
+  void nodes_duplicate_request(const std::vector<std::string> &id_list,
+                               const std::vector<QPointF>     &scene_pos_list);
+
+  void nodes_paste_request();
+
   void quit_request();
 
   void viewport_request();
@@ -181,6 +189,8 @@ private:
   void delete_graphics_node(GraphicsNode *p_node);
 
   bool is_item_static(QGraphicsItem *item);
+
+  void select_all();
 };
 
 } // namespace gngui

@@ -105,17 +105,11 @@ std::string GraphViewer::add_node(NodeProxy         *p_node_proxy,
 
   this->connect(p_node,
                 &GraphicsNode::selected,
-                [this](const std::string &id)
-                {
-                  Q_EMIT this->node_selected(id);
-                });
+                [this](const std::string &id) { Q_EMIT this->node_selected(id); });
 
   this->connect(p_node,
                 &GraphicsNode::deselected,
-                [this](const std::string &id)
-                {
-                  Q_EMIT this->node_deselected(id);
-                });
+                [this](const std::string &id) { Q_EMIT this->node_deselected(id); });
 
   // if nothing provided, generate a unique id based on the object address
   std::string nid = node_id;
@@ -242,20 +236,11 @@ void GraphViewer::add_toolbar(QPoint window_pos)
 
   this->connect(select_all_icon,
                 &AbstractIcon::hit_icon,
-                [this]()
-                {
-                  for (QGraphicsItem *item : this->scene()->items())
-                    if (!is_item_static(item))
-                      item->setSelected(true);
-                });
+                [this]() { this->select_all(); });
 
   this->connect(clear_all_icon,
                 &AbstractIcon::hit_icon,
-                [this]()
-                {
-                  Logger::log()->trace("here");
-                  Q_EMIT this->graph_clear_request();
-                });
+                [this]() { Q_EMIT this->graph_clear_request(); });
 
   this->connect(new_icon,
                 &AbstractIcon::hit_icon,
@@ -671,6 +656,42 @@ void GraphViewer::keyReleaseEvent(QKeyEvent *event)
   {
     this->setDragMode(QGraphicsView::NoDrag);
   }
+  else if (event->modifiers() == Qt::ControlModifier && event->key() == Qt::Key_A)
+  {
+    this->select_all();
+  }
+  else if (event->modifiers() == Qt::ControlModifier && event->key() == Qt::Key_C)
+  {
+    std::vector<std::string> id_list = {};
+    std::vector<QPointF>     scene_pos_list = {};
+
+    for (QGraphicsItem *item : this->scene()->items())
+      if (GraphicsNode *p_node = dynamic_cast<GraphicsNode *>(item))
+        if (p_node->isSelected())
+        {
+          id_list.push_back(p_node->get_id());
+          scene_pos_list.push_back(p_node->pos());
+        }
+
+    if (id_list.size())
+      Q_EMIT this->nodes_copy_request(id_list, scene_pos_list);
+  }
+  else if (event->modifiers() == Qt::ControlModifier && event->key() == Qt::Key_D)
+  {
+    std::vector<std::string> id_list = {};
+    std::vector<QPointF>     scene_pos_list = {};
+
+    for (QGraphicsItem *item : this->scene()->items())
+      if (GraphicsNode *p_node = dynamic_cast<GraphicsNode *>(item))
+        if (p_node->isSelected())
+        {
+          id_list.push_back(p_node->get_id());
+          scene_pos_list.push_back(p_node->pos());
+        }
+
+    if (id_list.size())
+      Q_EMIT this->nodes_duplicate_request(id_list, scene_pos_list);
+  }
   else if (event->modifiers() == Qt::ControlModifier && event->key() == Qt::Key_G)
   {
     QPoint  view_pos = this->mapFromGlobal(QCursor::pos());
@@ -690,13 +711,17 @@ void GraphViewer::keyReleaseEvent(QKeyEvent *event)
   {
     Q_EMIT this->graph_save_as_request();
   }
+  else if (event->modifiers() == Qt::ControlModifier && event->key() == Qt::Key_Q)
+  {
+    this->quit_request();
+  }
   else if (event->modifiers() == Qt::ControlModifier && event->key() == Qt::Key_S)
   {
     Q_EMIT this->graph_save_request();
   }
-  else if (event->modifiers() == Qt::ControlModifier && event->key() == Qt::Key_Q)
+  else if (event->modifiers() == Qt::ControlModifier && event->key() == Qt::Key_V)
   {
-    this->quit_request();
+    Q_EMIT this->nodes_paste_request();
   }
   else if (event->key() == Qt::Key_Delete)
   {
@@ -896,6 +921,13 @@ void GraphViewer::save_screenshot(const std::string &fname)
 {
   QPixmap pixMap = this->grab();
   pixMap.save(fname.c_str());
+}
+
+void GraphViewer::select_all()
+{
+  for (QGraphicsItem *item : this->scene()->items())
+    if (!is_item_static(item))
+      item->setSelected(true);
 }
 
 void GraphViewer::toggle_link_type()
