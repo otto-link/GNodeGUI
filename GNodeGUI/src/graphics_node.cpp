@@ -338,13 +338,18 @@ void GraphicsNode::paint(QPainter                       *painter,
   // --- Header
 
   std::string main_category = this->get_main_category();
+  QColor      header_color = GN_STYLE->node.color_bg_light;
+
   if (GN_STYLE->node.color_category.contains(main_category))
-    painter->setBrush(GN_STYLE->node.color_category.at(main_category));
-  else
-    painter->setBrush(GN_STYLE->node.color_bg_light);
+    header_color = GN_STYLE->node.color_category.at(main_category);
+  painter->setBrush(header_color);
 
   if (this->is_node_computing)
-    painter->setBrush(Qt::BDiagPattern);
+  {
+    QColor dim_color = header_color;
+    dim_color.setAlphaF(0.75f * header_color.alphaF());
+    painter->setBrush(dim_color);
+  }
 
   painter->setPen(Qt::NoPen);
 
