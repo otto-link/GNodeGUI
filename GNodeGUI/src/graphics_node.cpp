@@ -347,7 +347,7 @@ void GraphicsNode::paint(QPainter                       *painter,
   if (this->is_node_computing)
   {
     QColor dim_color = header_color;
-    dim_color.setAlphaF(0.75f * header_color.alphaF());
+    dim_color.setAlphaF(0.5f * header_color.alphaF());
     painter->setBrush(dim_color);
   }
 
