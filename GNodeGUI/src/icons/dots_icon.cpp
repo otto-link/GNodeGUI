@@ -24,8 +24,10 @@ void DotsIcon::set_path()
   QBrush       brush = this->brush();
 
   brush.setColor(this->color);
-  brush.setStyle(Qt::SolidPattern);
   this->setBrush(brush);
+
+  QRectF rect(0.f, 0.f, this->width, this->width);
+  path.addRoundedRect(rect, 0.05f * this->width, 0.05f * this->width);
 
   float radius = 0.07f * this->width;
   float dx = this->width / 4.f;

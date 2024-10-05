@@ -16,6 +16,7 @@
 #include "gnodegui/utils.hpp"
 
 #include "gnodegui/icons/clear_all_icon.hpp"
+#include "gnodegui/icons/dots_icon.hpp"
 #include "gnodegui/icons/fit_content_icon.hpp"
 #include "gnodegui/icons/group_icon.hpp"
 #include "gnodegui/icons/link_type_icon.hpp"
@@ -188,6 +189,10 @@ void GraphViewer::add_toolbar(QPoint window_pos)
   this->add_static_item(save_icon, QPoint(x, y));
   y += dy;
 
+  auto dots_icon = new DotsIcon(width, color, pen_width);
+  this->add_static_item(dots_icon, QPoint(x, y));
+  y += dy;
+
   auto viewport_icon = new ViewportIcon(width, color, pen_width);
   if (GN_STYLE->viewer.add_viewport_icon)
   {
@@ -253,6 +258,10 @@ void GraphViewer::add_toolbar(QPoint window_pos)
   this->connect(save_icon,
                 &AbstractIcon::hit_icon,
                 [this]() { Q_EMIT this->graph_save_as_request(); });
+
+  this->connect(dots_icon,
+                &AbstractIcon::hit_icon,
+                [this]() { Q_EMIT this->graph_settings_request(); });
 
   if (GN_STYLE->viewer.add_viewport_icon)
   {
