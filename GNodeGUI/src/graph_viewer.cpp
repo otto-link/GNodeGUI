@@ -318,9 +318,6 @@ void GraphViewer::contextMenuEvent(QContextMenuEvent *event)
     const std::string              &action_name = key;
     const std::vector<std::string> &action_categories = split_string(cat, '/');
 
-    // // backup actions
-    // std::vector<QAction *> actions = {};
-
     QMenu *parent_menu = menu;
 
     // traverse the category hierarchy
@@ -375,7 +372,7 @@ void GraphViewer::contextMenuEvent(QContextMenuEvent *event)
           QString    key_qstr = QString::fromStdString(key);
           const bool match = key_qstr.contains(text, Qt::CaseInsensitive);
 
-          if (text.isEmpty())
+          if (text.isEmpty() || text.compare(" ") == 0)
             is_visible[key] = true;
           else
             is_visible[key] = match;
