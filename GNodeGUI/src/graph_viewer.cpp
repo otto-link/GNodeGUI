@@ -542,6 +542,18 @@ GraphicsNode *GraphViewer::get_graphics_node_by_id(const std::string &id)
   return nullptr;
 }
 
+std::vector<std::string> GraphViewer::get_selected_node_ids()
+{
+  std::vector<std::string> ids = {};
+
+  for (QGraphicsItem *item : this->scene()->items())
+    if (GraphicsNode *p_node = dynamic_cast<GraphicsNode *>(item))
+      if (p_node->isSelected())
+        ids.push_back(p_node->get_id());
+
+  return ids;
+}
+
 bool GraphViewer::is_item_static(QGraphicsItem *item)
 {
   return !(std::find(this->static_items.begin(), this->static_items.end(), item) ==

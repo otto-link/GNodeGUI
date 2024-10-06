@@ -53,6 +53,8 @@ public:
 
   GraphicsNode *get_graphics_node_by_id(const std::string &id);
 
+  std::vector<std::string> get_selected_node_ids();
+
   void json_from(nlohmann::json json);
 
   nlohmann::json json_to() const;
