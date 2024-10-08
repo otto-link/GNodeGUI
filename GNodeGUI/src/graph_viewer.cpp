@@ -745,6 +745,8 @@ void GraphViewer::keyReleaseEvent(QKeyEvent *event)
   {
     this->delete_selected_items();
   }
+
+  QGraphicsView::keyReleaseEvent(event);
 }
 
 void GraphViewer::mouseMoveEvent(QMouseEvent *event)

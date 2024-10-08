@@ -67,6 +67,7 @@ void AbstractIcon::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
     Q_EMIT this->hit_icon();
   }
+  QGraphicsPathItem::mousePressEvent(event);
 }
 
 void AbstractIcon::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
@@ -76,6 +77,8 @@ void AbstractIcon::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
   QPen pen = this->pen();
   pen.setWidth(this->pen_width);
   this->setPen(pen);
+
+  QGraphicsPathItem::mouseReleaseEvent(event);
 }
 
 } // namespace gngui

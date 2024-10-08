@@ -89,6 +89,8 @@ void GraphicsGroup::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
     auto   color_it = std::next(GN_STYLE->group.color_map.begin(), index);
     this->set_color(color_it->second);
   }
+
+  event->accept();
 }
 
 GraphicsGroup::Corner GraphicsGroup::get_resize_corner(const QPointF &pos) const
