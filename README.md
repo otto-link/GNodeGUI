@@ -11,7 +11,6 @@ This library is currently used in the [Hesiod](https://github.com/otto-link/Hesi
 
 - Node-based graphical interface
 - Supports custom node definitions
-- Modular and extendable design
 
 ## Build Instructions
 
