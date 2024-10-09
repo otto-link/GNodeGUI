@@ -310,13 +310,28 @@ void GraphViewer::contextMenuEvent(QContextMenuEvent *event)
 
   menu->addAction(text_box_action);
 
+  // sort node types by category (not by types for the treeview)
+  std::vector<std::pair<std::string, std::string>> pairs;
+  for (auto itr = this->node_inventory.begin(); itr != this->node_inventory.end(); ++itr)
+    pairs.push_back(*itr);
+
+  sort(pairs.begin(),
+       pairs.end(),
+       [=](std::pair<std::string, std::string> &a, std::pair<std::string, std::string> &b)
+       {
+         if (a.second == b.second)
+           return a.first < b.first;
+         else
+           return a.second < b.second;
+       });
+
   // to keep track of created submenus
   std::map<std::string, QMenu *> category_map;
 
-  for (auto &[key, cat] : this->node_inventory)
+  for (auto &p : pairs)
   {
-    const std::string              &action_name = key;
-    const std::vector<std::string> &action_categories = split_string(cat, '/');
+    const std::string              &action_name = p.first;
+    const std::vector<std::string> &action_categories = split_string(p.second, '/');
 
     QMenu *parent_menu = menu;
 
