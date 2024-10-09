@@ -1,6 +1,6 @@
 # GNodeGUI
 
-GNodeGUI is a C++ graphical node editor library aimed at providing a flexible and customizable interface for building and manipulating nodes in a graphical context.
+GNodeGUI is a C++ graphical node editor library aimed at providing an interface for building and manipulating nodes in a graphical context.
 
 ![Screenshot_2024-10-09_19-13-17](https://github.com/user-attachments/assets/3362ae46-47ee-4add-b7fd-9f143d8d887c)
 
