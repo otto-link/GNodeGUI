@@ -276,6 +276,7 @@ void GraphViewer::clear()
   for (QGraphicsItem *item : this->scene()->items())
     if (!this->is_item_static(item))
     {
+      item->setSelected(false);
       this->scene()->removeItem(item);
       delete item;
     }
