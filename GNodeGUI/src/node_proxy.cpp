@@ -21,7 +21,7 @@ void NodeProxy::log_debug()
     Logger::log()->trace("- port #: {}", k);
     Logger::log()->trace("  - caption: {}", this->get_port_caption(k));
     Logger::log()->trace("  - id: {}", this->get_port_id(k));
-    Logger::log()->trace("  - type: {}", this->get_port_type(k));
+    // Logger::log()->trace("  - type: {}", this->get_port_type(k));
     Logger::log()->trace("  - data_type: {}", this->get_data_type(k));
   }
 }
