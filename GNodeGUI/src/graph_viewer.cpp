@@ -609,7 +609,7 @@ void GraphViewer::json_from(nlohmann::json json)
 
       this->get_graphics_node_by_id(nid)->json_from(json_node);
 
-      Logger::log()->trace("{}", json_node["caption"]);
+      Logger::log()->trace("{}", json_node["caption"].get<std::string>());
       Logger::log()->trace("{}", this->get_graphics_node_by_id(nid)->get_nports());
     }
   }
