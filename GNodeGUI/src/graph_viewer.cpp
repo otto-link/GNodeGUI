@@ -302,7 +302,7 @@ void GraphViewer::contextMenuEvent(QContextMenuEvent *event)
 
   // add filterbox to the context menu
   QLineEdit *text_box = new QLineEdit(menu);
-  text_box->setPlaceholderText(QStringLiteral("Filter"));
+  text_box->setPlaceholderText(QStringLiteral("Filter or [SPACE]"));
   text_box->setClearButtonEnabled(true);
   // hesiod::resize_font(text_box, -2);
 
