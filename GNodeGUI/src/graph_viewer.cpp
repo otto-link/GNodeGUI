@@ -741,6 +741,10 @@ void GraphViewer::keyReleaseEvent(QKeyEvent *event)
   {
     this->toggle_link_type();
   }
+  else if (event->modifiers() == Qt::ControlModifier && event->key() == Qt::Key_I)
+  {
+    Q_EMIT this->graph_import_request();
+  }
   else if (event->modifiers() == Qt::ControlModifier && event->key() == Qt::Key_O)
   {
     Q_EMIT this->graph_load_request();
@@ -752,7 +756,7 @@ void GraphViewer::keyReleaseEvent(QKeyEvent *event)
   }
   else if (event->modifiers() == Qt::ControlModifier && event->key() == Qt::Key_Q)
   {
-    this->quit_request();
+    Q_EMIT this->quit_request();
   }
   else if (event->modifiers() == Qt::ControlModifier && event->key() == Qt::Key_S)
   {

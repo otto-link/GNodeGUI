@@ -102,6 +102,8 @@ Q_SIGNALS:
 
   void graph_clear_request();
 
+  void graph_import_request();
+
   void graph_load_request();
 
   void graph_new_request();
