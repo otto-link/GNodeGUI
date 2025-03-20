@@ -581,13 +581,17 @@ bool GraphViewer::is_item_static(QGraphicsItem *item)
            this->static_items.end());
 }
 
-void GraphViewer::json_from(nlohmann::json json)
+void GraphViewer::json_from(nlohmann::json     json,
+                            bool               clear_existing_content,
+                            const std::string &prefix_id)
 {
   // generate graph from json data
-  this->clear();
-
-  this->id = json["id"];
-  this->current_link_type = json["current_link_type"].get<LinkType>();
+  if (clear_existing_content)
+  {
+    this->clear();
+    this->id = json["id"];
+    this->current_link_type = json["current_link_type"].get<LinkType>();
+  }
 
   if (!json["groups"].is_null())
   {
@@ -603,7 +607,7 @@ void GraphViewer::json_from(nlohmann::json json)
   {
     for (auto &json_node : json["nodes"])
     {
-      std::string nid = json_node["id"];
+      std::string nid = prefix_id + json_node["id"].get<std::string>();
 
       float x = json_node["scene_position.x"];
       float y = json_node["scene_position.y"];
@@ -623,8 +627,8 @@ void GraphViewer::json_from(nlohmann::json json)
   {
     for (auto &json_link : json["links"])
     {
-      std::string node_out_id = json_link["node_out_id"];
-      std::string node_in_id = json_link["node_in_id"];
+      std::string node_out_id = prefix_id + json_link["node_out_id"].get<std::string>();
+      std::string node_in_id = prefix_id + json_link["node_in_id"].get<std::string>();
       std::string port_out_id = json_link["port_out_id"];
       std::string port_in_id = json_link["port_in_id"];
 

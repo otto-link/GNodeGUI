@@ -55,7 +55,11 @@ public:
 
   std::vector<std::string> get_selected_node_ids();
 
-  void json_from(nlohmann::json json);
+  // prefix_id can be usefull when importing a graph into an existing
+  // one, to avoid duplicate node ids
+  void json_from(nlohmann::json     json,
+                 bool               clear_existing_content = true,
+                 const std::string &prefix_id = "");
 
   nlohmann::json json_to() const;
 
