@@ -182,12 +182,15 @@ void GraphViewer::add_toolbar(QPoint window_pos)
   y += dy;
 
   auto load_icon = new LoadIcon(width, color, pen_width);
-  this->add_static_item(load_icon, QPoint(x, y));
-  y += dy;
-
   auto save_icon = new SaveIcon(width, color, pen_width);
-  this->add_static_item(save_icon, QPoint(x, y));
-  y += dy;
+  if (GN_STYLE->viewer.add_load_save_icons)
+  {
+    this->add_static_item(load_icon, QPoint(x, y));
+    y += dy;
+
+    this->add_static_item(save_icon, QPoint(x, y));
+    y += dy;
+  }
 
   auto dots_icon = new DotsIcon(width, color, pen_width);
   this->add_static_item(dots_icon, QPoint(x, y));
@@ -251,13 +254,16 @@ void GraphViewer::add_toolbar(QPoint window_pos)
                 &AbstractIcon::hit_icon,
                 [this]() { Q_EMIT this->graph_new_request(); });
 
-  this->connect(load_icon,
-                &AbstractIcon::hit_icon,
-                [this]() { Q_EMIT this->graph_load_request(); });
+  if (GN_STYLE->viewer.add_load_save_icons)
+  {
+    this->connect(load_icon,
+                  &AbstractIcon::hit_icon,
+                  [this]() { Q_EMIT this->graph_load_request(); });
 
-  this->connect(save_icon,
-                &AbstractIcon::hit_icon,
-                [this]() { Q_EMIT this->graph_save_as_request(); });
+    this->connect(save_icon,
+                  &AbstractIcon::hit_icon,
+                  [this]() { Q_EMIT this->graph_save_as_request(); });
+  }
 
   this->connect(dots_icon,
                 &AbstractIcon::hit_icon,
