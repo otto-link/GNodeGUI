@@ -176,10 +176,13 @@ void GraphViewer::add_toolbar(QPoint window_pos)
   this->add_static_item(clear_all_icon, QPoint(x, y));
   y += dy;
 
-  y += 2.f * padding;
   auto new_icon = new NewIcon(width, color, pen_width);
-  this->add_static_item(new_icon, QPoint(x, y));
-  y += dy;
+  if (GN_STYLE->viewer.add_new_icon)
+  {
+    y += 2.f * padding;
+    this->add_static_item(new_icon, QPoint(x, y));
+    y += dy;
+  }
 
   auto load_icon = new LoadIcon(width, color, pen_width);
   auto save_icon = new SaveIcon(width, color, pen_width);
