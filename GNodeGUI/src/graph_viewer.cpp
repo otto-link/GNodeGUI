@@ -963,6 +963,24 @@ void GraphViewer::on_node_right_clicked(const std::string &id, QPointF scene_pos
   Q_EMIT this->node_right_clicked(id, scene_pos);
 }
 
+void GraphViewer::on_update_finished()
+{
+  if (GN_STYLE->viewer.disable_during_update)
+  {
+    this->setEnabled(true);
+    this->setDragMode(QGraphicsView::NoDrag);
+  }
+}
+
+void GraphViewer::on_update_started()
+{
+  if (GN_STYLE->viewer.disable_during_update)
+  {
+    this->setDragMode(QGraphicsView::NoDrag);
+    this->setEnabled(false);
+  }
+}
+
 void GraphViewer::remove_node(const std::string &node_id)
 {
   for (QGraphicsItem *item : this->scene()->items())

@@ -89,6 +89,10 @@ public Q_SLOTS:
 
   void on_node_right_clicked(const std::string &id, QPointF scene_pos);
 
+  void on_update_finished();
+
+  void on_update_started();
+
 Q_SIGNALS:
   void background_right_clicked(QPointF scene_pos);
 

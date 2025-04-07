@@ -38,6 +38,8 @@ public:
     bool   add_viewport_icon = true;
     bool   add_new_icon = true;
     bool   add_load_save_icons = true;
+
+    bool disable_during_update = true;
   } viewer;
 
   struct Node
