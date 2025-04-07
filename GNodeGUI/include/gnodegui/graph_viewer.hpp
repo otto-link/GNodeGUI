@@ -67,6 +67,8 @@ public:
 
   void save_screenshot(const std::string &fname = "screenshot.png");
 
+  void set_enabled(bool state);
+
   void set_id(const std::string &new_id) { this->id = new_id; }
 
   void set_node_inventory(const std::map<std::string, std::string> &new_node_inventory)

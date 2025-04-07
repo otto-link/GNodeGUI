@@ -966,19 +966,13 @@ void GraphViewer::on_node_right_clicked(const std::string &id, QPointF scene_pos
 void GraphViewer::on_update_finished()
 {
   if (GN_STYLE->viewer.disable_during_update)
-  {
-    this->setEnabled(true);
-    this->setDragMode(QGraphicsView::NoDrag);
-  }
+    this->set_enabled(true);
 }
 
 void GraphViewer::on_update_started()
 {
   if (GN_STYLE->viewer.disable_during_update)
-  {
-    this->setDragMode(QGraphicsView::NoDrag);
-    this->setEnabled(false);
-  }
+    this->set_enabled(false);
 }
 
 void GraphViewer::remove_node(const std::string &node_id)
@@ -1014,6 +1008,12 @@ void GraphViewer::select_all()
   for (QGraphicsItem *item : this->scene()->items())
     if (!is_item_static(item))
       item->setSelected(true);
+}
+
+void GraphViewer::set_enabled(bool state)
+{
+  this->setEnabled(state);
+  this->setDragMode(QGraphicsView::NoDrag);
 }
 
 void GraphViewer::toggle_link_type()
