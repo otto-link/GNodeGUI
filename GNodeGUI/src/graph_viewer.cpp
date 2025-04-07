@@ -833,12 +833,12 @@ void GraphViewer::mouseReleaseEvent(QMouseEvent *event)
 
 void GraphViewer::on_compute_finished(const std::string &id)
 {
-  this->get_graphics_node_by_id(id)->on_compute_started();
+  this->get_graphics_node_by_id(id)->on_compute_finished();
 }
 
 void GraphViewer::on_compute_started(const std::string &id)
 {
-  this->get_graphics_node_by_id(id)->on_compute_finished();
+  this->get_graphics_node_by_id(id)->on_compute_started();
 }
 
 void GraphViewer::on_connection_dropped(GraphicsNode *from,
@@ -967,10 +967,14 @@ void GraphViewer::on_update_finished()
 {
   if (GN_STYLE->viewer.disable_during_update)
     this->set_enabled(true);
+
+  this->setCursor(Qt::ArrowCursor);
 }
 
 void GraphViewer::on_update_started()
 {
+  this->setCursor(Qt::WaitCursor);
+
   if (GN_STYLE->viewer.disable_during_update)
     this->set_enabled(false);
 }
