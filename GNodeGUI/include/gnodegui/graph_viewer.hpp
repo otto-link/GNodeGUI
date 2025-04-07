@@ -79,6 +79,10 @@ public:
   void zoom_to_content();
 
 public Q_SLOTS:
+  void on_compute_finished(const std::string &id);
+
+  void on_compute_started(const std::string &id);
+
   void on_node_reload_request(const std::string &id);
 
   void on_node_settings_request(const std::string &id);

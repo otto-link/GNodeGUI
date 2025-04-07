@@ -831,6 +831,16 @@ void GraphViewer::mouseReleaseEvent(QMouseEvent *event)
   QGraphicsView::mouseReleaseEvent(event);
 }
 
+void GraphViewer::on_compute_finished(const std::string &id)
+{
+  this->get_graphics_node_by_id(id)->on_compute_started();
+}
+
+void GraphViewer::on_compute_started(const std::string &id)
+{
+  this->get_graphics_node_by_id(id)->on_compute_finished();
+}
+
 void GraphViewer::on_connection_dropped(GraphicsNode *from,
                                         int           port_index,
                                         QPointF       scene_pos)
