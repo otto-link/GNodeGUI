@@ -482,8 +482,10 @@ void GraphViewer::delete_graphics_node(GraphicsNode *p_node)
           p_link->get_node_in()->get_id() == p_node->get_id())
         this->delete_graphics_link(p_link);
 
+  std::string nid = p_node->get_id();
+
   delete p_node;
-  Q_EMIT this->node_deleted(p_node->get_id());
+  Q_EMIT this->node_deleted(nid);
 }
 
 void GraphViewer::delete_selected_items()
