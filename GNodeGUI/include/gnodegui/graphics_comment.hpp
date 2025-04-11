@@ -29,6 +29,7 @@ public:
 
   void set_comment_text(const std::string &new_comment_text);
 
+  void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event) override;
   virtual void paint(QPainter                       *painter,
                      const QStyleOptionGraphicsItem *option,
                      QWidget                        *widget) override;
