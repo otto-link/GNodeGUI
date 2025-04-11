@@ -185,11 +185,15 @@ public:
     this->connected_link_ref[port_index] = p_link;
   }
 
+  void set_p_node_proxy(NodeProxy *new_p_node_proxy);
+
   /**
    * @brief Sets the visibility of the associated QWidget.
    * @param visible True to make visible, false to hide.
    */
   void set_qwidget_visibility(bool is_visible);
+
+  void update_proxy_widget();
 
 public Q_SLOTS:
   /**
@@ -332,6 +336,7 @@ private:
   int  port_index_from;                /**< Index of the port initiating a connection. */
   std::string data_type_connecting = ""; /**< Data type of the port currently attempting a
                                             connection. */
+  QGraphicsProxyWidget *proxy_widget = nullptr;
 
   /**
    * @brief Retrieves the index of the port currently hovered by the mouse.

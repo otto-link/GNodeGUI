@@ -75,20 +75,7 @@ GraphicsNode::GraphicsNode(NodeProxy *p_node_proxy, QGraphicsItem *parent)
   }
 
   // add widget
-  if (QWidget *widget = this->p_node_proxy->get_qwidget_ref())
-  {
-    // ensure it's a top-level widget
-    widget->setParent(nullptr);
-
-    QGraphicsProxyWidget *proxy_widget = new QGraphicsProxyWidget(this);
-    proxy_widget->setWidget(widget);
-    proxy_widget->resize(this->p_node_proxy->get_qwidget_size());
-    QSizeF widget_size = proxy_widget->size();
-
-    // update the geometry
-    this->update_geometry(widget_size);
-    proxy_widget->setPos(this->geometry.widget_pos);
-  }
+  this->update_proxy_widget();
 }
 
 std::vector<std::string> GraphicsNode::get_category_splitted(char delimiter) const
@@ -488,6 +475,12 @@ bool GraphicsNode::sceneEventFilter(QGraphicsItem *watched, QEvent *event)
   return QGraphicsRectItem::sceneEventFilter(watched, event);
 }
 
+void GraphicsNode::set_p_node_proxy(NodeProxy *new_p_node_proxy)
+{
+  this->p_node_proxy = new_p_node_proxy;
+  this->update_proxy_widget();
+}
+
 void GraphicsNode::set_qwidget_visibility(bool is_visible)
 {
   // recompute geometry based on widget visiblity status
@@ -532,6 +525,24 @@ bool GraphicsNode::update_is_port_hovered(QPointF item_pos)
     }
 
   return false;
+}
+
+void GraphicsNode::update_proxy_widget()
+{
+  if (QWidget *widget = this->p_node_proxy->get_qwidget_ref())
+  {
+    // ensure it's a top-level widget
+    widget->setParent(nullptr);
+
+    this->proxy_widget = new QGraphicsProxyWidget(this);
+    this->proxy_widget->setWidget(widget);
+    this->proxy_widget->resize(this->p_node_proxy->get_qwidget_size());
+    QSizeF widget_size = this->proxy_widget->size();
+
+    // update the geometry
+    this->update_geometry(widget_size);
+    this->proxy_widget->setPos(this->geometry.widget_pos);
+  }
 }
 
 } // namespace gngui
