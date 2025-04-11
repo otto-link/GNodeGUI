@@ -10,6 +10,7 @@
 #include <QWidgetAction>
 
 #include "gnodegui/graph_viewer.hpp"
+#include "gnodegui/graphics_comment.hpp"
 #include "gnodegui/graphics_group.hpp"
 #include "gnodegui/logger.hpp"
 #include "gnodegui/style.hpp"
@@ -149,8 +150,11 @@ void GraphViewer::add_toolbar(QPoint window_pos)
   int dy = width + padding;
 
   auto group_icon = new GroupIcon(width, color, pen_width);
-  this->add_static_item(group_icon, QPoint(x, y));
-  y += dy;
+  if (GN_STYLE->viewer.add_group)
+  {
+    this->add_static_item(group_icon, QPoint(x, y));
+    y += dy;
+  }
 
   auto link_type_icon = new LinkTypeIcon(width, color, pen_width);
   this->add_static_item(link_type_icon, QPoint(x, y));
@@ -220,14 +224,17 @@ void GraphViewer::add_toolbar(QPoint window_pos)
   this->add_static_item(background, pos);
 
   // add connections
-  this->connect(group_icon,
-                &AbstractIcon::hit_icon,
-                [this]()
-                {
-                  QPoint  pos = QCursor::pos();
-                  QPointF scene_pos = this->mapToScene(pos);
-                  this->add_item(new GraphicsGroup(), scene_pos);
-                });
+  if (GN_STYLE->viewer.add_group)
+  {
+    this->connect(group_icon,
+                  &AbstractIcon::hit_icon,
+                  [this]()
+                  {
+                    QPoint  pos = QCursor::pos();
+                    QPointF scene_pos = this->mapToScene(pos);
+                    this->add_item(new GraphicsGroup(), scene_pos);
+                  });
+  }
 
   this->connect(reload_icon,
                 &AbstractIcon::hit_icon,
@@ -614,6 +621,16 @@ void GraphViewer::json_from(nlohmann::json     json,
     }
   }
 
+  if (!json["comments"].is_null())
+  {
+    for (auto &json_comment : json["comments"])
+    {
+      GraphicsComment *p_comment = new GraphicsComment();
+      this->add_item(p_comment);
+      p_comment->json_from(json_comment);
+    }
+  }
+
   if (!json["nodes"].is_null())
   {
     for (auto &json_node : json["nodes"])
@@ -678,6 +695,7 @@ nlohmann::json GraphViewer::json_to() const
   std::vector<nlohmann::json> json_node_list = {};
   std::vector<nlohmann::json> json_link_list = {};
   std::vector<nlohmann::json> json_group_list = {};
+  std::vector<nlohmann::json> json_comment_list = {};
 
   for (QGraphicsItem *item : this->scene()->items())
   {
@@ -687,11 +705,14 @@ nlohmann::json GraphViewer::json_to() const
       json_link_list.push_back(p_link->json_to());
     else if (GraphicsGroup *p_group = dynamic_cast<GraphicsGroup *>(item))
       json_group_list.push_back(p_group->json_to());
+    else if (GraphicsComment *p_comment = dynamic_cast<GraphicsComment *>(item))
+      json_comment_list.push_back(p_comment->json_to());
   }
 
   json["nodes"] = json_node_list;
   json["links"] = json_link_list;
   json["groups"] = json_group_list;
+  json["comments"] = json_comment_list;
 
   return json;
 }
@@ -746,11 +767,20 @@ void GraphViewer::keyReleaseEvent(QKeyEvent *event)
     if (id_list.size())
       Q_EMIT this->nodes_duplicate_request(id_list, scene_pos_list);
   }
-  else if (event->modifiers() == Qt::ControlModifier && event->key() == Qt::Key_G)
+  else if (event->modifiers() == Qt::ControlModifier && event->key() == Qt::Key_B)
   {
     QPoint  view_pos = this->mapFromGlobal(QCursor::pos());
     QPointF scene_pos = this->mapToScene(view_pos);
-    this->add_item(new GraphicsGroup(), scene_pos);
+    this->add_item(new GraphicsComment(), scene_pos);
+  }
+  else if (event->modifiers() == Qt::ControlModifier && event->key() == Qt::Key_G)
+  {
+    if (GN_STYLE->viewer.add_group)
+    {
+      QPoint  view_pos = this->mapFromGlobal(QCursor::pos());
+      QPointF scene_pos = this->mapToScene(view_pos);
+      this->add_item(new GraphicsGroup(), scene_pos);
+    }
   }
   else if (event->modifiers() == Qt::ControlModifier && event->key() == Qt::Key_L)
   {

@@ -38,6 +38,7 @@ public:
     bool   add_viewport_icon = true;
     bool   add_new_icon = true;
     bool   add_load_save_icons = true;
+    bool   add_group = true;
 
     bool disable_during_update = true;
   } viewer;
@@ -113,6 +114,16 @@ public:
                                                {"Yellow", QColor(241, 250, 140)},
                                                {"Black", Qt::black}};
   } group;
+
+  struct Comment
+  {
+    float rounding_radius = 4.f;
+    float width = 256.f;
+
+    QColor color_text = Qt::lightGray;
+    QColor color_bg = QColor(108, 108, 108, 255);
+    float  background_fill_alpha = 0.1f;
+  } comment;
 
 private:
   // Disable copy constructor
