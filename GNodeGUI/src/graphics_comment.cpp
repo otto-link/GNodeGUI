@@ -1,8 +1,8 @@
 /* Copyright (c) 2025 Otto Link. Distributed under the terms of the GNU General
  * Public License. The full license is in the file LICENSE, distributed with
  * this software. */
-#include <QPainter>
 #include <QInputDialog>
+#include <QPainter>
 
 #include "gnodegui/graphics_comment.hpp"
 #include "gnodegui/logger.hpp"
@@ -38,22 +38,22 @@ nlohmann::json GraphicsComment::json_to() const
 
   return json;
 }
-  
+
 void GraphicsComment::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 {
   bool    ok;
   QString new_caption = QInputDialog::getMultiLineText(nullptr,
-					      "Edit Caption",
-					      "Enter new caption:",
-					      this->comment_text.c_str(),
-					      &ok);
-  
-    if (ok && !new_caption.isEmpty())
-      this->set_comment_text(new_caption.toStdString());
+                                                       "Edit Caption",
+                                                       "Enter new caption:",
+                                                       this->comment_text.c_str(),
+                                                       &ok);
 
-    QGraphicsRectItem::mouseDoubleClickEvent(event);
+  if (ok && !new_caption.isEmpty())
+    this->set_comment_text(new_caption.toStdString());
+
+  QGraphicsRectItem::mouseDoubleClickEvent(event);
 }
-  
+
 void GraphicsComment::paint(QPainter                       *painter,
                             const QStyleOptionGraphicsItem *option,
                             QWidget                        *widget)
