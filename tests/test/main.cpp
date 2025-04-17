@@ -52,6 +52,11 @@ public:
     return (QWidget *)this->push_button;
   }
 
+  std::string get_tool_tip_text() override
+  {
+    return "This is the tool tip for this node";
+  }
+
   // QSize get_qwidget_size() override { return QSize(256, 32); }
 
 private:

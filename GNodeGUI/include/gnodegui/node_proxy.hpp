@@ -205,6 +205,13 @@ public:
   virtual QSize get_qwidget_size() { return QSize(-1, -1); }
 
   /**
+   * @brief Get the content of the node tool tip.
+   *
+   * @return Tol tip content.
+   */
+  virtual std::string get_tool_tip_text() { return std::string(); }
+
+  /**
    * @brief Displays debugging informations about the current Node instance.
    */
   void log_debug();

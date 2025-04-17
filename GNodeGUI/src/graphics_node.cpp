@@ -33,6 +33,9 @@ GraphicsNode::GraphicsNode(NodeProxy *p_node_proxy, QGraphicsItem *parent)
   this->setOpacity(1.f);
   this->setZValue(0);
 
+  if (!this->p_node_proxy->get_tool_tip_text().empty())
+    this->setToolTip(QString::fromStdString(this->p_node_proxy->get_tool_tip_text()));
+
   this->is_port_hovered.resize(this->get_nports());
   this->connected_link_ref.resize(this->get_nports());
 
