@@ -107,11 +107,13 @@ std::string GraphViewer::add_node(NodeProxy         *p_node_proxy,
 
   this->connect(p_node,
                 &GraphicsNode::selected,
-                [this](const std::string &node_id) { Q_EMIT this->node_selected(node_id); });
+                [this](const std::string &node_id)
+                { Q_EMIT this->node_selected(node_id); });
 
   this->connect(p_node,
                 &GraphicsNode::deselected,
-                [this](const std::string &node_id) { Q_EMIT this->node_deselected(node_id); });
+                [this](const std::string &node_id)
+                { Q_EMIT this->node_deselected(node_id); });
 
   // if nothing provided, generate a unique id based on the object address
   std::string nid = node_id;
