@@ -107,11 +107,11 @@ std::string GraphViewer::add_node(NodeProxy         *p_node_proxy,
 
   this->connect(p_node,
                 &GraphicsNode::selected,
-                [this](const std::string &id) { Q_EMIT this->node_selected(id); });
+                [this](const std::string &node_id) { Q_EMIT this->node_selected(node_id); });
 
   this->connect(p_node,
                 &GraphicsNode::deselected,
-                [this](const std::string &id) { Q_EMIT this->node_deselected(id); });
+                [this](const std::string &node_id) { Q_EMIT this->node_deselected(node_id); });
 
   // if nothing provided, generate a unique id based on the object address
   std::string nid = node_id;
@@ -571,11 +571,11 @@ void GraphViewer::export_to_graphviz(const std::string &fname)
   file << "}\n";
 }
 
-GraphicsNode *GraphViewer::get_graphics_node_by_id(const std::string &id)
+GraphicsNode *GraphViewer::get_graphics_node_by_id(const std::string &node_id)
 {
   for (QGraphicsItem *item : this->scene()->items())
     if (GraphicsNode *p_node = dynamic_cast<GraphicsNode *>(item))
-      if (p_node->get_id() == id)
+      if (p_node->get_id() == node_id)
         return p_node;
 
   return nullptr;
@@ -863,14 +863,14 @@ void GraphViewer::mouseReleaseEvent(QMouseEvent *event)
   QGraphicsView::mouseReleaseEvent(event);
 }
 
-void GraphViewer::on_compute_finished(const std::string &id)
+void GraphViewer::on_compute_finished(const std::string &node_id)
 {
-  this->get_graphics_node_by_id(id)->on_compute_finished();
+  this->get_graphics_node_by_id(node_id)->on_compute_finished();
 }
 
-void GraphViewer::on_compute_started(const std::string &id)
+void GraphViewer::on_compute_started(const std::string &node_id)
 {
-  this->get_graphics_node_by_id(id)->on_compute_started();
+  this->get_graphics_node_by_id(node_id)->on_compute_started();
 }
 
 void GraphViewer::on_connection_dropped(GraphicsNode *from,
@@ -978,21 +978,21 @@ void GraphViewer::on_connection_started(GraphicsNode *from_node, int port_index)
                                   from_node->get_port_id(port_index));
 }
 
-void GraphViewer::on_node_reload_request(const std::string &id)
+void GraphViewer::on_node_reload_request(const std::string &node_id)
 {
-  Logger::log()->trace("GraphViewer::on_node_reload_request {}", id);
-  Q_EMIT this->node_reload_request(id);
+  Logger::log()->trace("GraphViewer::on_node_reload_request {}", node_id);
+  Q_EMIT this->node_reload_request(node_id);
 }
 
-void GraphViewer::on_node_settings_request(const std::string &id)
+void GraphViewer::on_node_settings_request(const std::string &node_id)
 {
-  Logger::log()->trace("GraphViewer::on_node_settings_request {}", id);
-  Q_EMIT this->node_settings_request(id);
+  Logger::log()->trace("GraphViewer::on_node_settings_request {}", node_id);
+  Q_EMIT this->node_settings_request(node_id);
 }
 
-void GraphViewer::on_node_right_clicked(const std::string &id, QPointF scene_pos)
+void GraphViewer::on_node_right_clicked(const std::string &node_id, QPointF scene_pos)
 {
-  Q_EMIT this->node_right_clicked(id, scene_pos);
+  Q_EMIT this->node_right_clicked(node_id, scene_pos);
 }
 
 void GraphViewer::on_update_finished()

@@ -51,7 +51,7 @@ public:
 
   std::string get_id() const { return this->id; }
 
-  GraphicsNode *get_graphics_node_by_id(const std::string &id);
+  GraphicsNode *get_graphics_node_by_id(const std::string &node_id);
 
   std::vector<std::string> get_selected_node_ids();
 
@@ -81,15 +81,15 @@ public:
   void zoom_to_content();
 
 public Q_SLOTS:
-  void on_compute_finished(const std::string &id);
+  void on_compute_finished(const std::string &node_id);
 
-  void on_compute_started(const std::string &id);
+  void on_compute_started(const std::string &node_id);
 
-  void on_node_reload_request(const std::string &id);
+  void on_node_reload_request(const std::string &node_id);
 
-  void on_node_settings_request(const std::string &id);
+  void on_node_settings_request(const std::string &node_id);
 
-  void on_node_right_clicked(const std::string &id, QPointF scene_pos);
+  void on_node_right_clicked(const std::string &node_id, QPointF scene_pos);
 
   void on_update_finished();
 
@@ -103,7 +103,7 @@ Q_SIGNALS:
                           const std::string &to_in,
                           const std::string &port_id_in);
 
-  void connection_dropped(const std::string &id,
+  void connection_dropped(const std::string &node_id,
                           const std::string &port_id,
                           QPointF            scene_pos);
 
@@ -130,21 +130,21 @@ Q_SIGNALS:
 
   void graph_settings_request();
 
-  void new_graphics_node_request(const std::string &id, QPointF scene_pos);
+  void new_graphics_node_request(const std::string &node_id, QPointF scene_pos);
 
   void new_node_request(const std::string &type, QPointF scene_pos);
 
-  void node_deleted(const std::string &id);
+  void node_deleted(const std::string &node_id);
 
-  void node_deselected(const std::string &id);
+  void node_deselected(const std::string &node_id);
 
-  void node_reload_request(const std::string &id);
+  void node_reload_request(const std::string &node_id);
 
-  void node_selected(const std::string &id);
+  void node_selected(const std::string &node_id);
 
-  void node_settings_request(const std::string &id);
+  void node_settings_request(const std::string &node_id);
 
-  void node_right_clicked(const std::string &id, QPointF scene_pos);
+  void node_right_clicked(const std::string &node_id, QPointF scene_pos);
 
   void nodes_copy_request(const std::vector<std::string> &id_list,
                           const std::vector<QPointF>     &scene_pos_list);

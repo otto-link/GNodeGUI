@@ -532,6 +532,8 @@ bool GraphicsNode::update_is_port_hovered(QPointF item_pos)
 
 void GraphicsNode::update_proxy_widget()
 {
+  Logger::log()->debug("GraphicsNode::update_proxy_widget");
+
   if (QWidget *widget = this->p_node_proxy->get_qwidget_ref())
   {
     // ensure it's a top-level widget
