@@ -71,6 +71,8 @@ public:
 
   void set_id(const std::string &new_id) { this->id = new_id; }
 
+  void set_node_as_selected(const std::string &node_id);
+
   void set_node_inventory(const std::map<std::string, std::string> &new_node_inventory)
   {
     this->node_inventory = new_node_inventory;

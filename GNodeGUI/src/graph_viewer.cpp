@@ -1054,6 +1054,21 @@ void GraphViewer::set_enabled(bool state)
   this->setDragMode(QGraphicsView::NoDrag);
 }
 
+void GraphViewer::set_node_as_selected(const std::string &node_id)
+{
+  GraphicsNode *p_node = this->get_graphics_node_by_id(node_id);
+
+  if (p_node)
+  {
+    qDebug() << "Setting node as selected:" << QString::fromStdString(node_id);
+    qDebug() << "Before selection, isSelected():" << p_node->isSelected();
+
+    p_node->setSelected(true);
+
+    qDebug() << "After selection, isSelected():" << p_node->isSelected();
+  }
+}
+
 void GraphViewer::toggle_link_type()
 {
   for (QGraphicsItem *item : this->scene()->items())

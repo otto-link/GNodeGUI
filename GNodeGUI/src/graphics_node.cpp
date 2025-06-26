@@ -156,12 +156,14 @@ bool GraphicsNode::is_port_available(int port_index)
 
 QVariant GraphicsNode::itemChange(GraphicsItemChange change, const QVariant &value)
 {
-  if (change == QGraphicsItem::ItemSelectedChange)
+  if (change == QGraphicsItem::ItemSelectedHasChanged)
   {
-    if (this->isSelected())
-      Q_EMIT this->deselected(this->get_id());
-    else
+    const bool new_selection_state = value.toBool();
+
+    if (new_selection_state)
       Q_EMIT this->selected(this->get_id());
+    else
+      Q_EMIT this->deselected(this->get_id());
   }
 
   return QGraphicsItem::itemChange(change, value);
