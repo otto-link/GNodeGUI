@@ -835,15 +835,9 @@ void GraphViewer::mouseMoveEvent(QMouseEvent *event)
 
 void GraphViewer::mousePressEvent(QMouseEvent *event)
 {
-  if (event->button() == Qt::LeftButton && (event->modifiers() & Qt::ShiftModifier))
-    this->setDragMode(QGraphicsView::RubberBandDrag);
-
-  else if (event->button() == Qt::LeftButton)
-    this->setDragMode(QGraphicsView::ScrollHandDrag);
-
-  else if (event->button() == Qt::RightButton)
+  if (event->button() == Qt::RightButton)
   {
-    // Only handle the right-click if no item handled it
+    // only handle the right-click if no item handled it
     if (this->itemAt(event->pos()) == nullptr)
     {
       QPoint  view_pos = this->mapFromGlobal(QCursor::pos());
@@ -851,7 +845,20 @@ void GraphViewer::mousePressEvent(QMouseEvent *event)
       Q_EMIT this->background_right_clicked(scene_pos);
     }
     else
+    {
       event->ignore();
+    }
+
+    QGraphicsView::mousePressEvent(event);
+    return;
+  }
+
+  if (event->button() == Qt::LeftButton)
+  {
+    if (event->modifiers() & Qt::ShiftModifier)
+      this->setDragMode(QGraphicsView::RubberBandDrag);
+    else
+      this->setDragMode(QGraphicsView::ScrollHandDrag);
   }
 
   QGraphicsView::mousePressEvent(event);
@@ -859,9 +866,7 @@ void GraphViewer::mousePressEvent(QMouseEvent *event)
 
 void GraphViewer::mouseReleaseEvent(QMouseEvent *event)
 {
-  if (event->button() == Qt::LeftButton)
-    this->setDragMode(QGraphicsView::NoDrag);
-
+  this->setDragMode(QGraphicsView::NoDrag);
   QGraphicsView::mouseReleaseEvent(event);
 }
 
@@ -1059,14 +1064,7 @@ void GraphViewer::set_node_as_selected(const std::string &node_id)
   GraphicsNode *p_node = this->get_graphics_node_by_id(node_id);
 
   if (p_node)
-  {
-    qDebug() << "Setting node as selected:" << QString::fromStdString(node_id);
-    qDebug() << "Before selection, isSelected():" << p_node->isSelected();
-
     p_node->setSelected(true);
-
-    qDebug() << "After selection, isSelected():" << p_node->isSelected();
-  }
 }
 
 void GraphViewer::toggle_link_type()
