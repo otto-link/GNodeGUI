@@ -39,7 +39,7 @@ public:
                        QPointF            scene_pos,
                        const std::string &node_id = "");
 
-  void add_static_item(QGraphicsItem *item, QPoint window_pos);
+  void add_static_item(QGraphicsItem *item, QPoint window_pos, float z_value = 0.f);
 
   void add_toolbar(QPoint window_pos);
 

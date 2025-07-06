@@ -130,10 +130,11 @@ std::string GraphViewer::add_node(NodeProxy         *p_node_proxy,
   return nid;
 }
 
-void GraphViewer::add_static_item(QGraphicsItem *item, QPoint window_pos)
+void GraphViewer::add_static_item(QGraphicsItem *item, QPoint window_pos, float z_value)
 {
   item->setFlag(QGraphicsItem::ItemIgnoresTransformations, true);
   item->setFlag(QGraphicsItem::ItemIsMovable, false);
+  item->setZValue(z_value);
 
   this->add_item(item);
   this->static_items.push_back(item);
@@ -142,51 +143,52 @@ void GraphViewer::add_static_item(QGraphicsItem *item, QPoint window_pos)
 
 void GraphViewer::add_toolbar(QPoint window_pos)
 {
-  float  width = GN_STYLE->viewer.toolbar_width;
-  QColor color = GN_STYLE->viewer.color_toolbar;
-  qreal  pen_width = 1.f;
+  const float  width = GN_STYLE->viewer.toolbar_width;
+  const QColor color = GN_STYLE->viewer.color_toolbar;
+  const qreal  pen_width = 1.f;
+  const int    padding = (int)(0.2f * width);
+  const int    dy = width + padding;
+  const float  z_value = 1.f;
 
-  int padding = (int)(0.2f * width);
   int x = window_pos.x();
   int y = window_pos.y();
-  int dy = width + padding;
 
   auto group_icon = new GroupIcon(width, color, pen_width);
   if (GN_STYLE->viewer.add_group)
   {
-    this->add_static_item(group_icon, QPoint(x, y));
+    this->add_static_item(group_icon, QPoint(x, y), z_value);
     y += dy;
   }
 
   auto link_type_icon = new LinkTypeIcon(width, color, pen_width);
-  this->add_static_item(link_type_icon, QPoint(x, y));
+  this->add_static_item(link_type_icon, QPoint(x, y), z_value);
   y += dy;
 
   auto reload_icon = new ReloadIcon(width, color, pen_width);
-  this->add_static_item(reload_icon, QPoint(x, y));
+  this->add_static_item(reload_icon, QPoint(x, y), z_value);
   y += dy;
 
   auto fit_content_icon = new FitContentIcon(width, color, pen_width);
-  this->add_static_item(fit_content_icon, QPoint(x, y));
+  this->add_static_item(fit_content_icon, QPoint(x, y), z_value);
   y += dy;
 
   auto screenshot_icon = new ScreenshotIcon(width, color, pen_width);
-  this->add_static_item(screenshot_icon, QPoint(x, y));
+  this->add_static_item(screenshot_icon, QPoint(x, y), z_value);
   y += dy;
 
   auto select_all_icon = new SelectAllIcon(width, color, pen_width);
-  this->add_static_item(select_all_icon, QPoint(x, y));
+  this->add_static_item(select_all_icon, QPoint(x, y), z_value);
   y += dy;
 
   auto clear_all_icon = new ClearAllIcon(width, color, pen_width);
-  this->add_static_item(clear_all_icon, QPoint(x, y));
+  this->add_static_item(clear_all_icon, QPoint(x, y), z_value);
   y += dy;
 
   auto new_icon = new NewIcon(width, color, pen_width);
   if (GN_STYLE->viewer.add_new_icon)
   {
     y += 2.f * padding;
-    this->add_static_item(new_icon, QPoint(x, y));
+    this->add_static_item(new_icon, QPoint(x, y), z_value);
     y += dy;
   }
 
@@ -194,22 +196,22 @@ void GraphViewer::add_toolbar(QPoint window_pos)
   auto save_icon = new SaveIcon(width, color, pen_width);
   if (GN_STYLE->viewer.add_load_save_icons)
   {
-    this->add_static_item(load_icon, QPoint(x, y));
+    this->add_static_item(load_icon, QPoint(x, y), z_value);
     y += dy;
 
-    this->add_static_item(save_icon, QPoint(x, y));
+    this->add_static_item(save_icon, QPoint(x, y), z_value);
     y += dy;
   }
 
   auto dots_icon = new DotsIcon(width, color, pen_width);
-  this->add_static_item(dots_icon, QPoint(x, y));
+  this->add_static_item(dots_icon, QPoint(x, y), z_value);
   y += dy;
 
   auto viewport_icon = new ViewportIcon(width, color, pen_width);
   if (GN_STYLE->viewer.add_viewport_icon)
   {
     y += 2.f * padding;
-    this->add_static_item(viewport_icon, QPoint(x, y));
+    this->add_static_item(viewport_icon, QPoint(x, y), z_value);
     y += dy;
   }
 
@@ -218,12 +220,11 @@ void GraphViewer::add_toolbar(QPoint window_pos)
                                                         0.f,
                                                         width + 2.f * padding,
                                                         y - dy + padding);
-  background->setZValue(-1);
   background->setPen(QPen(QColor(0, 0, 0, 0)));
   background->setBrush(QBrush(QColor(0, 0, 0, 64)));
 
   QPoint pos = QPoint(window_pos.x() - padding, window_pos.y() - padding);
-  this->add_static_item(background, pos);
+  this->add_static_item(background, pos, z_value - 0.001f);
 
   // add connections
   if (GN_STYLE->viewer.add_group)
