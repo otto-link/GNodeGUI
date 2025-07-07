@@ -34,6 +34,11 @@ public:
 
   void add_item(QGraphicsItem *item, QPointF scene_pos = QPointF(0.f, 0.f));
 
+  void add_link(const std::string &id_out,
+                const std::string &port_id_out,
+                const std::string &to_in,
+                const std::string &port_id_in);
+
   // returns a unique ID for the node
   std::string add_node(NodeProxy         *p_node_proxy,
                        QPointF            scene_pos,
@@ -57,9 +62,7 @@ public:
 
   // prefix_id can be usefull when importing a graph into an existing
   // one, to avoid duplicate node ids
-  void json_from(nlohmann::json     json,
-                 bool               clear_existing_content = true,
-                 const std::string &prefix_id = "");
+  void json_from(nlohmann::json json, bool clear_existing_content = true);
 
   nlohmann::json json_to() const;
 

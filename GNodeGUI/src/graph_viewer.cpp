@@ -68,6 +68,35 @@ void GraphViewer::add_item(QGraphicsItem *item, QPointF scene_pos)
         }
 }
 
+void GraphViewer::add_link(const std::string &id_out,
+                           const std::string &port_id_out,
+                           const std::string &to_in,
+                           const std::string &port_id_in)
+{
+  this->temp_link = new GraphicsLink(QColor(0, 0, 0, 0), this->current_link_type);
+  this->scene()->addItem(this->temp_link);
+
+  GraphicsNode *from_node = this->get_graphics_node_by_id(id_out);
+  GraphicsNode *to_node = this->get_graphics_node_by_id(to_in);
+
+  if (from_node && to_node)
+  {
+    int port_from_index = from_node->get_port_index(port_id_out);
+    int port_to_index = to_node->get_port_index(port_id_in);
+
+    // this is the signal sent to say this graphic link must be also
+    // created by the model outside the GUI
+    this->on_connection_finished(from_node, port_from_index, to_node, port_to_index);
+  }
+  else
+  {
+    Logger::log()->error(
+        "GraphViewer::json_from, nodes instance cannot be found, IDs: {} and/or {}",
+        id_out,
+        to_in);
+  }
+}
+
 std::string GraphViewer::add_node(NodeProxy         *p_node_proxy,
                                   QPointF            scene_pos,
                                   const std::string &node_id)
@@ -602,9 +631,7 @@ bool GraphViewer::is_item_static(QGraphicsItem *item)
            this->static_items.end());
 }
 
-void GraphViewer::json_from(nlohmann::json     json,
-                            bool               clear_existing_content,
-                            const std::string &prefix_id)
+void GraphViewer::json_from(nlohmann::json json, bool clear_existing_content)
 {
   // generate graph from json data
   if (clear_existing_content)
@@ -638,7 +665,9 @@ void GraphViewer::json_from(nlohmann::json     json,
   {
     for (auto &json_node : json["nodes"])
     {
-      std::string nid = prefix_id + json_node["id"].get<std::string>();
+      Logger::log()->debug("{}", json_node.dump(4));
+
+      std::string nid = json_node["id"].get<std::string>();
 
       float x = json_node["scene_position.x"];
       float y = json_node["scene_position.y"];
@@ -658,32 +687,15 @@ void GraphViewer::json_from(nlohmann::json     json,
   {
     for (auto &json_link : json["links"])
     {
-      std::string node_out_id = prefix_id + json_link["node_out_id"].get<std::string>();
-      std::string node_in_id = prefix_id + json_link["node_in_id"].get<std::string>();
+      std::string node_out_id = json_link["node_out_id"].get<std::string>();
+      std::string node_in_id = json_link["node_in_id"].get<std::string>();
       std::string port_out_id = json_link["port_out_id"];
       std::string port_in_id = json_link["port_in_id"];
 
       // same here, the graphic links are generated but the data
       // connection itself is outsourced to the outter headless nodes
       // manager
-      this->temp_link = new GraphicsLink(QColor(0, 0, 0, 0), this->current_link_type);
-      this->scene()->addItem(this->temp_link);
-
-      GraphicsNode *from_node = this->get_graphics_node_by_id(node_out_id);
-      GraphicsNode *to_node = this->get_graphics_node_by_id(node_in_id);
-
-      if (from_node && to_node)
-      {
-        int port_from_index = from_node->get_port_index(port_out_id);
-        int port_to_index = to_node->get_port_index(port_in_id);
-
-        this->on_connection_finished(from_node, port_from_index, to_node, port_to_index);
-      }
-      else
-        Logger::log()->error(
-            "GraphViewer::json_from, nodes instance cannot be found, IDs: {} and/or {}",
-            node_out_id,
-            node_in_id);
+      this->add_link(node_out_id, port_out_id, node_in_id, port_in_id);
     }
   }
 }
