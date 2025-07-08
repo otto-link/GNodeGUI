@@ -697,8 +697,6 @@ void GraphViewer::json_from(nlohmann::json json, bool clear_existing_content)
   {
     for (auto &json_node : json["nodes"])
     {
-      Logger::log()->debug("{}", json_node.dump(4));
-
       std::string nid = json_node["id"].get<std::string>();
 
       float x = json_node["scene_position.x"];
