@@ -236,7 +236,6 @@ void GraphViewer::add_toolbar(QPoint window_pos)
   auto import_icon = new ImportIcon(width, color, pen_width);
   if (GN_STYLE->viewer.add_import_icon)
   {
-    y += 2.f * padding;
     this->add_static_item(import_icon, QPoint(x, y), z_value);
     y += dy;
   }
@@ -259,7 +258,7 @@ void GraphViewer::add_toolbar(QPoint window_pos)
                                                         width + 2.f * padding,
                                                         y - dy + padding);
   background->setPen(QPen(QColor(0, 0, 0, 0)));
-  background->setBrush(QBrush(QColor(0, 0, 0, 64)));
+  background->setBrush(QBrush(QColor(21, 21, 21, 255)));
 
   QPoint pos = QPoint(window_pos.x() - padding, window_pos.y() - padding);
   this->add_static_item(background, pos, z_value - 0.001f);
