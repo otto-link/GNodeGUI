@@ -351,6 +351,116 @@ void GraphViewer::contextMenuEvent(QContextMenuEvent *event)
 
   // --- if not keep going
 
+  this->execute_new_node_context_menu(event->pos());
+
+  QGraphicsView::contextMenuEvent(event);
+}
+
+void GraphViewer::delete_graphics_link(GraphicsLink *p_link)
+{
+  Logger::log()->trace("GraphicsLink removing");
+
+  if (!p_link)
+  {
+    Logger::log()->error("GraphViewer::delete_graphics_link: invalid link provided.");
+    return;
+  }
+
+  GraphicsNode *node_out = p_link->get_node_out();
+  GraphicsNode *node_in = p_link->get_node_in();
+  int           port_out = p_link->get_port_out_index();
+  int           port_in = p_link->get_port_in_index();
+
+  Logger::log()->trace("GraphViewer::delete_graphics_link, {}:{} -> {}:{}",
+                       node_out->get_id(),
+                       node_out->get_port_id(port_out),
+                       node_in->get_id(),
+                       node_in->get_port_id(port_in));
+
+  node_out->set_is_port_connected(port_out, nullptr);
+  node_in->set_is_port_connected(port_in, nullptr);
+
+  delete p_link;
+
+  Q_EMIT this->connection_deleted(node_out->get_id(),
+                                  node_out->get_port_id(port_out),
+                                  node_in->get_id(),
+                                  node_in->get_port_id(port_in));
+}
+
+void GraphViewer::delete_graphics_node(GraphicsNode *p_node)
+{
+  Logger::log()->trace("GraphicsNode removing, id: {}", p_node->get_id());
+
+  if (!p_node)
+  {
+    Logger::log()->error("GraphViewer::delete_graphics_node: invalid node provided.");
+    return;
+  }
+
+  // remove any connected links
+  for (QGraphicsItem *item : this->scene()->items())
+    if (GraphicsLink *p_link = dynamic_cast<GraphicsLink *>(item))
+      if (p_link->get_node_out()->get_id() == p_node->get_id() ||
+          p_link->get_node_in()->get_id() == p_node->get_id())
+        this->delete_graphics_link(p_link);
+
+  std::string nid = p_node->get_id();
+
+  delete p_node;
+  Q_EMIT this->node_deleted(nid);
+}
+
+void GraphViewer::delete_selected_items()
+{
+  QGraphicsScene *scene = this->scene();
+
+  if (!scene)
+    return;
+
+  for (QGraphicsItem *item : scene->selectedItems())
+  {
+    // remove item from the scene (if it's not already removed by one
+    // the methods called bellow)
+    if (scene->items().contains(item))
+    {
+      scene->removeItem(item);
+
+      if (GraphicsNode *p_node = dynamic_cast<GraphicsNode *>(item))
+        this->delete_graphics_node(p_node);
+      else if (GraphicsLink *p_link = dynamic_cast<GraphicsLink *>(item))
+        this->delete_graphics_link(p_link);
+      else
+      {
+        Logger::log()->trace("item removed");
+        delete item;
+      }
+    }
+  }
+}
+
+void GraphViewer::deselect_all()
+{
+  for (QGraphicsItem *item : this->scene()->items())
+    if (!is_item_static(item))
+      item->setSelected(false);
+}
+
+void GraphViewer::drawForeground(QPainter *painter, const QRectF &rect)
+{
+  QGraphicsView::drawForeground(painter, rect);
+
+  for (size_t k = 0; k < this->static_items.size(); k++)
+  {
+    // Keep the static item at a fixed position
+    QPointF scene_pos = this->mapToScene(this->viewport()->rect().topLeft() +
+                                         this->static_items_positions[k]);
+    this->static_items[k]->setPos(scene_pos);
+  }
+}
+
+bool GraphViewer::execute_new_node_context_menu(QPoint global_pos)
+{
   QMenu *menu = new QMenu(this);
 
   // add filterbox to the context menu
@@ -459,112 +569,19 @@ void GraphViewer::contextMenuEvent(QContextMenuEvent *event)
   // make sure the text box gets focus so the user doesn't have to click on it
   text_box->setFocus();
 
-  QAction *selected_action = menu->exec(event->globalPos());
+  QAction *selected_action = menu->exec(global_pos);
 
   if (selected_action)
   {
-    QPoint  view_pos = this->mapFromGlobal(event->globalPos());
+    QPoint  view_pos = this->mapFromGlobal(global_pos);
     QPointF scene_pos = this->mapToScene(view_pos);
 
     Q_EMIT this->new_node_request(selected_action->text().toStdString(), scene_pos);
+    return true;
   }
-
-  QGraphicsView::contextMenuEvent(event);
-}
-
-void GraphViewer::delete_graphics_link(GraphicsLink *p_link)
-{
-  Logger::log()->trace("GraphicsLink removing");
-
-  if (!p_link)
+  else
   {
-    Logger::log()->error("GraphViewer::delete_graphics_link: invalid link provided.");
-    return;
-  }
-
-  GraphicsNode *node_out = p_link->get_node_out();
-  GraphicsNode *node_in = p_link->get_node_in();
-  int           port_out = p_link->get_port_out_index();
-  int           port_in = p_link->get_port_in_index();
-
-  Logger::log()->trace("GraphViewer::delete_graphics_link, {}:{} -> {}:{}",
-                       node_out->get_id(),
-                       node_out->get_port_id(port_out),
-                       node_in->get_id(),
-                       node_in->get_port_id(port_in));
-
-  node_out->set_is_port_connected(port_out, nullptr);
-  node_in->set_is_port_connected(port_in, nullptr);
-
-  delete p_link;
-
-  Q_EMIT this->connection_deleted(node_out->get_id(),
-                                  node_out->get_port_id(port_out),
-                                  node_in->get_id(),
-                                  node_in->get_port_id(port_in));
-}
-
-void GraphViewer::delete_graphics_node(GraphicsNode *p_node)
-{
-  Logger::log()->trace("GraphicsNode removing, id: {}", p_node->get_id());
-
-  if (!p_node)
-  {
-    Logger::log()->error("GraphViewer::delete_graphics_node: invalid node provided.");
-    return;
-  }
-
-  // remove any connected links
-  for (QGraphicsItem *item : this->scene()->items())
-    if (GraphicsLink *p_link = dynamic_cast<GraphicsLink *>(item))
-      if (p_link->get_node_out()->get_id() == p_node->get_id() ||
-          p_link->get_node_in()->get_id() == p_node->get_id())
-        this->delete_graphics_link(p_link);
-
-  std::string nid = p_node->get_id();
-
-  delete p_node;
-  Q_EMIT this->node_deleted(nid);
-}
-
-void GraphViewer::delete_selected_items()
-{
-  QGraphicsScene *scene = this->scene();
-
-  if (!scene)
-    return;
-
-  for (QGraphicsItem *item : scene->selectedItems())
-  {
-    // remove item from the scene (if it's not already removed by one
-    // the methods called bellow)
-    if (scene->items().contains(item))
-    {
-      scene->removeItem(item);
-
-      if (GraphicsNode *p_node = dynamic_cast<GraphicsNode *>(item))
-        this->delete_graphics_node(p_node);
-      else if (GraphicsLink *p_link = dynamic_cast<GraphicsLink *>(item))
-        this->delete_graphics_link(p_link);
-      else
-      {
-        Logger::log()->trace("item removed");
-        delete item;
-      }
-    }
-  }
-}
-
-void GraphViewer::drawForeground(QPainter *painter, const QRectF &rect)
-{
-  QGraphicsView::drawForeground(painter, rect);
-
-  for (size_t k = 0; k < this->static_items.size(); k++)
-  {
-    // Keep the static item at a fixed position
-    QPointF scene_pos = this->mapToScene(this->viewport()->rect().topLeft() +
-                                         this->static_items_positions[k]);
-    this->static_items[k]->setPos(scene_pos);
+    return false;
   }
 }
 

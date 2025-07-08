@@ -50,6 +50,10 @@ public:
 
   void clear();
 
+  void deselect_all();
+
+  bool execute_new_node_context_menu(QPoint global_pos);
+
   // useful for debugging graph actual state, after export: to convert, command line: dot
   // export.dot -Tsvg > output.svg
   void export_to_graphviz(const std::string &fname = "export.dot");
@@ -69,6 +73,8 @@ public:
   void remove_node(const std::string &node_id);
 
   void save_screenshot(const std::string &fname = "screenshot.png");
+
+  void select_all();
 
   void set_enabled(bool state);
 
@@ -214,8 +220,6 @@ private:
   void delete_graphics_node(GraphicsNode *p_node);
 
   bool is_item_static(QGraphicsItem *item);
-
-  void select_all();
 };
 
 } // namespace gngui
