@@ -941,48 +941,81 @@ void GraphViewer::on_connection_finished(GraphicsNode *from_node,
     PortType from_type = from_node->get_port_type(port_from_index);
     PortType to_type = to_node->get_port_type(port_to_index);
 
-    if (from_node != to_node && from_type != to_type &&
-        from_node->is_port_available(port_from_index) &&
-        to_node->is_port_available(port_to_index))
+    if (from_node != to_node && from_type != to_type)
     {
-      // Finalize the connection
-      QPointF port_from_pos = from_node->scenePos() + from_node->get_geometry_ref()
-                                                          ->port_rects[port_from_index]
-                                                          .center();
-      QPointF port_to_pos = to_node->scenePos() + to_node->get_geometry_ref()
-                                                      ->port_rects[port_to_index]
-                                                      .center();
-
-      this->temp_link->set_endpoints(port_from_pos, port_to_pos);
-      this->temp_link->set_pen_style(Qt::SolidLine);
-
-      // from output to input
+      // remove any existing connection linked to the node 'to' input
+      if (!to_node->is_port_available(port_to_index))
       {
-        this->temp_link->set_endnodes(from_node, port_from_index, to_node, port_to_index);
+        Logger::log()->trace("GraphViewer::on_connection_finished: replace connection");
 
-        GraphicsNode *node_out = this->temp_link->get_node_out();
-        GraphicsNode *node_in = this->temp_link->get_node_in();
+        // loop over all graphics
+        GraphicsLink *p_link_to_delete = nullptr;
 
-        int port_out = this->temp_link->get_port_out_index();
-        int port_in = this->temp_link->get_port_in_index();
+        for (QGraphicsItem *item : this->scene()->items())
+          if (GraphicsLink *p_link = dynamic_cast<GraphicsLink *>(item))
+            if (p_link != this->temp_link)
+            {
+              std::string link_node_id = p_link->get_node_in()->get_id();
+              int         link_port_index = p_link->get_port_in_index();
 
-        node_out->set_is_port_connected(port_out, this->temp_link);
-        node_in->set_is_port_connected(port_in, this->temp_link);
+              if (link_node_id == to_node->get_id() && link_port_index == port_to_index)
+              {
+                p_link_to_delete = p_link;
+                break;
+              }
+            }
 
-        Logger::log()->trace("GraphViewer::on_connection_finished, {}:{} -> {}:{}",
-                             node_out->get_id(),
-                             node_out->get_port_id(port_out),
-                             node_in->get_id(),
-                             node_in->get_port_id(port_in));
-
-        Q_EMIT this->connection_finished(node_out->get_id(),
-                                         node_out->get_port_id(port_out),
-                                         node_in->get_id(),
-                                         node_in->get_port_id(port_in));
+        this->delete_graphics_link(p_link_to_delete);
       }
 
-      // Keep the link as a permanent connection
-      this->temp_link = nullptr;
+      // create new link
+      if (from_node->is_port_available(port_from_index) &&
+          to_node->is_port_available(port_to_index))
+      {
+        Logger::log()->trace("GraphViewer::on_connection_finished: new connection");
+
+        // Finalize the connection
+        QPointF port_from_pos = from_node->scenePos() + from_node->get_geometry_ref()
+                                                            ->port_rects[port_from_index]
+                                                            .center();
+        QPointF port_to_pos = to_node->scenePos() + to_node->get_geometry_ref()
+                                                        ->port_rects[port_to_index]
+                                                        .center();
+
+        this->temp_link->set_endpoints(port_from_pos, port_to_pos);
+        this->temp_link->set_pen_style(Qt::SolidLine);
+
+        // from output to input
+        {
+          this->temp_link->set_endnodes(from_node,
+                                        port_from_index,
+                                        to_node,
+                                        port_to_index);
+
+          GraphicsNode *node_out = this->temp_link->get_node_out();
+          GraphicsNode *node_in = this->temp_link->get_node_in();
+
+          int port_out = this->temp_link->get_port_out_index();
+          int port_in = this->temp_link->get_port_in_index();
+
+          node_out->set_is_port_connected(port_out, this->temp_link);
+          node_in->set_is_port_connected(port_in, this->temp_link);
+
+          Logger::log()->trace("GraphViewer::on_connection_finished, {}:{} -> {}:{}",
+                               node_out->get_id(),
+                               node_out->get_port_id(port_out),
+                               node_in->get_id(),
+                               node_in->get_port_id(port_in));
+
+          Q_EMIT this->connection_finished(node_out->get_id(),
+                                           node_out->get_port_id(port_out),
+                                           node_in->get_id(),
+                                           node_in->get_port_id(port_in));
+        }
+
+        // Keep the link as a permanent connection
+        this->temp_link = nullptr;
+      }
     }
     else
     {
