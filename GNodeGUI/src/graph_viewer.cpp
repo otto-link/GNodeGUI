@@ -474,7 +474,7 @@ void GraphViewer::drawForeground(QPainter *painter, const QRectF &rect)
   }
 }
 
-bool GraphViewer::execute_new_node_context_menu(QPoint global_pos)
+bool GraphViewer::execute_new_node_context_menu()
 {
   QMenu *menu = new QMenu(this);
 
@@ -584,11 +584,11 @@ bool GraphViewer::execute_new_node_context_menu(QPoint global_pos)
   // make sure the text box gets focus so the user doesn't have to click on it
   text_box->setFocus();
 
-  QAction *selected_action = menu->exec(global_pos);
+  QAction *selected_action = menu->exec(QCursor::pos());
 
   if (selected_action)
   {
-    QPoint  view_pos = this->mapFromGlobal(global_pos);
+    QPoint  view_pos = this->mapFromGlobal(QCursor::pos());
     QPointF scene_pos = this->mapToScene(view_pos);
 
     Q_EMIT this->new_node_request(selected_action->text().toStdString(), scene_pos);

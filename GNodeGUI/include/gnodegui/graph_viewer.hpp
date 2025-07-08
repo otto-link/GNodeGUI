@@ -52,7 +52,7 @@ public:
 
   void deselect_all();
 
-  bool execute_new_node_context_menu(QPoint global_pos);
+  bool execute_new_node_context_menu();
 
   // useful for debugging graph actual state, after export: to convert, command line: dot
   // export.dot -Tsvg > output.svg
