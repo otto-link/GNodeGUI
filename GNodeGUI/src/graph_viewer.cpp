@@ -366,7 +366,7 @@ void GraphViewer::contextMenuEvent(QContextMenuEvent *event)
 
   // --- if not keep going
 
-  this->execute_new_node_context_menu(event->pos());
+  this->execute_new_node_context_menu();
 
   QGraphicsView::contextMenuEvent(event);
 }
