@@ -37,6 +37,7 @@ public:
     float  toolbar_width = 32.f;
     bool   add_viewport_icon = true;
     bool   add_new_icon = true;
+    bool   add_import_icon = true;
     bool   add_load_save_icons = true;
     bool   add_group = true;
 

@@ -20,6 +20,7 @@
 #include "gnodegui/icons/dots_icon.hpp"
 #include "gnodegui/icons/fit_content_icon.hpp"
 #include "gnodegui/icons/group_icon.hpp"
+#include "gnodegui/icons/import_icon.hpp"
 #include "gnodegui/icons/link_type_icon.hpp"
 #include "gnodegui/icons/load_icon.hpp"
 #include "gnodegui/icons/new_icon.hpp"
@@ -232,6 +233,14 @@ void GraphViewer::add_toolbar(QPoint window_pos)
     y += dy;
   }
 
+  auto import_icon = new ImportIcon(width, color, pen_width);
+  if (GN_STYLE->viewer.add_import_icon)
+  {
+    y += 2.f * padding;
+    this->add_static_item(import_icon, QPoint(x, y), z_value);
+    y += dy;
+  }
+
   auto dots_icon = new DotsIcon(width, color, pen_width);
   this->add_static_item(dots_icon, QPoint(x, y), z_value);
   y += dy;
@@ -305,6 +314,13 @@ void GraphViewer::add_toolbar(QPoint window_pos)
     this->connect(save_icon,
                   &AbstractIcon::hit_icon,
                   [this]() { Q_EMIT this->graph_save_as_request(); });
+  }
+
+  if (GN_STYLE->viewer.add_import_icon)
+  {
+    this->connect(import_icon,
+                  &AbstractIcon::hit_icon,
+                  [this]() { Q_EMIT this->graph_import_request(); });
   }
 
   this->connect(dots_icon,
