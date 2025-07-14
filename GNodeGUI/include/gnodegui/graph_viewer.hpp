@@ -167,6 +167,8 @@ Q_SIGNALS:
 
   void quit_request();
 
+  void selection_has_changed();
+
   void viewport_request();
 
 protected: // Qt events

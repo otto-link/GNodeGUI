@@ -138,12 +138,18 @@ std::string GraphViewer::add_node(NodeProxy         *p_node_proxy,
   this->connect(p_node,
                 &GraphicsNode::selected,
                 [this](const std::string &node_id)
-                { Q_EMIT this->node_selected(node_id); });
+                {
+                  Q_EMIT this->node_selected(node_id);
+                  Q_EMIT this->selection_has_changed();
+                });
 
   this->connect(p_node,
                 &GraphicsNode::deselected,
                 [this](const std::string &node_id)
-                { Q_EMIT this->node_deselected(node_id); });
+                {
+                  Q_EMIT this->node_deselected(node_id);
+                  Q_EMIT this->selection_has_changed();
+                });
 
   // if nothing provided, generate a unique id based on the object address
   std::string nid = node_id;
@@ -350,6 +356,8 @@ void GraphViewer::clear()
 
   for (auto item : items_to_delete)
     delete item;
+
+  Q_EMIT this->selection_has_changed();
 }
 
 void GraphViewer::contextMenuEvent(QContextMenuEvent *event)
@@ -452,6 +460,8 @@ void GraphViewer::delete_selected_items()
       }
     }
   }
+
+  Q_EMIT this->selection_has_changed();
 }
 
 void GraphViewer::deselect_all()
@@ -459,6 +469,8 @@ void GraphViewer::deselect_all()
   for (QGraphicsItem *item : this->scene()->items())
     if (!is_item_static(item))
       item->setSelected(false);
+
+  Q_EMIT this->selection_has_changed();
 }
 
 void GraphViewer::drawForeground(QPainter *painter, const QRectF &rect)
@@ -1127,6 +1139,8 @@ void GraphViewer::select_all()
   for (QGraphicsItem *item : this->scene()->items())
     if (!is_item_static(item))
       item->setSelected(true);
+
+  Q_EMIT this->selection_has_changed();
 }
 
 void GraphViewer::set_enabled(bool state)
@@ -1141,6 +1155,8 @@ void GraphViewer::set_node_as_selected(const std::string &node_id)
 
   if (p_node)
     p_node->setSelected(true);
+
+  Q_EMIT this->selection_has_changed();
 }
 
 void GraphViewer::toggle_link_type()
