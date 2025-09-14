@@ -85,6 +85,11 @@ void GraphViewer::add_link(const std::string &id_out,
     int port_from_index = from_node->get_port_index(port_id_out);
     int port_to_index = to_node->get_port_index(port_id_in);
 
+    QColor link_color = get_color_from_data_type(
+        from_node->get_data_type(port_from_index));
+    this->temp_link = new GraphicsLink(link_color, this->current_link_type);
+    this->scene()->addItem(this->temp_link);
+
     // this is the signal sent to say this graphic link must be also
     // created by the model outside the GUI
     this->on_connection_finished(from_node, port_from_index, to_node, port_to_index);
