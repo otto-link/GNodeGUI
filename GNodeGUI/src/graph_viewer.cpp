@@ -158,7 +158,6 @@ std::string GraphViewer::add_node(NodeProxy         *p_node_proxy,
 
   // if nothing provided, generate a unique id based on the object address
   std::string nid = node_id;
-
   if (node_id == "")
   {
     std::ostringstream oss;
@@ -167,7 +166,6 @@ std::string GraphViewer::add_node(NodeProxy         *p_node_proxy,
   }
 
   p_node_proxy->set_id(nid);
-
   return nid;
 }
 
@@ -367,8 +365,7 @@ void GraphViewer::clear()
 
 void GraphViewer::contextMenuEvent(QContextMenuEvent *event)
 {
-  // --- skip this if there is an item is under the cursor
-
+  // skip this if there is an item is under the cursor
   QGraphicsItem *item = this->itemAt(event->pos());
 
   if (item)
@@ -377,8 +374,7 @@ void GraphViewer::contextMenuEvent(QContextMenuEvent *event)
     return;
   }
 
-  // --- if not keep going
-
+  // if not keep going
   this->execute_new_node_context_menu();
 
   QGraphicsView::contextMenuEvent(event);
