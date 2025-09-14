@@ -134,7 +134,10 @@ void GraphicsNode::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
 
 void GraphicsNode::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
 {
-  QPointF item_pos = this->mapToScene(event->pos()) - this->scenePos();
+  QPointF pos = event->pos();
+  QPointF scene_pos = this->mapToScene(pos);
+  QPointF item_pos = scene_pos - this->scenePos();
+
   if (this->update_is_port_hovered(item_pos))
     this->update();
 
@@ -209,7 +212,9 @@ void GraphicsNode::mousePressEvent(QGraphicsSceneMouseEvent *event)
   }
   else if (event->button() == Qt::RightButton)
   {
-    Q_EMIT this->right_clicked(this->get_id(), this->mapToScene(event->pos()));
+    QPointF pos = event->pos();
+    QPointF scene_pos = this->mapToScene(pos);
+    Q_EMIT this->right_clicked(this->get_id(), scene_pos);
   }
 
   QGraphicsRectItem::mousePressEvent(event);
@@ -217,56 +222,68 @@ void GraphicsNode::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
 void GraphicsNode::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
-  if (event->button() == Qt::LeftButton && this->has_connection_started)
+  if (event->button() == Qt::LeftButton)
   {
-    QList<QGraphicsItem *> items_under_mouse = scene()->items(event->scenePos());
-    bool                   is_dropped = true;
-
-    for (QGraphicsItem *item : items_under_mouse)
+    if (this->is_node_dragged)
     {
-      if (GraphicsNode *target_node = dynamic_cast<GraphicsNode *>(item))
-      {
-        int hovered_port_index = target_node->get_hovered_port_index();
-        if (hovered_port_index >= 0)
-        {
-          Logger::log()->trace("connection_finished {}:{}",
-                               target_node->get_id(),
-                               hovered_port_index);
-          Q_EMIT connection_finished(this,
-                                     this->port_index_from,
-                                     target_node,
-                                     hovered_port_index);
-          is_dropped = false;
-          break;
-        }
-        else
-        {
-          is_dropped = true;
-          break;
-        }
-      }
+      this->is_node_dragged = false;
     }
+    else if (this->has_connection_started)
+    {
+      // get all items at the mouse release position (in stacking order)
+      QList<QGraphicsItem *> items_under_mouse = scene()->items(event->scenePos());
+      bool                   is_dropped = true;
 
-    this->reset_is_port_hovered();
-    this->update();
+      for (QGraphicsItem *item : items_under_mouse)
+        if (GraphicsNode *target_node = dynamic_cast<GraphicsNode *>(item))
+        {
+          // check if the new link indeed land on a port
+          int hovered_port_index = target_node->get_hovered_port_index();
 
-    if (is_dropped)
-      Q_EMIT connection_dropped(this, this->port_index_from, event->scenePos());
+          if (hovered_port_index >= 0)
+          {
+            Logger::log()->trace("connection_finished {}:{}",
+                                 target_node->get_id(),
+                                 hovered_port_index);
 
-    this->has_connection_started = false;
+            Q_EMIT connection_finished(this,
+                                       this->port_index_from,
+                                       target_node,
+                                       hovered_port_index);
 
-    // reset data_type_connecting for all nodes
-    for (QGraphicsItem *item : this->scene()->items())
-      if (GraphicsNode *node = dynamic_cast<GraphicsNode *>(item))
+            is_dropped = false;
+            break;
+          }
+          else
+          {
+            is_dropped = true;
+            break;
+          }
+        }
+
+      this->reset_is_port_hovered();
+      this->update();
+
+      if (is_dropped)
       {
-        node->data_type_connecting.clear();
-        node->update();
+        Logger::log()->trace("GraphicsNode::mouseReleaseEvent connection_dropped {}",
+                             this->get_id());
+        Q_EMIT connection_dropped(this, this->port_index_from, event->scenePos());
       }
 
-    this->setFlag(QGraphicsItem::ItemIsMovable, true);
-  }
+      this->has_connection_started = false;
 
-  this->is_node_dragged = false;
+      // clean-up port color state
+      for (QGraphicsItem *item : this->scene()->items())
+        if (GraphicsNode *node = dynamic_cast<GraphicsNode *>(item))
+        {
+          node->data_type_connecting = "";
+          node->update();
+        }
+
+      this->setFlag(QGraphicsItem::ItemIsMovable, true);
+    }
+  }
   QGraphicsRectItem::mouseReleaseEvent(event);
 }
 
@@ -416,14 +433,14 @@ bool GraphicsNode::sceneEventFilter(QGraphicsItem *watched, QEvent *event)
           event);
       QPointF item_pos = mouse_event->scenePos() - this->scenePos();
 
-      // update connecting type
+      // update current data type of the building connection
       if (this->data_type_connecting != node->data_type_connecting)
       {
         this->data_type_connecting = node->data_type_connecting;
         this->update();
       }
 
-      // update hovered port
+      // update hovering port status
       if (this->update_is_port_hovered(item_pos))
       {
         // if a port is hovered, check that the port type (in/out)
