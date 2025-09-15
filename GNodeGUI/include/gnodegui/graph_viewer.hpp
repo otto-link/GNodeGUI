@@ -30,7 +30,7 @@ class GraphViewer : public QGraphicsView
   Q_OBJECT
 
 public:
-  GraphViewer(std::string id = "graph");
+  explicit GraphViewer(std::string id = "graph", QWidget *parent = nullptr);
 
   void add_item(QGraphicsItem *item, QPointF scene_pos = QPointF(0.f, 0.f));
 
@@ -62,7 +62,7 @@ public:
 
   GraphicsNode *get_graphics_node_by_id(const std::string &node_id);
 
-  std::vector<std::string> get_selected_node_ids();
+  std::vector<std::string> get_selected_node_ids() const;
 
   // prefix_id can be usefull when importing a graph into an existing
   // one, to avoid duplicate node ids
