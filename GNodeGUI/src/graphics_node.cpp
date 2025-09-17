@@ -95,9 +95,15 @@ std::vector<std::string> GraphicsNode::get_category_splitted(char delimiter) con
 int GraphicsNode::get_hovered_port_index() const
 {
   auto it = std::find(this->is_port_hovered.begin(), this->is_port_hovered.end(), true);
-  return (it != this->is_port_hovered.end())
-             ? std::distance(this->is_port_hovered.begin(), it)
-             : -1;
+
+  // if found, calculate the index; otherwise, return -1
+  if (it != this->is_port_hovered.end())
+  {
+    int index = std::distance(this->is_port_hovered.begin(), it);
+    return index;
+  }
+  else
+    return -1;
 }
 
 std::string GraphicsNode::get_main_category() const
@@ -109,7 +115,7 @@ std::string GraphicsNode::get_main_category() const
 
 int GraphicsNode::get_port_index(const std::string &id) const
 {
-  for (int k = 0; k < this->get_nports(); ++k)
+  for (int k = 0; k < this->get_nports(); k++)
     if (this->get_port_id(k) == id)
       return k;
 
@@ -170,7 +176,10 @@ void GraphicsNode::json_from(nlohmann::json json)
   this->get_id() = json["id"];
   this->get_caption() = json["caption"];
   this->is_widget_visible = json["is_widget_visible"];
-  this->setPos(QPointF(json["scene_position.x"], json["scene_position.y"]));
+
+  float x = json["scene_position.x"];
+  float y = json["scene_position.y"];
+  this->setPos(QPointF(x, y));
 }
 
 nlohmann::json GraphicsNode::json_to() const
@@ -210,6 +219,7 @@ void GraphicsNode::mousePressEvent(QGraphicsSceneMouseEvent *event)
       this->is_node_dragged = true;
     }
   }
+
   else if (event->button() == Qt::RightButton)
   {
     QPointF pos = event->pos();
@@ -374,7 +384,8 @@ void GraphicsNode::paint(QPainter                       *painter,
                            GN_STYLE->node.rounding_radius);
 
   // --- Ports
-  for (int k = 0; k < this->p_node_proxy->get_nports(); ++k)
+
+  for (int k = 0; k < this->p_node_proxy->get_nports(); k++)
   {
     // Set alignment based on port type (IN/OUT)
     int align_flag = (this->get_port_type(k) == PortType::IN) ? Qt::AlignLeft
@@ -386,7 +397,7 @@ void GraphicsNode::paint(QPainter                       *painter,
                       align_flag,
                       this->get_port_caption(k).c_str());
 
-    // port appearance
+    // Port appearance when selected or not
     if (this->is_port_hovered[k])
       painter->setPen(
           QPen(GN_STYLE->node.color_port_hovered, GN_STYLE->node.pen_width_hovered));
@@ -396,7 +407,7 @@ void GraphicsNode::paint(QPainter                       *painter,
     else
       painter->setPen(QPen(GN_STYLE->node.color_border, GN_STYLE->node.pen_width));
 
-    // brush based on data type
+    // Set port brush based on data type compatibility
     std::string data_type = this->get_data_type(k);
     float       port_radius = GN_STYLE->node.port_radius;
     if (!this->data_type_connecting.empty() && data_type != this->data_type_connecting)
@@ -446,18 +457,20 @@ bool GraphicsNode::sceneEventFilter(QGraphicsItem *watched, QEvent *event)
         // if a port is hovered, check that the port type (in/out)
         // and data type are compatible with the incoming link,
         // deactivate hovering for this port
-        for (int k = 0; k < this->get_nports(); ++k)
-        {
+        for (int k = 0; k < this->get_nports(); k++)
           if (this->is_port_hovered[k])
           {
             int from_pidx = node->port_index_from;
-            if (node->get_port_type(from_pidx) == this->get_port_type(k) ||
-                node->get_data_type(from_pidx) != this->get_data_type(k))
-            {
+
+            PortType from_ptype = node->get_port_type(from_pidx);
+            PortType to_ptype = this->get_port_type(k);
+
+            std::string from_pdata = node->get_data_type(from_pidx);
+            std::string to_pdata = this->get_data_type(k);
+
+            if (from_ptype == to_ptype || from_pdata != to_pdata)
               this->is_port_hovered[k] = false;
-            }
           }
-        }
         this->update();
       }
     }
@@ -476,7 +489,7 @@ void GraphicsNode::set_qwidget_visibility(bool is_visible)
 {
   // recompute geometry based on widget visiblity status
   QWidget *widget = this->get_qwidget_ref();
-  QSizeF   widget_size(-1.f, -1.f);
+  QSizeF   widget_size = QSizeF(-1.f, -1.f);
 
   if (widget)
   {
@@ -499,25 +512,21 @@ void GraphicsNode::update_geometry(QSizeF widget_size)
 bool GraphicsNode::update_is_port_hovered(QPointF item_pos)
 {
   // set hover state
-  for (size_t k = 0; k < this->geometry.port_rects.size(); ++k)
-  {
+  for (size_t k = 0; k < this->geometry.port_rects.size(); k++)
     if (this->geometry.port_rects[k].contains(item_pos))
     {
       this->is_port_hovered[k] = true;
       return true;
     }
 
-    // if we end up here and one the flag is still true, it means we
-    // just left a hovered port
-    for (size_t k = 0; k < this->geometry.port_rects.size(); ++k)
+  // if we end up here and one the flag is still true, it means we
+  // just left a hovered port
+  for (size_t k = 0; k < this->geometry.port_rects.size(); k++)
+    if (this->is_port_hovered[k])
     {
-      if (this->is_port_hovered[k])
-      {
-        this->is_port_hovered[k] = false;
-        return true;
-      }
+      this->is_port_hovered[k] = false;
+      return true;
     }
-  }
 
   return false;
 }

@@ -35,7 +35,7 @@
 namespace gngui
 {
 
-GraphViewer::GraphViewer(std::string id, QWidget *parent) : QGraphicsView(parent), id(id)
+GraphViewer::GraphViewer(std::string id) : QGraphicsView(), id(id)
 {
   Logger::log()->trace("GraphViewer::GraphViewer");
   this->setRenderHint(QPainter::Antialiasing);
@@ -360,7 +360,8 @@ void GraphViewer::clear()
 
 void GraphViewer::contextMenuEvent(QContextMenuEvent *event)
 {
-  // skip this if there is an item is under the cursor
+  // --- skip this if there is an item is under the cursor
+
   QGraphicsItem *item = this->itemAt(event->pos());
 
   if (item)
@@ -369,7 +370,8 @@ void GraphViewer::contextMenuEvent(QContextMenuEvent *event)
     return;
   }
 
-  // if not keep going
+  // --- if not keep going
+
   this->execute_new_node_context_menu();
 
   QGraphicsView::contextMenuEvent(event);
@@ -653,7 +655,7 @@ GraphicsNode *GraphViewer::get_graphics_node_by_id(const std::string &node_id)
   return nullptr;
 }
 
-std::vector<std::string> GraphViewer::get_selected_node_ids() const
+std::vector<std::string> GraphViewer::get_selected_node_ids()
 {
   std::vector<std::string> ids = {};
 

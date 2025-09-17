@@ -155,49 +155,41 @@ void GraphicsLink::set_endpoints(const QPointF &start_point, const QPointF &end_
 {
   QPainterPath new_path(start_point);
 
-  switch (this->link_type)
-  {
-  case LinkType::BROKEN_LINE:
+  if (this->link_type == LinkType::BROKEN_LINE)
   {
     float dx = std::copysign(20.f, end_point.x() - start_point.x());
     new_path.lineTo(QPointF(start_point.x() + dx, start_point.y()));
     new_path.lineTo(QPointF(end_point.x() - dx, end_point.y()));
     new_path.lineTo(end_point);
-    break;
   }
-
-  case LinkType::CIRCUIT:
+  else if (this->link_type == LinkType::CIRCUIT)
   {
     QPointF mid_point = 0.5f * (start_point + end_point);
     new_path.lineTo(QPointF(mid_point.x(), start_point.y()));
     new_path.lineTo(QPointF(mid_point.x(), end_point.y()));
     new_path.lineTo(end_point);
-    break;
   }
-
-  case LinkType::CUBIC:
+  else if (this->link_type == LinkType::CUBIC)
   {
     float   dx = std::abs(end_point.x() - start_point.x()) * GN_STYLE->link.curvature;
     QPointF control_point1(start_point.x() + dx, start_point.y());
     QPointF control_point2(end_point.x() - dx, end_point.y());
     new_path.cubicTo(control_point1, control_point2, end_point);
-    break;
   }
-
-  case LinkType::DEPORTED:
+  else if (this->link_type == LinkType::DEPORTED)
   {
-    QPointF mid_point(0.5f * (start_point.x() + end_point.x()), start_point.y());
+    QPointF mid_point = QPointF(0.5f * (start_point.x() + end_point.x()),
+                                start_point.y());
     new_path.lineTo(mid_point);
+
     float   dx = std::abs(end_point.x() - mid_point.x()) * GN_STYLE->link.curvature;
     QPointF control_point1(mid_point.x() + dx, mid_point.y());
     QPointF control_point2(end_point.x() - dx, end_point.y());
     new_path.cubicTo(control_point1, control_point2, end_point);
-    break;
   }
-
-  case LinkType::LINEAR:
+  else if (this->link_type == LinkType::LINEAR)
+  {
     new_path.lineTo(end_point);
-    break;
   }
 
   this->setPath(new_path);
@@ -213,15 +205,22 @@ QPainterPath GraphicsLink::shape() const
 {
   QPainterPathStroker stroker;
   stroker.setWidth(40);
-  return stroker.createStroke(path()).united(path());
+  QPainterPath widened_path = stroker.createStroke(path());
+  return widened_path.united(path());
 }
 
 LinkType GraphicsLink::toggle_link_type()
 {
-  auto it = std::find(this->link_types.begin(), this->link_types.end(), this->link_type);
-  size_t type_index = (it == this->link_types.end() - 1)
-                          ? 0
-                          : (it - this->link_types.begin() + 1);
+  // current link type in the list
+  auto it = find(this->link_types.begin(), this->link_types.end(), this->link_type);
+
+  size_t type_index;
+
+  if (it == this->link_types.end() - 1)
+    type_index = 0;
+  else
+    type_index = it - this->link_types.begin() + 1;
+
   this->set_link_type(this->link_types[type_index]);
 
   return this->link_types[type_index];
