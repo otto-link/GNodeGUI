@@ -318,6 +318,9 @@ void GraphicsNode::paint(QPainter                       *painter,
   Q_UNUSED(option);
   Q_UNUSED(widget);
 
+  if (!this->p_node_proxy)
+    return;
+
   // --- Background rectangle
 
   painter->setBrush(QBrush(GN_STYLE->node.color_bg));
