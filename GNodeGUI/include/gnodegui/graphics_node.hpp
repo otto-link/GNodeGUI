@@ -175,6 +175,8 @@ public:
    */
   nlohmann::json json_to() const;
 
+  void set_is_node_pinned(bool new_state);
+
   /**
    * @brief Loads node data from a JSON object (is set to nullptr to flag a disconnect
    * port).
@@ -327,6 +329,7 @@ private:
   GraphicsNodeGeometry geometry;     /**< Geometry data for the node. */
   bool is_node_dragged = false; /**< Indicates if the node is currently being dragged. */
   bool is_node_hovered = false; /**< Indicates if the mouse is hovering over the node. */
+  bool is_node_pinned = false;
   std::vector<bool> is_port_hovered; /**< Flags for each port's hover state. */
   std::vector<GraphicsLink *>
        connected_link_ref;        /**< References to links connected to this node. */

@@ -1164,6 +1164,13 @@ void GraphViewer::toggle_link_type()
       this->current_link_type = p_link->toggle_link_type();
 }
 
+void GraphViewer::unpin_nodes()
+{
+  for (QGraphicsItem *item : this->scene()->items())
+    if (GraphicsNode *p_node = dynamic_cast<GraphicsNode *>(item))
+      p_node->set_is_node_pinned(false);
+}
+
 void GraphViewer::wheelEvent(QWheelEvent *event)
 {
   const float factor = 1.2f;

@@ -65,6 +65,7 @@ public:
     QColor color_border_hovered = Qt::black;
     QColor color_caption = Qt::white;
     QColor color_selected = QColor(80, 250, 123, 255);
+    QColor color_pinned = QColor(139, 233, 253, 255);
     QColor color_icon = Qt::lightGray;
 
     QColor color_port_hovered = Qt::white; // QColor(180, 180, 180, 255);

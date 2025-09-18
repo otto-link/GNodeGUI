@@ -89,6 +89,8 @@ public:
 
   void toggle_link_type();
 
+  void unpin_nodes();
+
   void zoom_to_content();
 
 public Q_SLOTS:

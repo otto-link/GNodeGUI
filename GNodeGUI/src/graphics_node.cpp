@@ -329,6 +329,21 @@ void GraphicsNode::paint(QPainter                       *painter,
                            GN_STYLE->node.rounding_radius,
                            GN_STYLE->node.rounding_radius);
 
+  // --- Add outer border for pinned node
+
+  if (this->is_node_pinned)
+  {
+    painter->setBrush(Qt::NoBrush);
+    painter->setPen(
+        QPen(GN_STYLE->node.color_pinned, 2.f * GN_STYLE->node.pen_width_selected));
+
+    float w = GN_STYLE->node.pen_width_selected;
+
+    painter->drawRoundedRect(this->geometry.body_rect.adjusted(-w, -w, w, w),
+                             GN_STYLE->node.rounding_radius,
+                             GN_STYLE->node.rounding_radius);
+  }
+
   // --- Caption
 
   // Set pen based on whether the node is selected or not
@@ -424,6 +439,12 @@ void GraphicsNode::paint(QPainter                       *painter,
     // Draw the port as a circle (ellipse with equal width and height)
     painter->drawEllipse(this->geometry.port_rects[k].center(), port_radius, port_radius);
   }
+}
+
+void GraphicsNode::set_is_node_pinned(bool new_state)
+{
+  this->is_node_pinned = new_state;
+  this->update();
 }
 
 void GraphicsNode::reset_is_port_hovered()
