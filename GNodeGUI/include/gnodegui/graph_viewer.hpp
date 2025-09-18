@@ -30,7 +30,7 @@ class GraphViewer : public QGraphicsView
   Q_OBJECT
 
 public:
-  GraphViewer(std::string id = "graph");
+  explicit GraphViewer(std::string id = "graph", QWidget *parent = nullptr);
 
   void add_item(QGraphicsItem *item, QPointF scene_pos = QPointF(0.f, 0.f));
 

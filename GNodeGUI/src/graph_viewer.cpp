@@ -35,7 +35,7 @@
 namespace gngui
 {
 
-GraphViewer::GraphViewer(std::string id) : QGraphicsView(), id(id)
+GraphViewer::GraphViewer(std::string id, QWidget *parent) : QGraphicsView(parent), id(id)
 {
   Logger::log()->trace("GraphViewer::GraphViewer");
   this->setRenderHint(QPainter::Antialiasing);
