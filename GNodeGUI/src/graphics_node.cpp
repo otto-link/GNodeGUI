@@ -334,14 +334,19 @@ void GraphicsNode::paint(QPainter                       *painter,
   if (this->is_node_pinned)
   {
     painter->setBrush(Qt::NoBrush);
-    painter->setPen(
-        QPen(GN_STYLE->node.color_pinned, 2.f * GN_STYLE->node.pen_width_selected));
+
+    QPen pen = QPen(GN_STYLE->node.color_pinned, 2.f * GN_STYLE->node.pen_width_selected);
+    pen.setStyle(Qt::DashLine);
+    painter->setPen(pen);
 
     float w = GN_STYLE->node.pen_width_selected;
 
     painter->drawRoundedRect(this->geometry.body_rect.adjusted(-w, -w, w, w),
                              GN_STYLE->node.rounding_radius,
                              GN_STYLE->node.rounding_radius);
+
+    pen.setStyle(Qt::SolidLine);
+    painter->setPen(pen);
   }
 
   // --- Caption
