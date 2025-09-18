@@ -92,6 +92,19 @@ void GraphicsLink::paint(QPainter                       *painter,
   // update path
   if (this->node_out && this->node_in)
   {
+    // guards
+    {
+      auto geom = node_out->get_geometry_ref();
+      if (!geom || port_out_index >= (int)geom->port_rects.size())
+        return;
+    }
+
+    {
+      auto geom = node_in->get_geometry_ref();
+      if (!geom || port_in_index >= (int)geom->port_rects.size())
+        return;
+    }
+
     QPointF start_point = this->node_out->scenePos() + this->node_out->get_geometry_ref()
                                                            ->port_rects[port_out_index]
                                                            .center();
