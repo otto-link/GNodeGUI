@@ -109,68 +109,55 @@ public Q_SLOTS:
   void on_update_started();
 
 Q_SIGNALS:
-  void background_right_clicked(QPointF scene_pos);
+
+  // --- link signals
 
   void connection_deleted(const std::string &id_out,
                           const std::string &port_id_out,
                           const std::string &to_in,
                           const std::string &port_id_in);
-
   void connection_dropped(const std::string &node_id,
                           const std::string &port_id,
                           QPointF            scene_pos);
-
   void connection_finished(const std::string &id_out,
                            const std::string &port_id_out,
                            const std::string &to_in,
                            const std::string &port_id_in);
-
   void connection_started(const std::string &id_from, const std::string &port_id_from);
 
+  // --- graph signals
+
+  void graph_automatic_node_layout_request();
   void graph_clear_request();
-
   void graph_import_request();
-
   void graph_load_request();
-
   void graph_new_request();
-
   void graph_reload_request();
-
   void graph_save_as_request();
-
   void graph_save_request();
-
   void graph_settings_request();
 
+  // --- node signals
+
   void new_graphics_node_request(const std::string &node_id, QPointF scene_pos);
-
   void new_node_request(const std::string &type, QPointF scene_pos);
-
   void node_deleted(const std::string &node_id);
-
   void node_deselected(const std::string &node_id);
-
   void node_reload_request(const std::string &node_id);
-
   void node_selected(const std::string &node_id);
-
   void node_settings_request(const std::string &node_id);
-
   void node_right_clicked(const std::string &node_id, QPointF scene_pos);
-
   void nodes_copy_request(const std::vector<std::string> &id_list,
                           const std::vector<QPointF>     &scene_pos_list);
-
   void nodes_duplicate_request(const std::vector<std::string> &id_list,
                                const std::vector<QPointF>     &scene_pos_list);
-
   void nodes_paste_request();
 
+  // --- global signals
+
+  void background_right_clicked(QPointF scene_pos);
   void quit_request();
-
   void selection_has_changed();
-
   void viewport_request();
 
 protected: // Qt events

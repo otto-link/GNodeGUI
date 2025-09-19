@@ -854,6 +854,10 @@ void GraphViewer::keyReleaseEvent(QKeyEvent *event)
   {
     Q_EMIT this->graph_save_as_request();
   }
+  else if (event->modifiers() == Qt::ControlModifier && event->key() == Qt::Key_P)
+  {
+    Q_EMIT this->graph_automatic_node_layout_request();
+  }
   else if (event->modifiers() == Qt::ControlModifier && event->key() == Qt::Key_Q)
   {
     Q_EMIT this->quit_request();
