@@ -674,6 +674,8 @@ QRectF GraphViewer::get_bounding_box()
   return bbox;
 }
 
+std::string GraphViewer::get_id() const { return this->id; }
+
 QPointF GraphViewer::get_mouse_scene_pos()
 {
   QPoint  pos = QCursor::pos();
@@ -1168,6 +1170,12 @@ void GraphViewer::set_node_as_selected(const std::string &node_id)
     p_node->setSelected(true);
 
   Q_EMIT this->selection_has_changed();
+}
+
+void GraphViewer::set_node_inventory(
+    const std::map<std::string, std::string> &new_node_inventory)
+{
+  this->node_inventory = new_node_inventory;
 }
 
 void GraphViewer::toggle_link_type()
