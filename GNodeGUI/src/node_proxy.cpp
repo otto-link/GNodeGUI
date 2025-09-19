@@ -8,7 +8,7 @@
 namespace gngui
 {
 
-virtual std::string NodeProxy::get_port_id(int port_index) const
+std::string NodeProxy::get_port_id(int port_index) const
 {
   return this->get_port_caption(port_index);
 }
