@@ -681,14 +681,21 @@ QPointF GraphViewer::get_mouse_scene_pos()
   return scene_pos;
 }
 
-std::vector<std::string> GraphViewer::get_selected_node_ids()
+std::vector<std::string> GraphViewer::get_selected_node_ids(
+    std::vector<QPointF> *p_scene_pos_list)
 {
   std::vector<std::string> ids = {};
 
   for (QGraphicsItem *item : this->scene()->items())
     if (GraphicsNode *p_node = dynamic_cast<GraphicsNode *>(item))
       if (p_node->isSelected())
+      {
         ids.push_back(p_node->get_id());
+
+        // optional, returns node positions
+        if (p_scene_pos_list)
+          p_scene_pos_list->push_back(p_node->pos());
+      }
 
   return ids;
 }
@@ -818,32 +825,16 @@ void GraphViewer::keyReleaseEvent(QKeyEvent *event)
   }
   else if (event->modifiers() == Qt::ControlModifier && event->key() == Qt::Key_C)
   {
-    std::vector<std::string> id_list = {};
     std::vector<QPointF>     scene_pos_list = {};
-
-    for (QGraphicsItem *item : this->scene()->items())
-      if (GraphicsNode *p_node = dynamic_cast<GraphicsNode *>(item))
-        if (p_node->isSelected())
-        {
-          id_list.push_back(p_node->get_id());
-          scene_pos_list.push_back(p_node->pos());
-        }
+    std::vector<std::string> id_list = this->get_selected_node_ids(&scene_pos_list);
 
     if (id_list.size())
       Q_EMIT this->nodes_copy_request(id_list, scene_pos_list);
   }
   else if (event->modifiers() == Qt::ControlModifier && event->key() == Qt::Key_D)
   {
-    std::vector<std::string> id_list = {};
     std::vector<QPointF>     scene_pos_list = {};
-
-    for (QGraphicsItem *item : this->scene()->items())
-      if (GraphicsNode *p_node = dynamic_cast<GraphicsNode *>(item))
-        if (p_node->isSelected())
-        {
-          id_list.push_back(p_node->get_id());
-          scene_pos_list.push_back(p_node->pos());
-        }
+    std::vector<std::string> id_list = this->get_selected_node_ids(&scene_pos_list);
 
     if (id_list.size())
       Q_EMIT this->nodes_duplicate_request(id_list, scene_pos_list);
@@ -855,11 +846,7 @@ void GraphViewer::keyReleaseEvent(QKeyEvent *event)
   else if (event->modifiers() == Qt::ControlModifier && event->key() == Qt::Key_G)
   {
     if (GN_STYLE->viewer.add_group)
-    {
-      QPoint  view_pos = this->mapFromGlobal(QCursor::pos());
-      QPointF scene_pos = this->mapToScene(view_pos);
-      this->add_item(new GraphicsGroup(), scene_pos);
-    }
+      this->add_item(new GraphicsGroup(), this->get_mouse_scene_pos());
   }
   else if (event->modifiers() == Qt::ControlModifier && event->key() == Qt::Key_L)
   {
@@ -921,9 +908,7 @@ void GraphViewer::mousePressEvent(QMouseEvent *event)
     // only handle the right-click if no item handled it
     if (this->itemAt(event->pos()) == nullptr)
     {
-      QPoint  view_pos = this->mapFromGlobal(QCursor::pos());
-      QPointF scene_pos = this->mapToScene(view_pos);
-      Q_EMIT this->background_right_clicked(scene_pos);
+      Q_EMIT this->background_right_clicked(this->get_mouse_scene_pos());
     }
     else
     {

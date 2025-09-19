@@ -66,7 +66,8 @@ public:
 
   QPointF get_mouse_scene_pos();
 
-  std::vector<std::string> get_selected_node_ids();
+  std::vector<std::string> get_selected_node_ids(
+      std::vector<QPointF> *p_scene_pos_list = nullptr);
 
   // prefix_id can be usefull when importing a graph into an existing
   // one, to avoid duplicate node ids
