@@ -58,6 +58,8 @@ public:
   // export.dot -Tsvg > output.svg
   void export_to_graphviz(const std::string &fname = "export.dot");
 
+  QRectF get_bounding_box();
+
   std::string get_id() const { return this->id; }
 
   GraphicsNode *get_graphics_node_by_id(const std::string &node_id);

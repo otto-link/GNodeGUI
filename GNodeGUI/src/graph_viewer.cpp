@@ -655,6 +655,31 @@ GraphicsNode *GraphViewer::get_graphics_node_by_id(const std::string &node_id)
   return nullptr;
 }
 
+QRectF GraphViewer::get_bounding_box()
+{
+  QRectF bbox;
+
+  // if there are no static items, the built-in scene bounding
+  // rectangle is used. If not, the bounding box is recomputed with the
+  // static items excluded
+  if (this->static_items.empty())
+    bbox = this->scene()->itemsBoundingRect();
+  else
+  {
+    std::vector<QGraphicsItem *> items_not_static;
+
+    for (QGraphicsItem *item : this->scene()->items())
+    {
+      if (!this->is_item_static(item))
+        items_not_static.push_back(item);
+
+      bbox = compute_bounding_rect(items_not_static);
+    }
+  }
+
+  return bbox;
+}
+
 std::vector<std::string> GraphViewer::get_selected_node_ids()
 {
   std::vector<std::string> ids = {};
@@ -1195,25 +1220,7 @@ void GraphViewer::wheelEvent(QWheelEvent *event)
 
 void GraphViewer::zoom_to_content()
 {
-  QRectF bbox;
-
-  // if there are no static items, the built-in scene bounding
-  // rectangle is used. If not, the bounding box is recomputed with the
-  // static items excluded
-  if (this->static_items.empty())
-    bbox = this->scene()->itemsBoundingRect();
-  else
-  {
-    std::vector<QGraphicsItem *> items_not_static;
-
-    for (QGraphicsItem *item : this->scene()->items())
-    {
-      if (!this->is_item_static(item))
-        items_not_static.push_back(item);
-
-      bbox = compute_bounding_rect(items_not_static);
-    }
-  }
+  QRectF bbox = this->get_bounding_box();
 
   // add a margin
   float margin_x = 0.3f * bbox.width();
