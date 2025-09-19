@@ -24,6 +24,11 @@ class GraphViewer : public QGraphicsView
 public:
   explicit GraphViewer(std::string id = "graph", QWidget *parent = nullptr);
 
+  // --- Serializzation
+
+  void           json_from(nlohmann::json json, bool clear_existing_content = true);
+  nlohmann::json json_to() const;
+
   // --- Add
 
   void        add_item(QGraphicsItem *item, QPointF scene_pos = QPointF(0.f, 0.f));
@@ -75,10 +80,7 @@ public:
   // useful for debugging graph actual state, after export: to convert, command line: dot
   // export.dot -Tsvg > output.svg
   void export_to_graphviz(const std::string &fname = "export.dot");
-
-  void           json_from(nlohmann::json json, bool clear_existing_content = true);
-  nlohmann::json json_to() const;
-  void           save_screenshot(const std::string &fname = "screenshot.png");
+  void save_screenshot(const std::string &fname = "screenshot.png");
 
 public Q_SLOTS:
 
