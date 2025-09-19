@@ -1,13 +1,6 @@
 /* Copyright (c) 2025 Otto Link. Distributed under the terms of the GNU General
  * Public License. The full license is in the file LICENSE, distributed with
  * this software. */
-
-/**
- * @file graphics_comment.hpp
- * @author Otto Link (otto.link.bv@gmail.com)
- * @brief
- * @copyright Copyright (c) 2025 Otto Link.
- */
 #pragma once
 #include <QGraphicsRectItem>
 #include <QObject>

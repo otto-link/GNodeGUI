@@ -1,14 +1,6 @@
 /* Copyright (c) 2024 Otto Link. Distributed under the terms of the GNU General
  * Public License. The full license is in the file LICENSE, distributed with
  * this software. */
-
-/**
- * @file graphics_group.hpp
- * @author Otto Link (otto.link.bv@gmail.com)
- * @brief
- * @copyright Copyright (c) 2024 Otto Link. Distributed under the terms of the
- * GNU General Public License. See the file LICENSE for the full license.
- */
 #pragma once
 #include <memory>
 
@@ -28,12 +20,10 @@ class GraphicsGroup : public QGraphicsRectItem
 public:
   GraphicsGroup(QGraphicsItem *parent = nullptr);
 
-  void json_from(nlohmann::json json);
-
+  void           json_from(nlohmann::json json);
   nlohmann::json json_to() const;
 
   void set_caption(const std::string &new_caption);
-
   void set_color(const QColor &new_color);
 
 protected:
@@ -47,19 +37,12 @@ protected:
   } current_corner;
 
   void contextMenuEvent(QGraphicsSceneContextMenuEvent *event) override;
-
   void hoverEnterEvent(QGraphicsSceneHoverEvent *event) override;
-
   void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) override;
-
   void hoverMoveEvent(QGraphicsSceneHoverEvent *event) override;
-
   void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event) override;
-
   void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
-
   void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
-
   void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
 
   virtual void paint(QPainter                       *painter,

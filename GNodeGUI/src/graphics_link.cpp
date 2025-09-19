@@ -204,6 +204,25 @@ void GraphicsLink::set_endpoints(const QPointF &start_point, const QPointF &end_
   {
     new_path.lineTo(end_point);
   }
+  else if (this->link_type == LinkType::QUADRATIC)
+  {
+    QPointF control_point((start_point.x() + end_point.x()) * 0.5f,
+                          std::min(start_point.y(), end_point.y()) - 20.f);
+    new_path.quadTo(control_point, end_point);
+  }
+  else if (this->link_type == LinkType::JAGGED)
+  {
+    int segments = 6; // number of zig-zag segments
+    for (int i = 1; i <= segments; ++i)
+    {
+      float t = float(i) / segments;
+      float x = start_point.x() + t * (end_point.x() - start_point.x());
+      float y = start_point.y() + t * (end_point.y() - start_point.y()) +
+                ((i % 2 == 0) ? -10.f : 10.f); // alternate up/down
+      new_path.lineTo(QPointF(x, y));
+    }
+    new_path.lineTo(end_point);
+  }
 
   this->setPath(new_path);
 }
@@ -212,6 +231,11 @@ void GraphicsLink::set_link_type(const LinkType &new_link_type)
 {
   this->link_type = new_link_type;
   this->update();
+}
+
+void GraphicsLink::set_pen_style(const Qt::PenStyle &new_pen_style)
+{
+  this->pen_style = new_pen_style;
 }
 
 QPainterPath GraphicsLink::shape() const

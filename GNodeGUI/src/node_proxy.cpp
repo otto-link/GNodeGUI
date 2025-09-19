@@ -8,6 +8,11 @@
 namespace gngui
 {
 
+virtual std::string NodeProxy::get_port_id(int port_index) const
+{
+  return this->get_port_caption(port_index);
+}
+
 void NodeProxy::log_debug()
 {
   Logger::log()->trace("NodeProxy::log_debug, node {}({})",
