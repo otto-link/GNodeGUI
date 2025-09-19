@@ -273,11 +273,7 @@ void GraphViewer::add_toolbar(QPoint window_pos)
     this->connect(group_icon,
                   &AbstractIcon::hit_icon,
                   [this]()
-                  {
-                    QPoint  pos = QCursor::pos();
-                    QPointF scene_pos = this->mapToScene(pos);
-                    this->add_item(new GraphicsGroup(), scene_pos);
-                  });
+                  { this->add_item(new GraphicsGroup(), this->get_mouse_scene_pos()); });
   }
 
   this->connect(reload_icon,
@@ -598,10 +594,8 @@ bool GraphViewer::execute_new_node_context_menu()
 
   if (selected_action)
   {
-    QPoint  view_pos = this->mapFromGlobal(QCursor::pos());
-    QPointF scene_pos = this->mapToScene(view_pos);
-
-    Q_EMIT this->new_node_request(selected_action->text().toStdString(), scene_pos);
+    Q_EMIT this->new_node_request(selected_action->text().toStdString(),
+                                  this->get_mouse_scene_pos());
     return true;
   }
   else
@@ -678,6 +672,13 @@ QRectF GraphViewer::get_bounding_box()
   }
 
   return bbox;
+}
+
+QPointF GraphViewer::get_mouse_scene_pos()
+{
+  QPoint  pos = QCursor::pos();
+  QPointF scene_pos = this->mapToScene(pos);
+  return scene_pos;
 }
 
 std::vector<std::string> GraphViewer::get_selected_node_ids()
@@ -849,9 +850,7 @@ void GraphViewer::keyReleaseEvent(QKeyEvent *event)
   }
   else if (event->modifiers() == Qt::ControlModifier && event->key() == Qt::Key_B)
   {
-    QPoint  view_pos = this->mapFromGlobal(QCursor::pos());
-    QPointF scene_pos = this->mapToScene(view_pos);
-    this->add_item(new GraphicsComment(), scene_pos);
+    this->add_item(new GraphicsComment(), this->get_mouse_scene_pos());
   }
   else if (event->modifiers() == Qt::ControlModifier && event->key() == Qt::Key_G)
   {

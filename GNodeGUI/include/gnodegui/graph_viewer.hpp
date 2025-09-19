@@ -64,6 +64,8 @@ public:
 
   GraphicsNode *get_graphics_node_by_id(const std::string &node_id);
 
+  QPointF get_mouse_scene_pos();
+
   std::vector<std::string> get_selected_node_ids();
 
   // prefix_id can be usefull when importing a graph into an existing
