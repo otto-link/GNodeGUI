@@ -7,6 +7,8 @@
 #include <QKeyEvent>
 #include <QLineEdit>
 #include <QMenu>
+#include <QTimer>
+#include <QToolTip>
 #include <QWidgetAction>
 
 #include "gnodegui/graph_viewer.hpp"
@@ -907,18 +909,32 @@ void GraphViewer::mousePressEvent(QMouseEvent *event)
 {
   if (event->button() == Qt::RightButton)
   {
-    // only handle the right-click if no item handled it
-    if (this->itemAt(event->pos()) == nullptr)
+    QGraphicsItem *item = this->itemAt(event->pos());
+
+    if ((event->modifiers() & Qt::ControlModifier) && item)
     {
-      Q_EMIT this->background_right_clicked(this->get_mouse_scene_pos());
-    }
-    else
-    {
-      event->ignore();
+      // Ctrl + Right-Click on a link or a node to remove it
+      if (GraphicsLink *p_link = dynamic_cast<GraphicsLink *>(item))
+        this->delete_graphics_link(p_link);
+      else if (GraphicsNode *p_node = dynamic_cast<GraphicsNode *>(item))
+        this->delete_graphics_node(p_node);
+      else if (GraphicsComment *p_comment = dynamic_cast<GraphicsComment *>(item))
+        delete p_comment;
+
+      // prevent context menu opening
+      this->setContextMenuPolicy(Qt::NoContextMenu);
+
+      // this is ugly... set context menu back
+      QTimer::singleShot(200,
+                         this,
+                         [this]()
+                         { this->setContextMenuPolicy(Qt::DefaultContextMenu); });
+
+      event->accept();
+      return;
     }
 
-    QGraphicsView::mousePressEvent(event);
-    return;
+    QToolTip::hideText();
   }
 
   if (event->button() == Qt::LeftButton)

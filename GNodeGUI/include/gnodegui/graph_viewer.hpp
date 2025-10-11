@@ -141,7 +141,6 @@ Q_SIGNALS:
 
   // --- Global signals
 
-  void background_right_clicked(QPointF scene_pos);
   void quit_request();
   void selection_has_changed();
   void viewport_request();
