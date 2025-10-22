@@ -144,6 +144,8 @@ Q_SIGNALS:
   void quit_request();
   void selection_has_changed();
   void viewport_request();
+  void rubber_band_selection_started();
+  void rubber_band_selection_finished();
 
 protected:
   // --- Qt events

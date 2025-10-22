@@ -940,9 +940,14 @@ void GraphViewer::mousePressEvent(QMouseEvent *event)
   if (event->button() == Qt::LeftButton)
   {
     if (event->modifiers() & Qt::ShiftModifier)
+    {
       this->setDragMode(QGraphicsView::RubberBandDrag);
+      Q_EMIT this->rubber_band_selection_started();
+    }
     else
+    {
       this->setDragMode(QGraphicsView::ScrollHandDrag);
+    }
   }
 
   QGraphicsView::mousePressEvent(event);
@@ -951,6 +956,7 @@ void GraphViewer::mousePressEvent(QMouseEvent *event)
 void GraphViewer::mouseReleaseEvent(QMouseEvent *event)
 {
   this->setDragMode(QGraphicsView::NoDrag);
+  Q_EMIT this->rubber_band_selection_finished();
   QGraphicsView::mouseReleaseEvent(event);
 }
 
