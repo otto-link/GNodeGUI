@@ -680,8 +680,9 @@ std::string GraphViewer::get_id() const { return this->id; }
 
 QPointF GraphViewer::get_mouse_scene_pos()
 {
-  QPoint  pos = QCursor::pos();
-  QPointF scene_pos = this->mapToScene(pos);
+  QPoint  global_pos = QCursor::pos();
+  QPoint  local_pos = this->mapFromGlobal(global_pos);
+  QPointF scene_pos = this->mapToScene(local_pos);
   return scene_pos;
 }
 
