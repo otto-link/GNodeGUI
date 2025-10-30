@@ -15,10 +15,26 @@ namespace gngui
 
 void clean_delete_graphics_item(QGraphicsItem *item)
 {
+  if (!item)
+    return;
+
+  // disable interaction immediately so Qt stops querying it
+  item->setEnabled(false);
+  item->setAcceptHoverEvents(false);
+  item->setAcceptedMouseButtons(Qt::NoButton);
+  item->setFlag(QGraphicsItem::ItemIsMovable, false);
+  item->setFlag(QGraphicsItem::ItemIsSelectable, false);
+
+  // remove from scene now to stop further scene iteration referencing it
   if (item->scene())
     item->scene()->removeItem(item);
-  QTimer::singleShot(0, [item]() { delete item; });
-  item = nullptr;
+
+  // if it's a QObject (QGraphicsObject / your GraphicsNode inherits
+  // QObject), schedule deletion safely on the event loop.
+  if (auto obj = dynamic_cast<QObject *>(item))
+    QMetaObject::invokeMethod(obj, "deleteLater", Qt::QueuedConnection);
+  else
+    delete item; // QTimer::singleShot(0, [item]() { delete item; });
 }
 
 QRectF compute_bounding_rect(const std::vector<QGraphicsItem *> &items)

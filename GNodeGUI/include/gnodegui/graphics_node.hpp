@@ -28,6 +28,7 @@ class GraphicsNode : public QObject, public QGraphicsRectItem
 
 public:
   GraphicsNode(NodeProxy *p_node_proxy, QGraphicsItem *parent = nullptr);
+  ~GraphicsNode();
 
   // --- Serializzation
 
@@ -61,6 +62,7 @@ public:
 
   // --- UI
 
+  void prepare_for_delete();
   void update_proxy_widget();
 
 public Q_SLOTS:

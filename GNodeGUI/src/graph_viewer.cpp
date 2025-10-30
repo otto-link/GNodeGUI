@@ -390,24 +390,34 @@ void GraphViewer::delete_graphics_link(GraphicsLink *p_link, bool link_will_be_r
   int           port_out = p_link->get_port_out_index();
   int           port_in = p_link->get_port_in_index();
 
+  std::string node_out_id = node_out ? node_out->get_id() : "";
+  std::string node_in_id = node_in ? node_in->get_id() : "";
+  std::string node_out_port_id = node_out ? node_out->get_port_id(port_out) : "";
+  std::string node_in_port_id = node_in ? node_in->get_port_id(port_in) : "";
+
   Logger::log()->trace("GraphViewer::delete_graphics_link, {}:{} -> {}:{}",
-                       node_out->get_id(),
-                       node_out->get_port_id(port_out),
-                       node_in->get_id(),
-                       node_in->get_port_id(port_in));
+                       node_out_id,
+                       node_out_port_id,
+                       node_in_id,
+                       node_in_port_id);
 
   Logger::log()->trace("GraphViewer::delete_graphics_link: link_will_be_replaced = {}",
                        link_will_be_replaced ? "T" : "F");
 
-  node_out->set_is_port_connected(port_out, nullptr);
-  node_in->set_is_port_connected(port_in, nullptr);
+  // disconnect nodes safely
+  if (node_out)
+    node_out->set_is_port_connected(port_out, nullptr);
+  if (node_in)
+    node_in->set_is_port_connected(port_in, nullptr);
 
+  // delete the link
   clean_delete_graphics_item(p_link);
 
-  Q_EMIT this->connection_deleted(node_out->get_id(),
-                                  node_out->get_port_id(port_out),
-                                  node_in->get_id(),
-                                  node_in->get_port_id(port_in),
+  // emit signal using stored data, not pointers...
+  Q_EMIT this->connection_deleted(node_out_id,
+                                  node_out_port_id,
+                                  node_in_id,
+                                  node_in_port_id,
                                   link_will_be_replaced);
 }
 
@@ -422,16 +432,17 @@ void GraphViewer::delete_graphics_node(GraphicsNode *p_node)
   }
 
   // remove any connected links
-  for (QGraphicsItem *item : this->scene()->items())
+  auto items = scene()->items();
+
+  for (QGraphicsItem *item : items)
     if (GraphicsLink *p_link = dynamic_cast<GraphicsLink *>(item))
       if (p_link->get_node_out()->get_id() == p_node->get_id() ||
           p_link->get_node_in()->get_id() == p_node->get_id())
         this->delete_graphics_link(p_link);
 
-  std::string nid = p_node->get_id();
+  p_node->prepare_for_delete();
 
-  clean_delete_graphics_item(p_node);
-  Q_EMIT this->node_deleted(nid);
+  Q_EMIT this->node_deleted(p_node->get_id());
 }
 
 void GraphViewer::delete_selected_items()
@@ -441,19 +452,51 @@ void GraphViewer::delete_selected_items()
   if (!scene)
     return;
 
-  for (QGraphicsItem *item : scene->selectedItems())
+  // links
   {
-    // remove item from the scene (if it's not already removed by one
-    // the methods called bellow)
-    if (scene->items().contains(item))
-    {
-      scene->removeItem(item);
+    auto items = scene->selectedItems();
 
-      if (GraphicsNode *p_node = dynamic_cast<GraphicsNode *>(item))
-        this->delete_graphics_node(p_node);
-      else if (GraphicsLink *p_link = dynamic_cast<GraphicsLink *>(item))
-        this->delete_graphics_link(p_link);
-      else
+    std::vector<GraphicsLink *> to_remove_links = {};
+
+    for (QGraphicsItem *item : items)
+    {
+      if (scene->items().contains(item))
+      {
+        if (GraphicsLink *p_link = dynamic_cast<GraphicsLink *>(item))
+          to_remove_links.push_back(p_link);
+      }
+    }
+
+    for (auto p_link : to_remove_links)
+      this->delete_graphics_link(p_link);
+  }
+
+  // nodes
+  {
+    auto items = scene->selectedItems();
+
+    std::vector<GraphicsNode *> to_remove_nodes = {};
+
+    for (QGraphicsItem *item : items)
+    {
+      if (scene->items().contains(item))
+      {
+        if (GraphicsNode *p_node = dynamic_cast<GraphicsNode *>(item))
+          to_remove_nodes.push_back(p_node);
+      }
+    }
+
+    for (auto p_node : to_remove_nodes)
+      this->delete_graphics_node(p_node);
+  }
+
+  // reminder
+  {
+    auto items = scene->selectedItems();
+
+    for (QGraphicsItem *item : items)
+    {
+      if (scene->items().contains(item))
       {
         Logger::log()->trace("item removed");
         clean_delete_graphics_item(item);
@@ -466,7 +509,9 @@ void GraphViewer::delete_selected_items()
 
 void GraphViewer::deselect_all()
 {
-  for (QGraphicsItem *item : this->scene()->items())
+  auto items = scene()->items();
+
+  for (QGraphicsItem *item : items)
     if (!is_item_static(item))
       item->setSelected(false);
 
@@ -647,7 +692,9 @@ void GraphViewer::export_to_graphviz(const std::string &fname)
 
 GraphicsNode *GraphViewer::get_graphics_node_by_id(const std::string &node_id)
 {
-  for (QGraphicsItem *item : this->scene()->items())
+  auto items = scene()->items();
+
+  for (QGraphicsItem *item : items)
     if (GraphicsNode *p_node = dynamic_cast<GraphicsNode *>(item))
       if (p_node->get_id() == node_id)
         return p_node;
@@ -668,7 +715,9 @@ QRectF GraphViewer::get_bounding_box()
   {
     std::vector<QGraphicsItem *> items_not_static;
 
-    for (QGraphicsItem *item : this->scene()->items())
+    auto items = scene()->items();
+
+    for (QGraphicsItem *item : items)
     {
       if (!this->is_item_static(item))
         items_not_static.push_back(item);
@@ -694,8 +743,9 @@ std::vector<std::string> GraphViewer::get_selected_node_ids(
     std::vector<QPointF> *p_scene_pos_list)
 {
   std::vector<std::string> ids = {};
+  auto                     items = scene()->items();
 
-  for (QGraphicsItem *item : this->scene()->items())
+  for (QGraphicsItem *item : items)
     if (GraphicsNode *p_node = dynamic_cast<GraphicsNode *>(item))
       if (p_node->isSelected())
       {
@@ -1148,7 +1198,9 @@ void GraphViewer::on_update_started()
 
 void GraphViewer::remove_node(const std::string &node_id)
 {
-  for (QGraphicsItem *item : this->scene()->items())
+  auto items = scene()->items();
+
+  for (QGraphicsItem *item : items)
     if (GraphicsNode *p_node = dynamic_cast<GraphicsNode *>(item))
       if (p_node->get_id() == node_id)
         this->delete_graphics_node(p_node);
