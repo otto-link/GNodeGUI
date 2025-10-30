@@ -89,11 +89,17 @@ GraphicsNode::GraphicsNode(NodeProxy *p_node_proxy, QGraphicsItem *parent)
 
 std::string GraphicsNode::get_caption() const
 {
+  if (!this->p_node_proxy)
+    return std::string();
+
   return this->p_node_proxy->get_caption();
 }
 
 std::string GraphicsNode::get_category() const
 {
+  if (!this->p_node_proxy)
+    return std::string();
+
   return this->p_node_proxy->get_category();
 }
 
@@ -104,6 +110,9 @@ std::vector<std::string> GraphicsNode::get_category_splitted(char delimiter) con
 
 std::string GraphicsNode::get_data_type(int port_index) const
 {
+  if (!this->p_node_proxy)
+    return std::string();
+
   return this->p_node_proxy->get_data_type(port_index);
 }
 
@@ -123,7 +132,13 @@ int GraphicsNode::get_hovered_port_index() const
     return -1;
 }
 
-std::string GraphicsNode::get_id() const { return this->p_node_proxy->get_id(); }
+std::string GraphicsNode::get_id() const
+{
+  if (!this->p_node_proxy)
+    return std::string();
+
+  return this->p_node_proxy->get_id();
+}
 
 std::string GraphicsNode::get_main_category() const
 {
@@ -132,15 +147,27 @@ std::string GraphicsNode::get_main_category() const
   return node_category.substr(0, pos);
 }
 
-int GraphicsNode::get_nports() const { return this->p_node_proxy->get_nports(); }
+int GraphicsNode::get_nports() const
+{
+  if (!this->p_node_proxy)
+    return 0;
+
+  return this->p_node_proxy->get_nports();
+}
 
 std::string GraphicsNode::get_port_caption(int port_index) const
 {
+  if (!this->p_node_proxy)
+    return std::string();
+
   return this->p_node_proxy->get_port_caption(port_index);
 }
 
 std::string GraphicsNode::get_port_id(int port_index) const
 {
+  if (!this->p_node_proxy)
+    return std::string();
+
   return this->p_node_proxy->get_port_id(port_index);
 }
 
@@ -155,12 +182,21 @@ int GraphicsNode::get_port_index(const std::string &id) const
 
 PortType GraphicsNode::get_port_type(int port_index) const
 {
+  if (!this->p_node_proxy)
+    return PortType::OUT;
+
   return this->p_node_proxy->get_port_type(port_index);
 }
 
 NodeProxy *GraphicsNode::get_proxy_ref() { return this->p_node_proxy; }
 
-QWidget *GraphicsNode::get_qwidget_ref() { return this->p_node_proxy->get_qwidget_ref(); }
+QWidget *GraphicsNode::get_qwidget_ref()
+{
+  if (!this->p_node_proxy)
+    return nullptr;
+
+  return this->p_node_proxy->get_qwidget_ref();
+}
 
 void GraphicsNode::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 {
@@ -556,7 +592,9 @@ bool GraphicsNode::sceneEventFilter(QGraphicsItem *watched, QEvent *event)
 void GraphicsNode::set_p_node_proxy(NodeProxy *new_p_node_proxy)
 {
   this->p_node_proxy = new_p_node_proxy;
-  this->update_proxy_widget();
+
+  if (this->p_node_proxy)
+    this->update_proxy_widget();
 }
 
 void GraphicsNode::set_qwidget_visibility(bool is_visible)
@@ -579,6 +617,9 @@ void GraphicsNode::set_qwidget_visibility(bool is_visible)
 
 void GraphicsNode::update_geometry(QSizeF widget_size)
 {
+  if (!this->p_node_proxy)
+    return;
+
   this->geometry = GraphicsNodeGeometry(this->p_node_proxy, widget_size);
   this->setRect(0.f, 0.f, this->geometry.full_width, this->geometry.full_height);
 }
@@ -608,6 +649,9 @@ bool GraphicsNode::update_is_port_hovered(QPointF item_pos)
 void GraphicsNode::update_proxy_widget()
 {
   Logger::log()->debug("GraphicsNode::update_proxy_widget");
+
+  if (!this->p_node_proxy)
+    return;
 
   if (QWidget *widget = this->p_node_proxy->get_qwidget_ref())
   {

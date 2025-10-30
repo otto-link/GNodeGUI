@@ -122,6 +122,7 @@ private:
   int                         port_index_from;
   std::string                 data_type_connecting = "";
   QGraphicsProxyWidget       *proxy_widget = nullptr;
+  bool                        is_valid = true;
 };
 
 } // namespace gngui
