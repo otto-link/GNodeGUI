@@ -375,7 +375,7 @@ void GraphViewer::contextMenuEvent(QContextMenuEvent *event)
   QGraphicsView::contextMenuEvent(event);
 }
 
-void GraphViewer::delete_graphics_link(GraphicsLink *p_link)
+void GraphViewer::delete_graphics_link(GraphicsLink *p_link, bool link_will_be_replaced)
 {
   Logger::log()->trace("GraphicsLink removing");
 
@@ -396,6 +396,9 @@ void GraphViewer::delete_graphics_link(GraphicsLink *p_link)
                        node_in->get_id(),
                        node_in->get_port_id(port_in));
 
+  Logger::log()->trace("GraphViewer::delete_graphics_link: link_will_be_replaced = {}",
+                       link_will_be_replaced ? "T" : "F");
+
   node_out->set_is_port_connected(port_out, nullptr);
   node_in->set_is_port_connected(port_in, nullptr);
 
@@ -404,7 +407,8 @@ void GraphViewer::delete_graphics_link(GraphicsLink *p_link)
   Q_EMIT this->connection_deleted(node_out->get_id(),
                                   node_out->get_port_id(port_out),
                                   node_in->get_id(),
-                                  node_in->get_port_id(port_in));
+                                  node_in->get_port_id(port_in),
+                                  link_will_be_replaced);
 }
 
 void GraphViewer::delete_graphics_node(GraphicsNode *p_node)
@@ -1026,7 +1030,11 @@ void GraphViewer::on_connection_finished(GraphicsNode *from_node,
               }
             }
 
-        this->delete_graphics_link(p_link_to_delete);
+        // delete the link but prevent the graph update since it's
+        // going to be updated after the new link will trigger an
+        // update in the next step
+        bool link_will_be_replaced = true;
+        this->delete_graphics_link(p_link_to_delete, link_will_be_replaced);
       }
 
       // create new link

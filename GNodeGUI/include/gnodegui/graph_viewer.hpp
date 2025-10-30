@@ -101,7 +101,8 @@ Q_SIGNALS:
   void connection_deleted(const std::string &id_out,
                           const std::string &port_id_out,
                           const std::string &to_in,
-                          const std::string &port_id_in);
+                          const std::string &port_id_in,
+                          bool               link_will_be_replaced);
   void connection_dropped(const std::string &node_id,
                           const std::string &port_id,
                           QPointF            scene_pos);
@@ -173,7 +174,7 @@ private Q_SLOTS:
   void on_connection_started(GraphicsNode *from_node, int port_index);
 
 private:
-  void delete_graphics_link(GraphicsLink *p_link);
+  void delete_graphics_link(GraphicsLink *, bool prevent_graph_update = false);
   void delete_graphics_node(GraphicsNode *p_node);
   bool is_item_static(QGraphicsItem *item);
 
