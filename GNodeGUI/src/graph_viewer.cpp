@@ -351,7 +351,7 @@ void GraphViewer::clear()
   this->viewport()->update();
 
   for (auto item : items_to_delete)
-    delete item;
+    clean_delete_graphics_item(item);
 
   Q_EMIT this->selection_has_changed();
 }
@@ -402,7 +402,7 @@ void GraphViewer::delete_graphics_link(GraphicsLink *p_link, bool link_will_be_r
   node_out->set_is_port_connected(port_out, nullptr);
   node_in->set_is_port_connected(port_in, nullptr);
 
-  delete p_link;
+  clean_delete_graphics_item(p_link);
 
   Q_EMIT this->connection_deleted(node_out->get_id(),
                                   node_out->get_port_id(port_out),
@@ -430,7 +430,7 @@ void GraphViewer::delete_graphics_node(GraphicsNode *p_node)
 
   std::string nid = p_node->get_id();
 
-  delete p_node;
+  clean_delete_graphics_item(p_node);
   Q_EMIT this->node_deleted(nid);
 }
 
@@ -456,7 +456,7 @@ void GraphViewer::delete_selected_items()
       else
       {
         Logger::log()->trace("item removed");
-        delete item;
+        clean_delete_graphics_item(item);
       }
     }
   }
@@ -924,7 +924,7 @@ void GraphViewer::mousePressEvent(QMouseEvent *event)
       else if (GraphicsNode *p_node = dynamic_cast<GraphicsNode *>(item))
         this->delete_graphics_node(p_node);
       else if (GraphicsComment *p_comment = dynamic_cast<GraphicsComment *>(item))
-        delete p_comment;
+        clean_delete_graphics_item(p_comment);
 
       // prevent context menu opening
       this->setContextMenuPolicy(Qt::NoContextMenu);
@@ -982,9 +982,7 @@ void GraphViewer::on_connection_dropped(GraphicsNode *from,
   if (this->temp_link)
   {
     // Remove the temporary line
-    this->scene()->removeItem(temp_link);
-    delete this->temp_link;
-    this->temp_link = nullptr;
+    clean_delete_graphics_item(this->temp_link);
 
     Logger::log()->trace("GraphViewer::on_connection_dropped connection_dropped {}:{}",
                          from->get_id(),
@@ -1090,9 +1088,7 @@ void GraphViewer::on_connection_finished(GraphicsNode *from_node,
     {
       // tried to connect but nothinh happens (same node from and to,
       // same port types...)
-      this->scene()->removeItem(temp_link);
-      delete this->temp_link;
-      this->temp_link = nullptr;
+      clean_delete_graphics_item(temp_link);
     }
   }
 

@@ -19,6 +19,7 @@
 namespace gngui
 {
 
+void   clean_delete_graphics_item(QGraphicsItem *item);
 QRectF compute_bounding_rect(const std::vector<QGraphicsItem *> &items);
 
 std::vector<std::string> split_string(const std::string &string, char delimiter);

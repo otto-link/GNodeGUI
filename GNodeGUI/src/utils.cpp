@@ -6,10 +6,20 @@
 #include <vector>
 
 #include <QGraphicsItem>
+#include <QGraphicsScene>
 #include <QRectF>
+#include <QTimer>
 
 namespace gngui
 {
+
+void clean_delete_graphics_item(QGraphicsItem *item)
+{
+  if (item->scene())
+    item->scene()->removeItem(item);
+  QTimer::singleShot(0, [item]() { delete item; });
+  item = nullptr;
+}
 
 QRectF compute_bounding_rect(const std::vector<QGraphicsItem *> &items)
 {
