@@ -27,7 +27,7 @@ void clean_delete_graphics_item(QGraphicsItem *item)
   item->setAcceptedMouseButtons(Qt::NoButton);
   item->setFlag(QGraphicsItem::ItemIsMovable, false);
   item->setFlag(QGraphicsItem::ItemIsSelectable, false);
-  item->setFlag(QGraphicsItem::ItemHasNoContents, true);
+  item->setFlag(QGraphicsItem::ItemHasNoContents, true); // prevent paint()
 
   // remove from scene now to stop further scene iteration referencing it
   if (item->scene())
