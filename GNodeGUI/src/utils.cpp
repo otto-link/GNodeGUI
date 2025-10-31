@@ -29,12 +29,8 @@ void clean_delete_graphics_item(QGraphicsItem *item)
   if (item->scene())
     item->scene()->removeItem(item);
 
-  // if it's a QObject (QGraphicsObject / your GraphicsNode inherits
-  // QObject), schedule deletion safely on the event loop.
   if (auto obj = dynamic_cast<QObject *>(item))
     QMetaObject::invokeMethod(obj, "deleteLater", Qt::QueuedConnection);
-  else
-    delete item; // QTimer::singleShot(0, [item]() { delete item; });
 }
 
 QRectF compute_bounding_rect(const std::vector<QGraphicsItem *> &items)

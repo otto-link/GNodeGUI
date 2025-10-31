@@ -4,6 +4,7 @@
 #include <fstream>
 #include <iostream>
 
+#include <QCoreApplication>
 #include <QKeyEvent>
 #include <QLineEdit>
 #include <QMenu>
@@ -414,11 +415,12 @@ void GraphViewer::delete_graphics_link(GraphicsLink *p_link, bool link_will_be_r
   clean_delete_graphics_item(p_link);
 
   // emit signal using stored data, not pointers...
-  Q_EMIT this->connection_deleted(node_out_id,
-                                  node_out_port_id,
-                                  node_in_id,
-                                  node_in_port_id,
-                                  link_will_be_replaced);
+  if (node_out && node_in)
+    Q_EMIT this->connection_deleted(node_out_id,
+                                    node_out_port_id,
+                                    node_in_id,
+                                    node_in_port_id,
+                                    link_will_be_replaced);
 }
 
 void GraphViewer::delete_graphics_node(GraphicsNode *p_node)
@@ -430,19 +432,44 @@ void GraphViewer::delete_graphics_node(GraphicsNode *p_node)
     Logger::log()->error("GraphViewer::delete_graphics_node: invalid node provided.");
     return;
   }
+  QPointer<GraphicsNode> node_ptr(p_node); // track node safely
 
-  // remove any connected links
-  auto items = scene()->items();
+  Logger::log()->trace("GraphicsNode removing, id: {}",
+                       node_ptr ? node_ptr->get_id() : "null");
 
-  for (QGraphicsItem *item : items)
+  // First, remove any connected links
+  QList<QGraphicsItem *> items_copy = scene()->items(); // copy to avoid iterator issues
+
+  for (QGraphicsItem *item : items_copy)
+  {
     if (GraphicsLink *p_link = dynamic_cast<GraphicsLink *>(item))
-      if (p_link->get_node_out()->get_id() == p_node->get_id() ||
-          p_link->get_node_in()->get_id() == p_node->get_id())
-        this->delete_graphics_link(p_link);
+    {
+      QPointer<GraphicsNode> link_out(p_link->get_node_out());
+      QPointer<GraphicsNode> link_in(p_link->get_node_in());
 
-  p_node->prepare_for_delete();
+      if ((link_out && link_out == node_ptr) || (link_in && link_in == node_ptr))
+      {
+        // safely delete link
+        delete_graphics_link(p_link, false);
+      }
+    }
+  }
 
-  Q_EMIT this->node_deleted(p_node->get_id());
+  // Prepare the node for deletion
+  if (node_ptr)
+  {
+    node_ptr->prepare_for_delete();
+
+    // Remove from scene immediately to prevent further scene access
+    if (node_ptr->scene())
+      node_ptr->scene()->removeItem(node_ptr);
+
+    // Delete later safely
+    node_ptr->deleteLater();
+
+    // Emit signal after scheduling deletion
+    Q_EMIT node_deleted(node_ptr->get_id());
+  }
 }
 
 void GraphViewer::delete_selected_items()
@@ -451,6 +478,8 @@ void GraphViewer::delete_selected_items()
 
   if (!scene)
     return;
+
+  this->set_enabled(false);
 
   // links
   {
@@ -470,6 +499,11 @@ void GraphViewer::delete_selected_items()
     for (auto p_link : to_remove_links)
       this->delete_graphics_link(p_link);
   }
+
+  // make sure all actions related to the links removal are done
+  // before continuing (to avoid that a Qt process removes a node
+  // before removing a link to that node)
+  QCoreApplication::processEvents();
 
   // nodes
   {
@@ -503,6 +537,10 @@ void GraphViewer::delete_selected_items()
       }
     }
   }
+
+  QCoreApplication::processEvents();
+
+  this->set_enabled(true);
 
   Q_EMIT this->selection_has_changed();
 }
