@@ -95,7 +95,6 @@ GraphicsNode::~GraphicsNode()
   // --- mismatch...
 
   this->is_valid = false; // avoid any paint attempts
-
   this->p_node_proxy = nullptr;
 
   // immediately disable interaction (non-reentrant simple ops)
@@ -578,6 +577,8 @@ void GraphicsNode::prepare_for_delete()
     delete this->proxy_widget;
     this->proxy_widget = nullptr;
   }
+
+  this->update();
 
   if (this->scene())
     this->scene()->removeItem(this);

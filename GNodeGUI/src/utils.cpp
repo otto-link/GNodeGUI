@@ -7,8 +7,11 @@
 
 #include <QGraphicsItem>
 #include <QGraphicsScene>
+#include <QObject>
 #include <QRectF>
 #include <QTimer>
+
+#include "gnodegui/logger.hpp"
 
 namespace gngui
 {
@@ -24,13 +27,21 @@ void clean_delete_graphics_item(QGraphicsItem *item)
   item->setAcceptedMouseButtons(Qt::NoButton);
   item->setFlag(QGraphicsItem::ItemIsMovable, false);
   item->setFlag(QGraphicsItem::ItemIsSelectable, false);
+  item->setFlag(QGraphicsItem::ItemHasNoContents, true);
 
   // remove from scene now to stop further scene iteration referencing it
   if (item->scene())
     item->scene()->removeItem(item);
 
+  // if QObject / QGraphicsObject, schedule deletion safely
   if (auto obj = dynamic_cast<QObject *>(item))
-    QMetaObject::invokeMethod(obj, "deleteLater", Qt::QueuedConnection);
+  {
+    obj->disconnect();
+    obj->deleteLater();
+  }
+  else
+    // defer deletion to avoid interfering with current event processing
+    QTimer::singleShot(0, [item]() { delete item; });
 }
 
 QRectF compute_bounding_rect(const std::vector<QGraphicsItem *> &items)

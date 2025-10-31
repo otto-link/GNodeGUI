@@ -28,6 +28,12 @@ GraphicsLink::GraphicsLink(QColor color, LinkType link_type, QGraphicsItem *pare
   this->setZValue(-1);
 }
 
+GraphicsLink::~GraphicsLink()
+{
+  Logger::log()->debug("GraphicsLink::~GraphicsLink");
+  this->is_valid = false;
+}
+
 QRectF GraphicsLink::boundingRect() const
 {
   QRectF bbox = this->path().boundingRect();
@@ -75,6 +81,9 @@ void GraphicsLink::paint(QPainter                       *painter,
 {
   Q_UNUSED(option);
   Q_UNUSED(widget);
+
+  if (!this->is_valid)
+    return;
 
   QColor pcolor = this->isSelected() ? GN_STYLE->link.color_selected : this->color;
   float  pwidth = this->is_link_hovered

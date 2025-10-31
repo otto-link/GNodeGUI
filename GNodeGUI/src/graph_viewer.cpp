@@ -46,6 +46,7 @@ GraphViewer::GraphViewer(std::string id, QWidget *parent) : QGraphicsView(parent
   this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   this->setDragMode(QGraphicsView::NoDrag);
+  this->setFocusPolicy(Qt::StrongFocus);
 
   this->setScene(new QGraphicsScene());
   this->scene()->setSceneRect(-MAX_SIZE, -MAX_SIZE, (MAX_SIZE * 2), (MAX_SIZE * 2));
@@ -455,20 +456,10 @@ void GraphViewer::delete_graphics_node(GraphicsNode *p_node)
     }
   }
 
-  // Prepare the node for deletion
   if (node_ptr)
   {
     node_ptr->prepare_for_delete();
-
-    // Remove from scene immediately to prevent further scene access
-    if (node_ptr->scene())
-      node_ptr->scene()->removeItem(node_ptr);
-
-    // Delete later safely
-    node_ptr->deleteLater();
-
-    // Emit signal after scheduling deletion
-    Q_EMIT node_deleted(node_ptr->get_id());
+    clean_delete_graphics_item(node_ptr);
   }
 }
 
@@ -907,6 +898,13 @@ void GraphViewer::keyPressEvent(QKeyEvent *event)
   if (event->key() == Qt::Key_Shift)
     this->setDragMode(QGraphicsView::RubberBandDrag);
 
+  if (event->key() == Qt::Key_Delete)
+  {
+    this->delete_selected_items();
+    event->accept();
+    return;
+  }
+
   QGraphicsView::keyPressEvent(event);
 }
 
@@ -977,10 +975,6 @@ void GraphViewer::keyReleaseEvent(QKeyEvent *event)
   else if (event->modifiers() == Qt::ControlModifier && event->key() == Qt::Key_V)
   {
     Q_EMIT this->nodes_paste_request();
-  }
-  else if (event->key() == Qt::Key_Delete)
-  {
-    this->delete_selected_items();
   }
 
   QGraphicsView::keyReleaseEvent(event);
