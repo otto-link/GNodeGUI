@@ -460,6 +460,8 @@ void GraphViewer::delete_graphics_node(GraphicsNode *p_node)
   {
     node_ptr->prepare_for_delete();
     clean_delete_graphics_item(node_ptr);
+
+    Q_EMIT this->node_deleted(node_ptr->get_id());
   }
 }
 
