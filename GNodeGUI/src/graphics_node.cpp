@@ -9,6 +9,7 @@
 #include <QGraphicsScene>
 #include <QGraphicsSceneMouseEvent>
 #include <QPainter>
+#include <QPointer>
 
 #include "gnodegui/graphics_link.hpp"
 #include "gnodegui/graphics_node.hpp"

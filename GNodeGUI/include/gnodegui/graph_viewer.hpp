@@ -7,6 +7,7 @@
 #include <QGraphicsItem>
 #include <QGraphicsView>
 #include <QJsonObject>
+#include <QPointer>
 
 #include "nlohmann/json.hpp"
 
