@@ -109,51 +109,31 @@ std::string GraphViewer::add_node(NodeProxy         *p_node_proxy,
   GraphicsNode *p_node = new GraphicsNode(p_node_proxy);
   this->add_item(p_node, scene_pos);
 
-  this->connect(p_node,
-                &GraphicsNode::right_clicked,
-                this,
-                &GraphViewer::on_node_right_clicked);
+  p_node->right_clicked = [this](const std::string &port_index, QPointF scene_pos)
+  { this->on_node_right_clicked(port_index, scene_pos); };
 
-  this->connect(p_node,
-                &GraphicsNode::connection_started,
-                this,
-                &GraphViewer::on_connection_started);
+  p_node->connection_started = [this](GraphicsNode *from, int port_index)
+  { this->on_connection_started(from, port_index); };
 
-  this->connect(p_node,
-                &GraphicsNode::connection_finished,
-                this,
-                &GraphViewer::on_connection_finished);
+  p_node->connection_finished =
+      [this](GraphicsNode *from, int port_from_index, GraphicsNode *to, int port_to_index)
+  { this->on_connection_finished(from, port_from_index, to, port_to_index); };
 
-  this->connect(p_node,
-                &GraphicsNode::connection_dropped,
-                this,
-                &GraphViewer::on_connection_dropped);
+  p_node->connection_dropped =
+      [this](GraphicsNode *from, int port_index, QPointF scene_pos)
+  { this->on_connection_dropped(from, port_index, scene_pos); };
 
-  this->connect(p_node,
-                &GraphicsNode::reload_request,
-                this,
-                &GraphViewer::on_node_reload_request);
+  p_node->selected = [this](const std::string &node_id)
+  {
+    Q_EMIT this->node_selected(node_id);
+    Q_EMIT this->selection_has_changed();
+  };
 
-  this->connect(p_node,
-                &GraphicsNode::toggle_widget_visibility,
-                this,
-                &GraphViewer::on_node_settings_request);
-
-  this->connect(p_node,
-                &GraphicsNode::selected,
-                [this](const std::string &node_id)
-                {
-                  Q_EMIT this->node_selected(node_id);
-                  Q_EMIT this->selection_has_changed();
-                });
-
-  this->connect(p_node,
-                &GraphicsNode::deselected,
-                [this](const std::string &node_id)
-                {
-                  Q_EMIT this->node_deselected(node_id);
-                  Q_EMIT this->selection_has_changed();
-                });
+  p_node->deselected = [this](const std::string &node_id)
+  {
+    Q_EMIT this->node_deselected(node_id);
+    Q_EMIT this->selection_has_changed();
+  };
 
   // if nothing provided, generate a unique id based on the object address
   std::string nid = node_id;
@@ -433,10 +413,8 @@ void GraphViewer::delete_graphics_node(GraphicsNode *p_node)
     Logger::log()->error("GraphViewer::delete_graphics_node: invalid node provided.");
     return;
   }
-  QPointer<GraphicsNode> node_ptr(p_node); // track node safely
-
   Logger::log()->trace("GraphicsNode removing, id: {}",
-                       node_ptr ? node_ptr->get_id() : "null");
+                       p_node ? p_node->get_id() : "null");
 
   // First, remove any connected links
   QList<QGraphicsItem *> items_copy = scene()->items(); // copy to avoid iterator issues
@@ -445,10 +423,10 @@ void GraphViewer::delete_graphics_node(GraphicsNode *p_node)
   {
     if (GraphicsLink *p_link = dynamic_cast<GraphicsLink *>(item))
     {
-      QPointer<GraphicsNode> link_out(p_link->get_node_out());
-      QPointer<GraphicsNode> link_in(p_link->get_node_in());
+      GraphicsNode *p_link_out = p_link->get_node_out();
+      GraphicsNode *p_link_in = p_link->get_node_in();
 
-      if ((link_out && link_out == node_ptr) || (link_in && link_in == node_ptr))
+      if ((p_link_out && p_link_out == p_node) || (p_link_in && p_link_in == p_node))
       {
         // safely delete link
         delete_graphics_link(p_link, false);
@@ -456,12 +434,12 @@ void GraphViewer::delete_graphics_node(GraphicsNode *p_node)
     }
   }
 
-  if (node_ptr)
+  if (p_node)
   {
-    node_ptr->prepare_for_delete();
-    clean_delete_graphics_item(node_ptr);
+    p_node->prepare_for_delete();
+    clean_delete_graphics_item(p_node);
 
-    Q_EMIT this->node_deleted(node_ptr->get_id());
+    Q_EMIT this->node_deleted(p_node->get_id());
   }
 }
 
@@ -621,7 +599,7 @@ bool GraphViewer::execute_new_node_context_menu()
   bool submenu_active = true;
   bool filtering_active = false;
 
-  connect(
+  this->connect(
       text_box,
       &QLineEdit::textEdited,
       [this, menu, category_map, &submenu_active, &filtering_active](const QString &text)
@@ -1067,6 +1045,7 @@ void GraphViewer::on_connection_dropped(GraphicsNode *from,
   {
     // Remove the temporary line
     clean_delete_graphics_item(this->temp_link);
+    this->temp_link = nullptr;
 
     Logger::log()->trace("GraphViewer::on_connection_dropped connection_dropped {}:{}",
                          from->get_id(),

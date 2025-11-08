@@ -9,7 +9,6 @@
 #include <QGraphicsScene>
 #include <QGraphicsSceneMouseEvent>
 #include <QPainter>
-#include <QPointer>
 
 #include "gnodegui/graphics_link.hpp"
 #include "gnodegui/graphics_node.hpp"
@@ -45,44 +44,8 @@ GraphicsNode::GraphicsNode(NodeProxy *p_node_proxy, QGraphicsItem *parent)
   this->is_port_hovered.resize(this->get_nports());
   this->connected_link_ref.resize(this->get_nports());
 
-  // heometry
+  // geometry
   this->update_geometry();
-
-  // add buttons
-  if (GN_STYLE->node.reload_button)
-  {
-    gngui::ReloadIcon *reload = new gngui::ReloadIcon(this->geometry.reload_rect.width(),
-                                                      GN_STYLE->node.color_icon,
-                                                      GN_STYLE->node.pen_width,
-                                                      this);
-    reload->setPos(this->geometry.reload_rect.topLeft());
-
-    this->connect(reload,
-                  &ReloadIcon::hit_icon,
-                  [this]() { Q_EMIT this->reload_request(this->get_id()); });
-  }
-
-  if (GN_STYLE->node.settings_button)
-  {
-    gngui::ShowSettingsIcon *settings = new gngui::ShowSettingsIcon(
-        this->geometry.settings_rect.width(),
-        GN_STYLE->node.color_icon,
-        GN_STYLE->node.pen_width,
-        this);
-    settings->setPos(this->geometry.settings_rect.topLeft());
-
-    this->connect(settings,
-                  &ShowSettingsIcon::hit_icon,
-                  [this]() { Q_EMIT this->toggle_widget_visibility(this->get_id()); });
-
-    this->connect(settings,
-                  &ShowSettingsIcon::hit_icon,
-                  [this]()
-                  {
-                    this->is_widget_visible = !this->is_widget_visible;
-                    this->set_qwidget_visibility(this->is_widget_visible);
-                  });
-  }
 
   // add widget
   this->update_proxy_widget();
@@ -104,8 +67,6 @@ GraphicsNode::~GraphicsNode()
   this->setAcceptedMouseButtons(Qt::NoButton);
 
   // disconnect all Qt signals
-  QObject::disconnect(this, nullptr, nullptr, nullptr);
-
   // remove
   if (this->scene())
     this->scene()->removeItem(this);
@@ -263,9 +224,12 @@ QVariant GraphicsNode::itemChange(GraphicsItemChange change, const QVariant &val
     const bool new_selection_state = value.toBool();
 
     if (new_selection_state)
-      Q_EMIT this->selected(this->get_id());
-    else
-      Q_EMIT this->deselected(this->get_id());
+    {
+      if (this->selected)
+        this->selected(this->get_id());
+      else if (this->deselected)
+        this->deselected(this->get_id());
+    }
   }
 
   return QGraphicsItem::itemChange(change, value);
@@ -311,7 +275,8 @@ void GraphicsNode::mousePressEvent(QGraphicsSceneMouseEvent *event)
       this->setFlag(QGraphicsItem::ItemIsMovable, false);
       this->port_index_from = hovered_port_index;
       this->data_type_connecting = this->get_data_type(hovered_port_index);
-      Q_EMIT connection_started(this, hovered_port_index);
+      if (this->connection_started)
+        this->connection_started(this, hovered_port_index);
       event->accept();
     }
     else
@@ -324,7 +289,8 @@ void GraphicsNode::mousePressEvent(QGraphicsSceneMouseEvent *event)
   {
     QPointF pos = event->pos();
     QPointF scene_pos = this->mapToScene(pos);
-    Q_EMIT this->right_clicked(this->get_id(), scene_pos);
+    if (this->right_clicked)
+      this->right_clicked(this->get_id(), scene_pos);
   }
 
   QGraphicsRectItem::mousePressEvent(event);
@@ -340,33 +306,30 @@ void GraphicsNode::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     }
     else if (this->has_connection_started)
     {
-      // Wrap "this" in a QPointer for safety
-      QPointer<GraphicsNode> self(this);
-
       QList<QGraphicsItem *> items_under_mouse = scene()->items(event->scenePos());
       bool                   is_dropped = true;
 
       for (QGraphicsItem *item : items_under_mouse)
       {
-        if (GraphicsNode *target_node_raw = dynamic_cast<GraphicsNode *>(item))
+        if (GraphicsNode *p_target_node = dynamic_cast<GraphicsNode *>(item))
         {
-          QPointer<GraphicsNode> target_node(target_node_raw); // protect against deletion
 
-          int hovered_port_index = target_node ? target_node->get_hovered_port_index()
-                                               : -1;
+          int hovered_port_index = p_target_node ? p_target_node->get_hovered_port_index()
+                                                 : -1;
           if (hovered_port_index >= 0)
           {
             Logger::log()->trace("connection_finished {}:{}",
-                                 target_node->get_id(),
+                                 p_target_node->get_id(),
                                  hovered_port_index);
 
-            Q_EMIT connection_finished(self,
-                                       this->port_index_from,
-                                       target_node,
-                                       hovered_port_index);
+            if (this->connection_finished)
+              this->connection_finished(this,
+                                        this->port_index_from,
+                                        p_target_node,
+                                        hovered_port_index);
 
             // After signal emission, the nodes may have been deleted
-            if (!self || !target_node)
+            if (!p_target_node)
               return;
 
             is_dropped = false;
@@ -380,9 +343,6 @@ void GraphicsNode::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
         }
       }
 
-      if (!self)
-        return; // the node got deleted during the signal
-
       this->reset_is_port_hovered();
       this->update();
 
@@ -391,11 +351,9 @@ void GraphicsNode::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
         Logger::log()->trace("GraphicsNode::mouseReleaseEvent connection_dropped {}",
                              this->get_id());
 
-        Q_EMIT connection_dropped(this, this->port_index_from, event->scenePos());
+        if (this->connection_dropped)
+          this->connection_dropped(this, this->port_index_from, event->scenePos());
       }
-
-      if (!self)
-        return; // node might have been deleted during connection_dropped
 
       this->has_connection_started = false;
 
@@ -430,13 +388,10 @@ void GraphicsNode::on_compute_started()
   this->update();
 }
 
-void GraphicsNode::paint(QPainter                       *painter,
-                         const QStyleOptionGraphicsItem *option,
-                         QWidget                        *widget)
+void GraphicsNode::paint(QPainter *painter,
+                         const QStyleOptionGraphicsItem * /* option */,
+                         QWidget * /* widget */)
 {
-  Q_UNUSED(option);
-  Q_UNUSED(widget);
-
   if (!this->is_valid || !this->p_node_proxy)
     return;
 
@@ -583,9 +538,6 @@ void GraphicsNode::prepare_for_delete()
 
   if (this->scene())
     this->scene()->removeItem(this);
-
-  // queue the delete for when Qt is idle
-  QMetaObject::invokeMethod(this, "deleteLater", Qt::QueuedConnection);
 }
 
 void GraphicsNode::set_is_node_pinned(bool new_state)
@@ -607,27 +559,24 @@ void GraphicsNode::reset_is_port_hovered()
 bool GraphicsNode::sceneEventFilter(QGraphicsItem *watched, QEvent *event)
 {
   // Try to cast the watched item to a GraphicsNode
-  if (GraphicsNode *node_raw = dynamic_cast<GraphicsNode *>(watched))
+  if (GraphicsNode *p_node = dynamic_cast<GraphicsNode *>(watched))
   {
-    QPointer<GraphicsNode> node(node_raw);
-    QPointer<GraphicsNode> self(this);
-
     // Check for mouse move while connection started
-    if (event->type() == QEvent::GraphicsSceneMouseMove && node &&
-        node->has_connection_started)
+    if (event->type() == QEvent::GraphicsSceneMouseMove && p_node &&
+        p_node->has_connection_started)
     {
       QGraphicsSceneMouseEvent *mouse_event = static_cast<QGraphicsSceneMouseEvent *>(
           event);
       QPointF item_pos = mouse_event->scenePos() - this->scenePos();
 
       // Update current data type of the building connection
-      if (self && node && this->data_type_connecting != node->data_type_connecting)
+      if (p_node && this->data_type_connecting != p_node->data_type_connecting)
       {
-        this->data_type_connecting = node->data_type_connecting;
+        this->data_type_connecting = p_node->data_type_connecting;
         this->update();
       }
 
-      if (!self || !node)
+      if (!p_node)
         return false; // one got deleted during update
 
       // Update hovering port status
@@ -637,14 +586,14 @@ bool GraphicsNode::sceneEventFilter(QGraphicsItem *watched, QEvent *event)
         {
           if (this->is_port_hovered[k])
           {
-            if (!node)
+            if (!p_node)
               break; // avoid deref if deleted mid-loop
 
-            int      from_pidx = node->port_index_from;
-            PortType from_ptype = node->get_port_type(from_pidx);
+            int      from_pidx = p_node->port_index_from;
+            PortType from_ptype = p_node->get_port_type(from_pidx);
             PortType to_ptype = this->get_port_type(k);
 
-            std::string from_pdata = node->get_data_type(from_pidx);
+            std::string from_pdata = p_node->get_data_type(from_pidx);
             std::string to_pdata = this->get_data_type(k);
 
             // Incompatible or same type → deactivate hover
@@ -652,9 +601,6 @@ bool GraphicsNode::sceneEventFilter(QGraphicsItem *watched, QEvent *event)
               this->is_port_hovered[k] = false;
           }
         }
-
-        if (self)
-          this->update();
       }
     }
   }

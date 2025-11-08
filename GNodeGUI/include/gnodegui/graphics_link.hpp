@@ -6,7 +6,6 @@
 #include <vector>
 
 #include <QGraphicsPathItem>
-#include <QObject>
 
 #include "gnodegui/graphics_node.hpp"
 #include "nlohmann/json.hpp"
@@ -25,10 +24,8 @@ enum LinkType
   JAGGED
 };
 
-class GraphicsLink : public QObject, public QGraphicsPathItem
+class GraphicsLink : public QGraphicsPathItem
 {
-  Q_OBJECT
-
 public:
   GraphicsLink(QColor         color = QColor(0, 0, 0, 0),
                LinkType       link_type = LinkType::CUBIC,

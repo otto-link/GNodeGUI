@@ -3,17 +3,14 @@
  * this software. */
 #pragma once
 #include <QGraphicsRectItem>
-#include <QObject>
 
 #include "nlohmann/json.hpp"
 
 namespace gngui
 {
 
-class GraphicsComment : public QObject, public QGraphicsRectItem
+class GraphicsComment : public QGraphicsRectItem
 {
-  Q_OBJECT
-
 public:
   GraphicsComment(QGraphicsItem *parent = nullptr);
 

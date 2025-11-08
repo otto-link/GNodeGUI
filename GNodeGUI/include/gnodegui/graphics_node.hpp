@@ -2,12 +2,12 @@
  * Public License. The full license is in the file LICENSE, distributed with
  * this software. */
 #pragma once
+#include <functional>
 #include <memory>
 
 #include <QEvent>
 #include <QGraphicsRectItem>
 #include <QMouseEvent>
-#include <QObject>
 #include <QWidget>
 
 #include "nlohmann/json.hpp"
@@ -22,10 +22,8 @@ namespace gngui
 
 class GraphicsLink; // forward decl
 
-class GraphicsNode : public QObject, public QGraphicsRectItem
+class GraphicsNode : public QGraphicsRectItem
 {
-  Q_OBJECT
-
 public:
   GraphicsNode(NodeProxy *p_node_proxy, QGraphicsItem *parent = nullptr);
   ~GraphicsNode();
@@ -65,23 +63,20 @@ public:
   void prepare_for_delete();
   void update_proxy_widget();
 
-public Q_SLOTS:
+  // --- "slots" equivalent
   void on_compute_finished();
   void on_compute_started();
 
-Q_SIGNALS:
-
-  void connection_dropped(GraphicsNode *from, int port_index, QPointF scene_pos);
-  void connection_finished(GraphicsNode *from,
-                           int           port_from_index,
-                           GraphicsNode *to,
-                           int           port_to_index);
-  void connection_started(GraphicsNode *from, int port_index);
-  void deselected(const std::string &id);
-  void reload_request(const std::string &id);
-  void right_clicked(const std::string &id, QPointF scene_pos);
-  void selected(const std::string &id);
-  void toggle_widget_visibility(const std::string &id);
+  // --- Callbacks - "signals" equivalent
+  std::function<void(GraphicsNode *from, int port_index, QPointF scene_pos)>
+      connection_dropped;
+  std::function<
+      void(GraphicsNode *from, int port_from_index, GraphicsNode *to, int port_to_index)>
+                                                                connection_finished;
+  std::function<void(GraphicsNode *from, int port_index)>       connection_started;
+  std::function<void(const std::string &id)>                    selected;
+  std::function<void(const std::string &id)>                    deselected;
+  std::function<void(const std::string &id, QPointF scene_pos)> right_clicked;
 
 protected:
   // --- Qt methods override

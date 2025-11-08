@@ -8,7 +8,6 @@
 #include <QGraphicsItem>
 #include <QGraphicsScene>
 #include <QObject>
-#include <QPointer>
 #include <QRectF>
 #include <QTimer>
 
@@ -36,41 +35,8 @@ void clean_delete_graphics_item(QGraphicsItem *item)
   if (item->scene())
     item->scene()->removeItem(item);
 
-  // if QObject / QGraphicsObject, schedule deletion safely
-  if (auto obj = dynamic_cast<QObject *>(item))
-  {
-    obj->disconnect();
-    obj->deleteLater();
-  }
-  else
-  {
-    if (auto p_link = dynamic_cast<GraphicsLink *>(item))
-    {
-      QPointer<GraphicsLink> guard(p_link);
-      QTimer::singleShot(0,
-                         [guard]() mutable
-                         {
-                           // safe: delete executed after paint events
-                           if (guard)
-                             delete guard;
-                         });
-    }
-    else if (auto p_node = dynamic_cast<GraphicsNode *>(item))
-    {
-      QPointer<GraphicsNode> guard(p_node);
-      QTimer::singleShot(0,
-                         [guard]() mutable
-                         {
-                           // safe: delete executed after paint events
-                           if (guard)
-                             delete guard;
-                         });
-    }
-    else
-    {
-      QTimer::singleShot(0, [item]() { if (item) delete item; });
-    }
-  }
+  delete item;
+  item = nullptr;
 }
 
 QRectF compute_bounding_rect(const std::vector<QGraphicsItem *> &items)

@@ -7,7 +7,6 @@
 #include <QGraphicsItem>
 #include <QGraphicsView>
 #include <QJsonObject>
-#include <QPointer>
 
 #include "nlohmann/json.hpp"
 
@@ -189,9 +188,9 @@ private:
   // all nodes available store as a map of (node type, node category)
   std::map<std::string, std::string> node_inventory;
 
-  QPointer<GraphicsLink> temp_link = nullptr;   // Temporary link
-  QPointer<GraphicsNode> source_node = nullptr; // Source node for the connection
-  LinkType               current_link_type = LinkType::CUBIC;
+  GraphicsLink *temp_link = nullptr;   // Temporary link
+  GraphicsNode *source_node = nullptr; // Source node for the connection
+  LinkType      current_link_type = LinkType::CUBIC;
 };
 
 } // namespace gngui
