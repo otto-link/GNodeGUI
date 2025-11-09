@@ -53,7 +53,7 @@ GraphicsNode::GraphicsNode(NodeProxy *p_node_proxy, QGraphicsItem *parent)
 
 GraphicsNode::~GraphicsNode()
 {
-  Logger::log()->debug("GraphicsNode::~GraphicsNode");
+  Logger::log()->debug("GraphicsNode::~GraphicsNode: {}", this->get_id());
 
   // --- safeguards added in the destructor to prevent any Qt lifetime
   // --- mismatch...
@@ -267,7 +267,7 @@ void GraphicsNode::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
     if (hovered_port_index >= 0)
     {
-      Logger::log()->trace("connection_started {}:{}",
+      Logger::log()->trace("GraphicsNode::mousePressEvent: connection_started {}:{}",
                            this->get_id(),
                            hovered_port_index);
 
@@ -316,21 +316,18 @@ void GraphicsNode::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 
           int hovered_port_index = p_target_node ? p_target_node->get_hovered_port_index()
                                                  : -1;
-          if (hovered_port_index >= 0)
+          if (hovered_port_index >= 0 && p_target_node != this)
           {
-            Logger::log()->trace("connection_finished {}:{}",
-                                 p_target_node->get_id(),
-                                 hovered_port_index);
+            Logger::log()->trace(
+                "GraphicsNode::mouseReleaseEvent: connection_finished {}:{}",
+                p_target_node->get_id(),
+                hovered_port_index);
 
             if (this->connection_finished)
               this->connection_finished(this,
                                         this->port_index_from,
                                         p_target_node,
                                         hovered_port_index);
-
-            // After signal emission, the nodes may have been deleted
-            if (!p_target_node)
-              return;
 
             is_dropped = false;
             break;

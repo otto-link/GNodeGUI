@@ -30,7 +30,12 @@ GraphicsLink::GraphicsLink(QColor color, LinkType link_type, QGraphicsItem *pare
 
 GraphicsLink::~GraphicsLink()
 {
-  Logger::log()->debug("GraphicsLink::~GraphicsLink");
+  Logger::log()->debug(
+      "GraphicsLink::~GraphicsLink: {}:{} -> {}:{}",
+      this->node_out ? this->node_out->get_id() : "NULL",
+      this->node_out ? this->node_out->get_port_id(this->port_out_index) : "NULL",
+      this->node_in ? this->node_in->get_id() : "NULL",
+      this->node_in ? this->node_in->get_port_id(this->port_in_index) : "NULL");
   this->is_valid = false;
 }
 
