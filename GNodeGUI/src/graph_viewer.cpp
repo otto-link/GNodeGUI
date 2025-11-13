@@ -436,10 +436,11 @@ void GraphViewer::delete_graphics_node(GraphicsNode *p_node)
 
   if (p_node)
   {
+    const std::string deleted_id = p_node->get_id(); // bckp before delete...
     p_node->prepare_for_delete();
     clean_delete_graphics_item(p_node);
 
-    Q_EMIT this->node_deleted(p_node->get_id());
+    Q_EMIT this->node_deleted(deleted_id);
   }
 }
 
