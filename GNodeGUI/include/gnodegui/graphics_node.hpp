@@ -61,6 +61,7 @@ public:
   // --- UI
 
   void prepare_for_delete();
+  void update_geometry(QSizeF widget_size = QSizeF(-1.f, -1.f));
   void update_proxy_widget();
 
   // --- "slots" equivalent
@@ -99,10 +100,6 @@ private:
   int  get_hovered_port_index() const;
   bool update_is_port_hovered(QPointF scene_pos);
   void reset_is_port_hovered();
-
-  // --- UI
-
-  void update_geometry(QSizeF widget_size = QSizeF(-1.f, -1.f));
 
   // --- Members
 
