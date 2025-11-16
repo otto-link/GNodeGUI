@@ -13,6 +13,8 @@
 namespace gngui
 {
 
+class GraphicsNode; // forward decl
+
 enum LinkType
 {
   BROKEN_LINE,
