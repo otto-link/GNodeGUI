@@ -72,6 +72,15 @@ public:
 
   std::string get_category() const override { return "Math/Range/Bound"; }
 
+  std::string get_comment() const override
+  {
+    return "The Qt framework contains a comprehensive set of highly intuitive and "
+           "modularized C++ library classes and is loaded with APIs to simplify your "
+           "application development. Qt produces highly readable, easily maintainable "
+           "and reusable code with high runtime performance and small footprint - and "
+           "it's cross-platform.";
+  }
+
   std::string get_data_type(int port_index) const override
   {
     std::vector<std::string> vec = {"float", "image", "int", "float"};

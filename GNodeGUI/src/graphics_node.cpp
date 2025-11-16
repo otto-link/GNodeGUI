@@ -515,6 +515,18 @@ void GraphicsNode::paint(QPainter *painter,
     // Draw the port as a circle (ellipse with equal width and height)
     painter->drawEllipse(this->geometry.port_rects[k].center(), port_radius, port_radius);
   }
+
+  // --- Comment
+
+  std::string comment = this->p_node_proxy->get_comment();
+
+  if (!comment.empty())
+  {
+    painter->setPen(GN_STYLE->node.color_comment);
+    painter->drawText(this->geometry.comment_rect,
+                      Qt::TextWordWrap | Qt::AlignLeft | Qt::AlignTop,
+                      comment.c_str());
+  }
 }
 
 void GraphicsNode::prepare_for_delete()

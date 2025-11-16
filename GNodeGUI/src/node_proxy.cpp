@@ -8,6 +8,12 @@
 namespace gngui
 {
 
+std::string NodeProxy::get_comment() const
+{
+  // no comment by default
+  return std::string();
+}
+
 std::string NodeProxy::get_port_id(int port_index) const
 {
   return this->get_port_caption(port_index);

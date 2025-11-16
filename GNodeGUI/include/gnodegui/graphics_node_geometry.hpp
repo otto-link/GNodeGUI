@@ -23,10 +23,9 @@ public:
   QSizeF  caption_size;
   QPointF caption_pos;
   QPointF widget_pos;
-  QRectF  reload_rect;
-  QRectF  settings_rect;
   QRectF  body_rect;
   QRectF  header_rect;
+  QRectF  comment_rect;
   int     full_width;
   int     full_height;
 
@@ -34,7 +33,24 @@ public:
   std::vector<QRectF> port_rects;
 
 private:
+  void compute_base_metrics(QFontMetrics &fm);
+
+  void compute_body_and_header();
+  void compute_caption(const QFontMetrics &fm);
+  void compute_comment_height(const QFontMetrics &fm, const std::string &comment);
+  void compute_full_dimensions(const QSizeF &widget_size);
+  void compute_node_width(const QSizeF &widget_size);
+  void compute_ports(const QFontMetrics &fm);
+
   NodeProxy *p_node_proxy; // Pointer to the associated node proxy
+
+  float line_height;
+  float margin;
+  float header_gap;
+  float node_width;
+  float comment_height;
+
+  float ports_end_y;
 };
 
 } // namespace gngui

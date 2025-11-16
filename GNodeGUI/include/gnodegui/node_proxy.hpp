@@ -47,6 +47,7 @@ public:
   // --- Ports
   virtual int         get_nports() const = 0;
   virtual std::string get_port_caption(int port_index) const = 0;
+  virtual std::string get_comment() const;
   virtual std::string get_port_id(int port_index) const;
   virtual PortType    get_port_type(int port_index) const = 0;
   virtual std::string get_data_type(int port_index) const = 0;
