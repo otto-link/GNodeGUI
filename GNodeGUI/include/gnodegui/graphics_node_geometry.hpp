@@ -41,6 +41,7 @@ private:
   void compute_full_dimensions(const QSizeF &widget_size);
   void compute_node_width(const QSizeF &widget_size);
   void compute_ports(const QFontMetrics &fm);
+  void compute_widget_position();
 
   NodeProxy *p_node_proxy; // Pointer to the associated node proxy
 

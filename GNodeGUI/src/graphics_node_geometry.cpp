@@ -33,40 +33,8 @@ GraphicsNodeGeometry::GraphicsNodeGeometry(NodeProxy *p_node_proxy, QSizeF widge
   this->compute_comment_height(fm, this->p_node_proxy->get_comment());
   this->compute_full_dimensions(widget_size);
   this->compute_body_and_header();
-
-  //
-
-  float dy = GN_STYLE->node.vertical_stretching * fm.height();
-  float margin = 2 * GN_STYLE->node.port_radius;
-
-  // ports bounding box
-  float ypos = this->header_rect.bottom() + GN_STYLE->node.padding;
-
-  for (int k = 0; k < this->p_node_proxy->get_nports(); k++)
-  {
-    float dx = 2.f * GN_STYLE->node.padding;
-
-    this->port_label_rects.push_back(
-        QRectF(margin + dx, ypos, node_width - 2.f * dx, dy));
-
-    if (this->p_node_proxy->get_port_type(k) == PortType::IN)
-      this->port_rects.push_back(
-          QRectF(margin - GN_STYLE->node.port_radius,
-                 ypos + 0.5f * fm.height() - GN_STYLE->node.port_radius,
-                 2 * GN_STYLE->node.port_radius,
-                 2 * GN_STYLE->node.port_radius));
-    else
-      this->port_rects.push_back(
-          QRectF(margin + node_width - GN_STYLE->node.port_radius,
-                 ypos + 0.5f * fm.height() - GN_STYLE->node.port_radius,
-                 2 * GN_STYLE->node.port_radius,
-                 2 * GN_STYLE->node.port_radius));
-
-    ypos += dy;
-  }
-
-  this->widget_pos = QPointF(margin + GN_STYLE->node.padding_widget_width,
-                             ypos + GN_STYLE->node.padding_widget_height);
+  this->compute_ports(fm);
+  this->compute_widget_position();
 }
 
 //
@@ -141,6 +109,37 @@ void GraphicsNodeGeometry::compute_node_width(const QSizeF &widget_size)
 {
   float min_from_widget = widget_size.width() + 2.f * GN_STYLE->node.padding_widget_width;
   this->node_width = std::max(GN_STYLE->node.width, (float)min_from_widget);
+}
+
+void GraphicsNodeGeometry::compute_ports(const QFontMetrics &fm)
+{
+  float y = this->header_rect.bottom() + GN_STYLE->node.padding;
+  float diameter = 2.f * GN_STYLE->node.port_radius;
+  float label_x = this->margin + 2.f * GN_STYLE->node.padding;
+  float label_w = this->node_width - 4.f * GN_STYLE->node.padding;
+
+  for (int i = 0; i < this->p_node_proxy->get_nports(); i++)
+  {
+    this->port_label_rects.emplace_back(QRectF(label_x, y, label_w, this->line_height));
+
+    float cy = y + 0.5f * fm.height() - GN_STYLE->node.port_radius;
+
+    float cx = (this->p_node_proxy->get_port_type(i) == PortType::IN)
+                   ? this->margin - GN_STYLE->node.port_radius
+                   : this->margin + this->node_width - GN_STYLE->node.port_radius;
+
+    this->port_rects.emplace_back(QRectF(cx, cy, diameter, diameter));
+
+    y += this->line_height;
+  }
+
+  this->ports_end_y = y;
+}
+
+void GraphicsNodeGeometry::compute_widget_position()
+{
+  this->widget_pos = QPointF(this->margin + GN_STYLE->node.padding_widget_width,
+                             this->ports_end_y + GN_STYLE->node.padding_widget_height);
 }
 
 } // namespace gngui
