@@ -13,8 +13,6 @@ namespace gngui
 GraphicsNodeGeometry::GraphicsNodeGeometry(NodeProxy *p_node_proxy, QSizeF widget_size)
     : p_node_proxy(p_node_proxy)
 {
-  Logger::log()->trace("GraphicsNodeGeometry::GraphicsNodeGeometry");
-
   if (!p_node_proxy)
   {
     Logger::log()->error(

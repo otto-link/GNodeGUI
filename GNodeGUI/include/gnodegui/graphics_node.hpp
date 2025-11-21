@@ -96,6 +96,8 @@ protected:
                      QWidget                        *widget) override;
 
 private:
+  QSizeF get_widget_size() const;
+
   // --- Hover state
 
   int  get_hovered_port_index() const;
@@ -108,6 +110,7 @@ private:
   QPointer<NodeProxy>         p_proxy;
   GraphicsNodeGeometry        geometry;
   std::string                 current_comment;
+  QSizeF                      current_widget_size;
   bool                        is_node_dragged = false;
   bool                        is_node_hovered = false;
   bool                        is_node_pinned = false;

@@ -175,6 +175,19 @@ PortType GraphicsNode::get_port_type(int port_index) const
 
 const NodeProxy *GraphicsNode::get_proxy_ref() const { return this->p_proxy; }
 
+QSizeF GraphicsNode::get_widget_size() const
+{
+  QSizeF size = QSizeF();
+
+  if (this->proxy_widget)
+  {
+    if (QWidget *widget = this->proxy_widget->widget())
+      size = widget->size();
+  }
+
+  return size;
+}
+
 void GraphicsNode::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 {
   this->is_node_hovered = true;
@@ -399,6 +412,9 @@ void GraphicsNode::paint(QPainter *painter,
 {
   if (!this->p_proxy)
     return;
+
+  if (current_widget_size != this->get_widget_size())
+    this->update_geometry();
 
   painter->save();
 
@@ -676,13 +692,7 @@ void GraphicsNode::update_geometry()
     return;
 
   // determine widget size (if any)
-  QSize widget_size = QSize();
-
-  if (this->proxy_widget)
-  {
-    if (QWidget *widget = this->proxy_widget->widget())
-      widget_size = widget->size();
-  }
+  QSizeF widget_size = this->get_widget_size();
 
   // geometry
   this->geometry = GraphicsNodeGeometry(this->p_proxy, widget_size);
