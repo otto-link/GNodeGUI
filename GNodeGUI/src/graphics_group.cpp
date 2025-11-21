@@ -37,7 +37,6 @@ GraphicsGroup::GraphicsGroup(QGraphicsItem *parent)
   this->setFlag(QGraphicsItem::ItemIsMovable, true);
   this->setAcceptHoverEvents(true);
   this->setRect(0.f, 0.f, GN_STYLE->group.default_width, GN_STYLE->group.default_height);
-  this->setZValue(-2);
 
   // Create a caption text item at the top middle of the rectangle
   this->caption_item = new QGraphicsTextItem("Double-click to edit caption", this);
@@ -154,6 +153,13 @@ void GraphicsGroup::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
   }
 
   QGraphicsRectItem::hoverMoveEvent(event);
+}
+
+QVariant GraphicsGroup::itemChange(GraphicsItemChange change, const QVariant &value)
+{
+  if (change == QGraphicsItem::ItemSceneChange && scene())
+    rearrange_z_order_by_size();
+  return QGraphicsRectItem::itemChange(change, value);
 }
 
 void GraphicsGroup::json_from(const nlohmann::json &json)
@@ -298,6 +304,7 @@ void GraphicsGroup::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
     this->setRect(new_rect);
     this->resize_start_pos = event->pos();
+    this->update_selected_items();
 
     this->update_caption_position();
     return;
@@ -310,8 +317,11 @@ void GraphicsGroup::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     // move the nodes first
     for (QGraphicsItem *item : this->selected_items)
     {
-      if (GraphicsNode *p_node = dynamic_cast<GraphicsNode *>(item))
-        p_node->moveBy(delta.x(), delta.y());
+      GraphicsNode  *p_node = dynamic_cast<GraphicsNode *>(item);
+      GraphicsGroup *p_group = dynamic_cast<GraphicsGroup *>(item);
+
+      if (p_node || p_group)
+        item->moveBy(delta.x(), delta.y());
     }
 
     // then make the links follow (all of them)
@@ -335,6 +345,7 @@ void GraphicsGroup::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
   this->resizing = false;
   this->dragging = false;
+  this->rearrange_z_order_by_size();
   QGraphicsRectItem::mouseReleaseEvent(event);
 }
 
@@ -372,6 +383,42 @@ void GraphicsGroup::paint(QPainter                       *painter,
   painter->restore();
 }
 
+void GraphicsGroup::rearrange_z_order_by_size()
+{
+  if (!this->scene())
+    return;
+
+  // reorder Z-order of groups by group size (smaller groups in front)
+  std::vector<GraphicsGroup *> groups;
+
+  for (QGraphicsItem *item : this->scene()->items())
+  {
+    if (GraphicsGroup *p_group = dynamic_cast<GraphicsGroup *>(item))
+      groups.push_back(p_group);
+  }
+
+  if (groups.size() < 2)
+    return;
+
+  std::sort(groups.begin(),
+            groups.end(),
+            [](QGraphicsItem *a, QGraphicsItem *b)
+            {
+              QRectF rect_a = a->boundingRect();
+              QRectF rect_b = b->boundingRect();
+              qreal  area_a = rect_a.width() * rect_a.height();
+              qreal  area_b = rect_b.width() * rect_b.height();
+              return area_a > area_b; // smallest last, largest first
+            });
+
+  qreal z_value = 0.0;
+  for (auto item : groups)
+  {
+    item->setZValue(z_value);
+    z_value += 1.0; // each item is above the previous
+  }
+}
+
 void GraphicsGroup::set_caption(const std::string &new_caption)
 {
   this->caption_item->setPlainText(new_caption.c_str());
@@ -387,15 +434,19 @@ void GraphicsGroup::set_color(const QColor &new_color)
 
 void GraphicsGroup::update_caption_position()
 {
+  QRectF  rect = this->rect();
   QRectF  caption_bbox = this->caption_item->boundingRect();
-  QPointF p = QPointF((this->rect().width() - caption_bbox.width()) * 0.5f, 4.f);
-  this->caption_item->setPos(p);
+  QPointF top_center = rect.topLeft() +
+                       QPointF(0.5f * (rect.width() - caption_bbox.width()), 0.f);
+  this->caption_item->setPos(top_center);
 }
 
 void GraphicsGroup::update_selected_items()
 {
-  QRectF bbox = this->rect();
-  bbox.moveTo(this->scenePos());
+  if (!scene())
+    return;
+
+  QRectF bbox = this->sceneBoundingRect();
 
   this->selected_items.clear();
   for (QGraphicsItem *item : this->scene()->items(bbox))
