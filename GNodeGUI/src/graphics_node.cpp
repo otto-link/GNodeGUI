@@ -260,14 +260,7 @@ void GraphicsNode::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
   // update the links connected to this node
   if (this->is_node_dragged)
-  {
-    for (QGraphicsItem *item : this->scene()->items())
-      if (GraphicsLink *p_link = dynamic_cast<GraphicsLink *>(item))
-      {
-        if (p_link->get_node_out() == this || p_link->get_node_in() == this)
-          p_link->update_path();
-      }
-  }
+    this->update_links();
 
   // let the base class handle normal movement
   QGraphicsItem::mouseMoveEvent(event);
@@ -317,6 +310,7 @@ void GraphicsNode::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     if (this->is_node_dragged)
     {
       this->is_node_dragged = false;
+      this->update_links();
     }
     else if (this->has_connection_started)
     {
@@ -715,6 +709,16 @@ bool GraphicsNode::update_is_port_hovered(QPointF item_pos)
     }
 
   return false;
+}
+
+void GraphicsNode::update_links()
+{
+  for (QGraphicsItem *item : this->scene()->items())
+    if (GraphicsLink *p_link = dynamic_cast<GraphicsLink *>(item))
+    {
+      if (p_link->get_node_out() == this || p_link->get_node_in() == this)
+        p_link->update_path();
+    }
 }
 
 // --- helper

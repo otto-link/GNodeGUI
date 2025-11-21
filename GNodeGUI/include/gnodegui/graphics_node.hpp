@@ -100,6 +100,7 @@ private:
 
   int  get_hovered_port_index() const;
   bool update_is_port_hovered(QPointF scene_pos);
+  void update_links();
   void reset_is_port_hovered();
 
   // --- Members
