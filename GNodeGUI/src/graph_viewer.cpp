@@ -92,6 +92,7 @@ void GraphViewer::add_link(const std::string &id_out,
 
     p_new_link->set_pen_style(Qt::SolidLine);
     p_new_link->set_endnodes(from_node, port_from_index, to_node, port_to_index);
+    p_new_link->update_path();
 
     this->scene()->addItem(p_new_link);
   }
