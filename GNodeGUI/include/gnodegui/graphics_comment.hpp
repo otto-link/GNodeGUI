@@ -14,7 +14,7 @@ class GraphicsComment : public QGraphicsRectItem
 public:
   GraphicsComment(QGraphicsItem *parent = nullptr);
 
-  void           json_from(nlohmann::json json);
+  void           json_from(const nlohmann::json &json);
   nlohmann::json json_to() const;
 
   void set_comment_text(const std::string &new_comment_text);

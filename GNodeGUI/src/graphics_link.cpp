@@ -94,6 +94,8 @@ void GraphicsLink::paint(QPainter                       *painter,
   Q_UNUSED(option);
   Q_UNUSED(widget);
 
+  painter->save();
+
   QColor pcolor = this->isSelected() ? GN_STYLE->link.color_selected : this->color;
   float  pwidth = this->is_link_hovered
                       ? GN_STYLE->link.pen_width_hovered
@@ -124,6 +126,8 @@ void GraphicsLink::paint(QPainter                       *painter,
                          GN_STYLE->link.port_tip_radius,
                          GN_STYLE->link.port_tip_radius);
   }
+
+  painter->restore();
 }
 
 void GraphicsLink::set_endnodes(GraphicsNode *from,
@@ -247,13 +251,14 @@ LinkType GraphicsLink::toggle_link_type()
   index = (index + 1) % this->link_types.size();
 
   this->set_link_type(this->link_types[index]);
+  this->update_path();
 
   return this->link_types[index];
 }
 
 void GraphicsLink::update_path()
 {
-  // update path
+  // update path (only establisged ones, not the temporary one)
   if (is_valid(this->node_out) && is_valid(this->node_in))
   {
     // guards

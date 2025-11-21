@@ -258,16 +258,19 @@ nlohmann::json GraphicsNode::json_to() const
 
 void GraphicsNode::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
+  // update the links connected to this node
+  if (this->is_node_dragged)
+  {
+    for (QGraphicsItem *item : this->scene()->items())
+      if (GraphicsLink *p_link = dynamic_cast<GraphicsLink *>(item))
+      {
+        if (p_link->get_node_out() == this || p_link->get_node_in() == this)
+          p_link->update_path();
+      }
+  }
+
   // let the base class handle normal movement
   QGraphicsItem::mouseMoveEvent(event);
-
-  // notify all connected links to update their paths (this includes
-  // the temporary link when a new link is created)
-  for (GraphicsLink *link : this->connected_link_ref)
-  {
-    if (link && link->scene())
-      link->update_path();
-  }
 }
 
 void GraphicsNode::mousePressEvent(QGraphicsSceneMouseEvent *event)
@@ -402,6 +405,8 @@ void GraphicsNode::paint(QPainter *painter,
 {
   if (!this->p_proxy)
     return;
+
+  painter->save();
 
   // --- Background rectangle
 
@@ -543,6 +548,8 @@ void GraphicsNode::paint(QPainter *painter,
 
     this->current_comment = comment;
   }
+
+  painter->restore();
 }
 
 void GraphicsNode::set_is_node_pinned(bool new_state)

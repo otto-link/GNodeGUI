@@ -957,6 +957,7 @@ void GraphViewer::keyReleaseEvent(QKeyEvent *event)
 
 void GraphViewer::mouseMoveEvent(QMouseEvent *event)
 {
+  // temporary link follows the mouse
   if (this->temp_link)
   {
     // Update the end of the temporary cubic spline to follow the mouse

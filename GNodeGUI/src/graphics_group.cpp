@@ -317,6 +317,8 @@ void GraphicsGroup::paint(QPainter                       *painter,
   Q_UNUSED(option);
   Q_UNUSED(widget);
 
+  painter->save();
+
   // set the pen depending on the state (selected, hovered, or default)
   qreal pen_width = GN_STYLE->group.pen_width;
   if (this->isSelected())
@@ -338,6 +340,8 @@ void GraphicsGroup::paint(QPainter                       *painter,
   painter->drawRoundedRect(this->rect(),
                            GN_STYLE->group.rounding_radius,
                            GN_STYLE->group.rounding_radius);
+
+  painter->restore();
 }
 
 void GraphicsGroup::set_caption(const std::string &new_caption)
