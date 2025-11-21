@@ -20,7 +20,7 @@ class GraphicsGroup : public QGraphicsRectItem
 public:
   GraphicsGroup(QGraphicsItem *parent = nullptr);
 
-  void           json_from(nlohmann::json json);
+  void           json_from(const nlohmann::json &json);
   nlohmann::json json_to() const;
 
   void set_caption(const std::string &new_caption);
@@ -50,6 +50,11 @@ protected:
                      QWidget                        *widget) override;
 
 private:
+  void update_selected_items();
+
+  Corner get_resize_corner(const QPointF &pos) const;
+  void   update_caption_position();
+
   QGraphicsTextItem *caption_item;
   QColor             color;
 
@@ -62,12 +67,6 @@ private:
   bool                   dragging;
   QPointF                drag_start_pos;
   QList<QGraphicsItem *> selected_items;
-
-  // Helper function to determine which corner is being hovered or clicked
-  Corner get_resize_corner(const QPointF &pos) const;
-
-  // Update the position of the caption to stay at the top middle of the rectangle
-  void update_caption_position();
 };
 
 } // namespace gngui

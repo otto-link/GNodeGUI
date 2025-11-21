@@ -96,6 +96,8 @@ public:
 
   struct Group
   {
+    float default_width = 256.f;
+    float default_height = 256.f;
     float pen_width = 1.f;
     float pen_width_hovered = 1.f;
     float pen_width_selected = 3.f;

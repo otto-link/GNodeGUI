@@ -36,7 +36,7 @@ GraphicsGroup::GraphicsGroup(QGraphicsItem *parent)
   this->setFlag(QGraphicsItem::ItemIsSelectable, true);
   this->setFlag(QGraphicsItem::ItemIsMovable, true);
   this->setAcceptHoverEvents(true);
-  this->setRect(0.f, 0.f, 256.f, 128.f);
+  this->setRect(0.f, 0.f, GN_STYLE->group.default_width, GN_STYLE->group.default_height);
   this->setZValue(-2);
 
   // Create a caption text item at the top middle of the rectangle
@@ -58,7 +58,7 @@ void GraphicsGroup::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
   // done and priority is given to the node context menu
   for (auto &item : this->scene()->items())
     if (GraphicsNode *p_node = dynamic_cast<GraphicsNode *>(item))
-      if (p_node->contains(event->scenePos() - p_node->scenePos()))
+      if (p_node->contains(p_node->mapFromScene(event->scenePos())))
         return;
 
   // if not, generate the context menu
@@ -156,17 +156,44 @@ void GraphicsGroup::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
   QGraphicsRectItem::hoverMoveEvent(event);
 }
 
-void GraphicsGroup::json_from(nlohmann::json json)
+void GraphicsGroup::json_from(const nlohmann::json &json)
 {
-  std::vector<float> pos = json["position"];
-  float              width = json["width"];
-  float              height = json["height"];
-  this->setRect(QRectF(pos[0], pos[1], width, height));
+  // Caption
+  if (json.contains("caption") && json["caption"].is_string())
+    this->set_caption(json["caption"].get<std::string>());
 
-  this->set_caption(json["caption"]);
+  // Color
+  if (json.contains("color") && json["color"].is_array() && json["color"].size() == 4)
+  {
+    auto cvec = json["color"];
+    this->set_color(QColor(cvec[0].get<int>(),
+                           cvec[1].get<int>(),
+                           cvec[2].get<int>(),
+                           cvec[3].get<int>()));
+  }
 
-  std::vector<float> cvec = json["color"];
-  this->set_color(QColor(cvec[0], cvec[1], cvec[2], cvec[3]));
+  // Position
+  if (json.contains("position") && json["position"].is_array() &&
+      json["position"].size() >= 2)
+  {
+    auto  pos = json["position"];
+    float x = pos[0].get<float>();
+    float y = pos[1].get<float>();
+    this->setPos(x, y);
+  }
+
+  // Width and height
+  float width = GN_STYLE->group.default_width;
+  float height = GN_STYLE->group.default_height;
+
+  if (json.contains("width") && json["width"].is_number())
+    width = json["width"].get<float>();
+  if (json.contains("height") && json["height"].is_number())
+    height = json["height"].get<float>();
+
+  this->setRect(0, 0, width, height);
+
+  this->update_caption_position();
 }
 
 nlohmann::json GraphicsGroup::json_to() const
@@ -174,13 +201,15 @@ nlohmann::json GraphicsGroup::json_to() const
   nlohmann::json json;
 
   json["caption"] = this->caption_item->document()->toRawText().toStdString();
-  json["position"] = {this->scenePos().x(), this->scenePos().y()};
-  json["width"] = this->rect().width();
-  json["height"] = this->rect().height();
   json["color"] = {this->color.red(),
                    this->color.green(),
                    this->color.blue(),
                    this->color.alpha()};
+
+  QRectF box = this->sceneBoundingRect();
+  json["position"] = {box.x(), box.y()};
+  json["width"] = box.width();
+  json["height"] = box.height();
 
   return json;
 }
@@ -234,7 +263,7 @@ void GraphicsGroup::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
       QRectF bbox = this->rect();
       bbox.moveTo(this->scenePos());
-      this->selected_items = this->scene()->items(bbox);
+      this->update_selected_items();
     }
   }
 
@@ -267,6 +296,11 @@ void GraphicsGroup::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
       break;
     }
 
+    // new_rect = new_rect.normalized();
+    // new_rect.setWidth(std::max(float(new_rect.width()),
+    // GN_STYLE->group.default_width)); new_rect.setHeight(
+    //     std::max(float(new_rect.height()), GN_STYLE->group.default_height));
+
     this->setRect(new_rect);
     this->resize_start_pos = event->pos();
 
@@ -278,20 +312,19 @@ void GraphicsGroup::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     // move the rectangle and items inside it
     QPointF delta = event->scenePos() - this->drag_start_pos;
 
-    // move all items inside the rectangle but don't move the
-    // rectangle itself and don't move the links or the widgets since
-    // they are already moved along with the nodes
+    // move the nodes first
     for (QGraphicsItem *item : this->selected_items)
-      if (item != this)
-      {
-        if (GraphicsNode *p_node = dynamic_cast<GraphicsNode *>(item))
-          p_node->moveBy(delta.x(), delta.y());
+    {
+      if (GraphicsNode *p_node = dynamic_cast<GraphicsNode *>(item))
+        p_node->moveBy(delta.x(), delta.y());
+    }
 
-        // move a group if it is within the currently moving group
-        if (GraphicsGroup *p_group = dynamic_cast<GraphicsGroup *>(item))
-          if (this->sceneBoundingRect().contains(p_group->sceneBoundingRect()))
-            p_group->moveBy(delta.x(), delta.y());
-      }
+    // then make the links follow (all of them)
+    for (QGraphicsItem *item : this->scene()->items())
+    {
+      if (GraphicsLink *p_link = dynamic_cast<GraphicsLink *>(item))
+        p_link->update_path();
+    }
 
     // move the rectangle itself
     this->setPos(pos() + delta);
@@ -359,11 +392,25 @@ void GraphicsGroup::set_color(const QColor &new_color)
 
 void GraphicsGroup::update_caption_position()
 {
-  QRectF  rect = this->rect();
   QRectF  caption_bbox = this->caption_item->boundingRect();
-  QPointF top_center = rect.topLeft() +
-                       QPointF(0.5f * (rect.width() - caption_bbox.width()), 0.f);
-  this->caption_item->setPos(top_center);
+  QPointF p = QPointF((this->rect().width() - caption_bbox.width()) * 0.5f, 4.f);
+  this->caption_item->setPos(p);
+}
+
+void GraphicsGroup::update_selected_items()
+{
+  QRectF bbox = this->rect();
+  bbox.moveTo(this->scenePos());
+
+  this->selected_items.clear();
+  for (QGraphicsItem *item : this->scene()->items(bbox))
+  {
+    if (item == this)
+      continue;
+
+    if (bbox.contains(item->sceneBoundingRect()))
+      this->selected_items.push_back(item);
+  }
 }
 
 } // namespace gngui
