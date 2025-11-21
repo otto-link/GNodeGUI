@@ -138,13 +138,8 @@ std::string GraphViewer::add_node(NodeProxy         *p_node_proxy,
   };
 
   // if nothing provided, generate a unique id based on the object address
-  std::string nid = node_id;
-  if (node_id == "")
-  {
-    std::ostringstream oss;
-    oss << std::to_string((unsigned long long)(void **)p_node);
-    nid = oss.str();
-  }
+  std::string nid = node_id.empty() ? std::to_string(reinterpret_cast<uintptr_t>(p_node))
+                                    : node_id;
 
   p_node_proxy->set_id(nid);
   return nid;
