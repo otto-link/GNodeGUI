@@ -41,8 +41,8 @@ public:
   // --- Getters
 
   GraphicsNode *get_node_out() { return this->node_out; }
-  int           get_port_out_index() const { return this->port_out_index; }
   GraphicsNode *get_node_in() { return this->node_in; }
+  int           get_port_out_index() const { return this->port_out_index; }
   int           get_port_in_index() const { return this->port_in_index; }
 
   // --- Node / Link Management
@@ -54,6 +54,7 @@ public:
   void     set_link_type(const LinkType &new_link_type);
   void     set_pen_style(const Qt::PenStyle &new_pen_style);
   LinkType toggle_link_type();
+  void     update_path();
 
 protected:
   // --- QGraphicsItem overrides
@@ -83,8 +84,8 @@ private:
 
   // node endpoints
   GraphicsNode *node_out = nullptr;
-  int           port_out_index;
   GraphicsNode *node_in = nullptr;
+  int           port_out_index;
   int           port_in_index;
 };
 

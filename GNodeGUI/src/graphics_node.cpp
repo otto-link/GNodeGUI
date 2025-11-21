@@ -101,7 +101,7 @@ std::string GraphicsNode::get_data_type(int port_index) const
   return this->p_proxy->get_data_type(port_index);
 }
 
-GraphicsNodeGeometry *GraphicsNode::get_geometry_ref() { return &(this->geometry); }
+const GraphicsNodeGeometry &GraphicsNode::get_geometry() const { return this->geometry; }
 
 int GraphicsNode::get_hovered_port_index() const
 {
@@ -173,7 +173,7 @@ PortType GraphicsNode::get_port_type(int port_index) const
   return this->p_proxy->get_port_type(port_index);
 }
 
-NodeProxy *GraphicsNode::get_proxy_ref() { return this->p_proxy; }
+const NodeProxy *GraphicsNode::get_proxy_ref() const { return this->p_proxy; }
 
 void GraphicsNode::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 {
@@ -186,6 +186,7 @@ void GraphicsNode::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 void GraphicsNode::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
 {
   this->is_node_hovered = false;
+  this->setCursor(Qt::ArrowCursor);
   this->update();
 
   QGraphicsRectItem::hoverLeaveEvent(event);
@@ -253,6 +254,20 @@ nlohmann::json GraphicsNode::json_to() const
   }
 
   return json;
+}
+
+void GraphicsNode::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+{
+  // let the base class handle normal movement
+  QGraphicsItem::mouseMoveEvent(event);
+
+  // notify all connected links to update their paths (this includes
+  // the temporary link when a new link is created)
+  for (GraphicsLink *link : this->connected_link_ref)
+  {
+    if (link && link->scene())
+      link->update_path();
+  }
 }
 
 void GraphicsNode::mousePressEvent(QGraphicsSceneMouseEvent *event)
@@ -694,5 +709,9 @@ bool GraphicsNode::update_is_port_hovered(QPointF item_pos)
 
   return false;
 }
+
+// --- helper
+
+bool is_valid(GraphicsNode *node) { return node && node->scene() != nullptr; }
 
 } // namespace gngui

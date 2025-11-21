@@ -36,20 +36,20 @@ public:
 
   // --- Getters
 
-  std::string              get_caption() const;
-  std::string              get_category() const;
-  std::vector<std::string> get_category_splitted(char delimiter = '/') const;
-  std::string              get_data_type(int port_index) const;
-  GraphicsNodeGeometry    *get_geometry_ref();
-  std::string              get_id() const;
-  std::string              get_main_category() const;
-  int                      get_nports() const;
-  std::string              get_port_caption(int port_index) const;
-  std::string              get_port_id(int port_index) const;
-  int                      get_port_index(const std::string &id) const;
-  PortType                 get_port_type(int port_index) const;
-  NodeProxy               *get_proxy_ref();
-  bool                     is_port_available(int port_index);
+  std::string                 get_caption() const;
+  std::string                 get_category() const;
+  std::vector<std::string>    get_category_splitted(char delimiter = '/') const;
+  std::string                 get_data_type(int port_index) const;
+  const GraphicsNodeGeometry &get_geometry() const;
+  std::string                 get_id() const;
+  std::string                 get_main_category() const;
+  int                         get_nports() const;
+  std::string                 get_port_caption(int port_index) const;
+  std::string                 get_port_id(int port_index) const;
+  int                         get_port_index(const std::string &id) const;
+  PortType                    get_port_type(int port_index) const;
+  const NodeProxy            *get_proxy_ref() const;
+  bool                        is_port_available(int port_index);
 
   // --- Setters
 
@@ -86,6 +86,7 @@ protected:
   void     hoverLeaveEvent(QGraphicsSceneHoverEvent *event) override;
   void     hoverMoveEvent(QGraphicsSceneHoverEvent *event) override;
   QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
+  void     mouseMoveEvent(QGraphicsSceneMouseEvent *event);
   void     mousePressEvent(QGraphicsSceneMouseEvent *event) override;
   void     mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
   bool     sceneEventFilter(QGraphicsItem *watched, QEvent *event) override;
@@ -118,5 +119,9 @@ private:
   std::string                 data_type_connecting = "";
   QGraphicsProxyWidget       *proxy_widget = nullptr;
 };
+
+// --- helper
+
+bool is_valid(GraphicsNode *node);
 
 } // namespace gngui

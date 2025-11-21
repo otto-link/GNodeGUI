@@ -83,11 +83,13 @@ void GraphViewer::add_link(const std::string &id_out,
 
   if (from_node && to_node)
   {
-    this->temp_link = new GraphicsLink(QColor(0, 0, 0, 0), this->current_link_type);
-    this->scene()->addItem(this->temp_link);
-
     int port_from_index = from_node->get_port_index(port_id_out);
     int port_to_index = to_node->get_port_index(port_id_in);
+
+    QColor color = get_color_from_data_type(from_node->get_data_type(port_from_index));
+
+    this->temp_link = new GraphicsLink(color, this->current_link_type);
+    this->scene()->addItem(this->temp_link);
 
     // this is the signal sent to say this graphic link must be also
     // created by the model outside the GUI
@@ -958,8 +960,9 @@ void GraphViewer::mouseMoveEvent(QMouseEvent *event)
   if (this->temp_link)
   {
     // Update the end of the temporary cubic spline to follow the mouse
-    QPointF end_pos = mapToScene(event->pos());
+    QPointF end_pos = this->mapToScene(event->pos());
     this->temp_link->set_endpoints(this->temp_link->path().pointAtPercent(0), end_pos);
+    this->temp_link->update_path();
   }
 
   QGraphicsView::mouseMoveEvent(event);
@@ -1098,12 +1101,11 @@ void GraphViewer::on_connection_finished(GraphicsNode *from_node,
         Logger::log()->trace("GraphViewer::on_connection_finished: new connection");
 
         // Finalize the connection
-        QPointF port_from_pos = from_node->scenePos() + from_node->get_geometry_ref()
-                                                            ->port_rects[port_from_index]
+        QPointF port_from_pos = from_node->scenePos() + from_node->get_geometry()
+                                                            .port_rects[port_from_index]
                                                             .center();
-        QPointF port_to_pos = to_node->scenePos() + to_node->get_geometry_ref()
-                                                        ->port_rects[port_to_index]
-                                                        .center();
+        QPointF port_to_pos = to_node->scenePos() +
+                              to_node->get_geometry().port_rects[port_to_index].center();
 
         this->temp_link->set_endpoints(port_from_pos, port_to_pos);
         this->temp_link->set_pen_style(Qt::SolidLine);
@@ -1155,12 +1157,11 @@ void GraphViewer::on_connection_started(GraphicsNode *from_node, int port_index)
 {
   this->source_node = from_node;
 
-  this->temp_link = new GraphicsLink(
-      get_color_from_data_type(from_node->get_data_type(port_index)),
-      this->current_link_type);
+  QColor color = get_color_from_data_type(from_node->get_data_type(port_index));
+  this->temp_link = new GraphicsLink(color, this->current_link_type);
 
   QPointF port_pos = from_node->scenePos() +
-                     from_node->get_geometry_ref()->port_rects[port_index].center();
+                     from_node->get_geometry().port_rects[port_index].center();
 
   this->temp_link->set_endpoints(port_pos, port_pos);
   this->scene()->addItem(this->temp_link);

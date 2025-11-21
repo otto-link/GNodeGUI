@@ -1,6 +1,7 @@
 /* Copyright (c) 2024 Otto Link. Distributed under the terms of the GNU General
  * Public License. The full license is in the file LICENSE, distributed with
  * this software. */
+#include <QGraphicsScene>
 #include <QPainter>
 #include <QPainterPath>
 #include <QPen>
@@ -30,16 +31,9 @@ GraphicsLink::GraphicsLink(QColor color, LinkType link_type, QGraphicsItem *pare
 
 GraphicsLink::~GraphicsLink()
 {
-  Logger::log()->debug(
-      "GraphicsLink::~GraphicsLink: {}:{} -> {}:{}",
-      this->node_out ? this->node_out->get_id() : "NULL",
-      this->node_out ? this->node_out->get_port_id(this->port_out_index) : "NULL",
-      this->node_in ? this->node_in->get_id() : "NULL",
-      this->node_in ? this->node_in->get_port_id(this->port_in_index) : "NULL");
-
-  if (this->node_out)
+  if (is_valid(this->node_out))
     this->node_out->set_is_port_connected(this->port_out_index, nullptr);
-  if (this->node_in)
+  if (is_valid(this->node_in))
     this->node_in->set_is_port_connected(this->port_in_index, nullptr);
 }
 
@@ -56,6 +50,7 @@ QRectF GraphicsLink::boundingRect() const
 void GraphicsLink::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 {
   this->is_link_hovered = true;
+  this->setCursor(Qt::PointingHandCursor);
   this->update();
 
   QGraphicsPathItem::hoverEnterEvent(event);
@@ -64,6 +59,7 @@ void GraphicsLink::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 void GraphicsLink::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
 {
   this->is_link_hovered = false;
+  this->setCursor(Qt::ArrowCursor);
   this->update();
 
   QGraphicsPathItem::hoverLeaveEvent(event);
@@ -73,11 +69,17 @@ nlohmann::json GraphicsLink::json_to() const
 {
   nlohmann::json json;
 
-  json["node_out_id"] = this->node_out->get_id();
-  json["node_in_id"] = this->node_in->get_id();
+  if (is_valid(this->node_out))
+  {
+    json["node_out_id"] = this->node_out->get_id();
+    json["port_out_id"] = this->node_out->get_port_id(this->port_out_index);
+  }
 
-  json["port_out_id"] = this->node_out->get_port_id(this->port_out_index);
-  json["port_in_id"] = this->node_in->get_port_id(this->port_in_index);
+  if (is_valid(this->node_in))
+  {
+    json["node_in_id"] = this->node_in->get_id();
+    json["port_in_id"] = this->node_in->get_port_id(this->port_in_index);
+  }
 
   json["link_type"] = this->link_type;
 
@@ -103,32 +105,6 @@ void GraphicsLink::paint(QPainter                       *painter,
   pen.setStyle(this->pen_style);
   painter->setPen(pen);
   painter->setBrush(Qt::NoBrush);
-
-  // update path
-  if (this->node_out && this->node_in)
-  {
-    // guards
-    {
-      auto geom = node_out->get_geometry_ref();
-      if (!geom || port_out_index >= (int)geom->port_rects.size())
-        return;
-    }
-
-    {
-      auto geom = node_in->get_geometry_ref();
-      if (!geom || port_in_index >= (int)geom->port_rects.size())
-        return;
-    }
-
-    QPointF start_point = this->node_out->scenePos() + this->node_out->get_geometry_ref()
-                                                           ->port_rects[port_out_index]
-                                                           .center();
-    QPointF end_point = this->node_in->scenePos() + this->node_in->get_geometry_ref()
-                                                        ->port_rects[port_in_index]
-                                                        .center();
-
-    this->set_endpoints(start_point, end_point);
-  }
 
   // draw path
   painter->drawPath(this->path());
@@ -264,18 +240,37 @@ QPainterPath GraphicsLink::shape() const
 LinkType GraphicsLink::toggle_link_type()
 {
   // current link type in the list
-  auto it = find(this->link_types.begin(), this->link_types.end(), this->link_type);
+  auto it = std::find(this->link_types.begin(), this->link_types.end(), this->link_type);
 
-  size_t type_index;
+  size_t index = std::distance(this->link_types.begin(), it);
+  index = (index + 1) % this->link_types.size();
 
-  if (it == this->link_types.end() - 1)
-    type_index = 0;
-  else
-    type_index = it - this->link_types.begin() + 1;
+  this->set_link_type(this->link_types[index]);
 
-  this->set_link_type(this->link_types[type_index]);
+  return this->link_types[index];
+}
 
-  return this->link_types[type_index];
+void GraphicsLink::update_path()
+{
+  // update path
+  if (is_valid(this->node_out) && is_valid(this->node_in))
+  {
+    // guards
+    if (port_out_index >= (int)this->node_out->get_geometry().port_rects.size())
+      return;
+    if (port_in_index >= (int)this->node_in->get_geometry().port_rects.size())
+      return;
+
+    QPointF start_point = this->node_out->scenePos() + this->node_out->get_geometry()
+                                                           .port_rects[port_out_index]
+                                                           .center();
+    QPointF end_point = this->node_in->scenePos() +
+                        this->node_in->get_geometry().port_rects[port_in_index].center();
+
+    this->set_endpoints(start_point, end_point);
+  }
+
+  this->update();
 }
 
 } // namespace gngui
