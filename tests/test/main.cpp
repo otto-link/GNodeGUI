@@ -224,7 +224,7 @@ int main(int argc, char *argv[])
   ed.resize(1000, 800);
   ed.show();
 
-  // ed.json_to();
+  std::cout << ed.json_to().dump(4);
 
   return app.exec();
 }

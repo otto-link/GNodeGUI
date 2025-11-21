@@ -88,12 +88,12 @@ void GraphViewer::add_link(const std::string &id_out,
 
     QColor color = get_color_from_data_type(from_node->get_data_type(port_from_index));
 
-    this->temp_link = new GraphicsLink(color, this->current_link_type);
-    this->scene()->addItem(this->temp_link);
+    GraphicsLink *p_new_link = new GraphicsLink(color, this->current_link_type);
 
-    // this is the signal sent to say this graphic link must be also
-    // created by the model outside the GUI
-    this->on_connection_finished(from_node, port_from_index, to_node, port_to_index);
+    p_new_link->set_pen_style(Qt::SolidLine);
+    p_new_link->set_endnodes(from_node, port_from_index, to_node, port_to_index);
+
+    this->scene()->addItem(p_new_link);
   }
   else
   {
@@ -768,7 +768,7 @@ void GraphViewer::json_from(nlohmann::json json, bool clear_existing_content)
       float y = json_node["scene_position.y"];
 
       // nodes are not generated in this class, it is outsourced to the
-      // outter headless nodes manager
+      // outter headless nodes manager. THERE IS NO NODE FACTORY AVAILABLE
       Q_EMIT this->new_graphics_node_request(nid, QPointF(x, y));
 
       this->get_graphics_node_by_id(nid)->json_from(json_node);
@@ -787,9 +787,8 @@ void GraphViewer::json_from(nlohmann::json json, bool clear_existing_content)
       std::string port_out_id = json_link["port_out_id"];
       std::string port_in_id = json_link["port_in_id"];
 
-      // same here, the graphic links are generated but the data
-      // connection itself is outsourced to the outter headless nodes
-      // manager
+      // the graphic links are generated (but the model connections
+      // itself are outsourced to the outter headless nodes manager)
       this->add_link(node_out_id, port_out_id, node_in_id, port_in_id);
     }
   }
