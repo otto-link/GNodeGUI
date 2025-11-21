@@ -24,4 +24,17 @@ QRectF compute_bounding_rect(const std::vector<QGraphicsItem *> &items);
 
 std::vector<std::string> split_string(const std::string &string, char delimiter);
 
+template <typename T>
+inline void json_safe_get(const nlohmann::json &j, const std::string &key, T &value)
+{
+  if (j.contains(key))
+  {
+    value = j.at(key).get<T>();
+  }
+  else
+  {
+    Logger::log()->error("Required json key \"{}\" not found.", key);
+  }
+}
+
 } // namespace gngui

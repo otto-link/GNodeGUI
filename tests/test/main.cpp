@@ -1,3 +1,5 @@
+#include <iostream>
+
 #include <QApplication>
 #include <QFont>
 #include <QPushButton>
@@ -11,30 +13,45 @@
 
 // --- node specialization
 
-class MyNode : public gngui::NodeProxy
+class MyNode
 {
 public:
-  MyNode(std::string id) : gngui::NodeProxy(id) {}
+  MyNode(std::string id) : id(id) {}
 
-  std::string get_caption() const override { return "NoiseFbm"; }
+  void do_something() const
+  {
+    std::cout << "MyNode with id " << id << " does something\n";
+  }
 
-  std::string get_category() const override { return "Primitive"; }
+  std::string get_caption() const { return "NoiseFbm"; }
 
-  std::string get_data_type(int port_index) const override
+  std::string get_category() const { return "Primitive"; }
+
+  std::string get_comment() const { return this->comment; };
+
+  void *get_data_ref(int /*port_index*/) const
+  {
+    // dummy, does nothing
+    return nullptr;
+  }
+
+  std::string get_data_type(int port_index) const
   {
     std::vector<std::string> vec = {"float", "float", "float", "image", "int"};
     return vec[port_index];
   }
 
-  int get_nports() const override { return 5; }
+  std::string get_id() const { return this->id; }
 
-  std::string get_port_caption(int port_index) const override
+  int get_nports() const { return 5; }
+
+  std::string get_port_caption(int port_index) const
   {
     std::vector<std::string> vec = {"in1", "in2", "out1", "in3", "out2"};
     return vec[port_index];
   }
 
-  gngui::PortType get_port_type(int port_index) const override
+  gngui::PortType get_port_type(int port_index) const
   {
     std::vector<gngui::PortType> vec = {gngui::PortType::IN,
                                         gngui::PortType::IN,
@@ -44,35 +61,54 @@ public:
     return vec[port_index];
   }
 
-  QWidget *get_qwidget_ref() override
-  {
-    if (!this->push_button)
-      this->push_button = new QPushButton("button");
+  std::string get_tool_tip_text() const { return "This is the tool tip for this node"; }
 
-    return (QWidget *)this->push_button;
-  }
+  void set_id(const std::string &new_id) { this->id = new_id; }
 
-  std::string get_tool_tip_text() override
-  {
-    return "This is the tool tip for this node";
-  }
-
-  // QSize get_qwidget_size() override { return QSize(256, 32); }
+  std::string comment;
 
 private:
-  QWidget *push_button = nullptr;
+  std::string id;
 };
 
-class LongNode : public gngui::NodeProxy
+class MyNodeWidget : public QWidget
+{
+  Q_OBJECT
+public:
+  // binding can be done differently, weak_ptr here if shared_ptr are
+  // used elsewhere for the model nodes, more convenient for lifetime
+  // management
+  MyNodeWidget(std::weak_ptr<MyNode> model, QWidget *parent = nullptr)
+      : QWidget(parent), model(model)
+  {
+    // the button affects the model directly (bypassing the
+    // GraphicsNode)
+    auto *button = new QPushButton("button", this);
+    this->connect(button,
+                  &QPushButton::pressed,
+                  [this]()
+                  {
+                    if (auto m = this->model.lock())
+                      m->do_something();
+                  });
+  }
+
+  QSize sizeHint() const override { return QSize(128, 32); }
+
+private:
+  std::weak_ptr<MyNode> model;
+};
+
+class LongNode // node without widget
 {
 public:
-  LongNode(std::string id) : gngui::NodeProxy(id) {}
+  LongNode(std::string id) : id(id) {}
 
-  std::string get_caption() const override { return "Clamp very long caption"; }
+  std::string get_caption() const { return "Clamp very long caption"; }
 
-  std::string get_category() const override { return "Math/Range/Bound"; }
+  std::string get_category() const { return "Math/Range/Bound"; }
 
-  std::string get_comment() const override
+  std::string get_comment() const
   {
     return "The Qt framework contains a comprehensive set of highly intuitive and "
            "modularized C++ library classes and is loaded with APIs to simplify your "
@@ -81,21 +117,29 @@ public:
            "it's cross-platform.";
   }
 
-  std::string get_data_type(int port_index) const override
+  void *get_data_ref(int /*port_index*/) const
+  {
+    // dummy, does nothing
+    return nullptr;
+  }
+
+  std::string get_data_type(int port_index) const
   {
     std::vector<std::string> vec = {"float", "image", "int", "float"};
     return vec[port_index];
   }
 
-  int get_nports() const override { return 4; }
+  std::string get_id() const { return this->id; }
 
-  std::string get_port_caption(int port_index) const override
+  int get_nports() const { return 4; }
+
+  std::string get_port_caption(int port_index) const
   {
     std::vector<std::string> vec = {"in1", "out1", "in2", "output"};
     return vec[port_index];
   }
 
-  gngui::PortType get_port_type(int port_index) const override
+  gngui::PortType get_port_type(int port_index) const
   {
     std::vector<gngui::PortType> vec = {gngui::PortType::IN,
                                         gngui::PortType::OUT,
@@ -103,6 +147,13 @@ public:
                                         gngui::PortType::OUT};
     return vec[port_index];
   }
+
+  std::string get_tool_tip_text() const { return "This is the tool tip for this node"; }
+
+  void set_id(const std::string &new_id) { this->id = new_id; }
+
+private:
+  std::string id;
 };
 
 // --- application
@@ -143,21 +194,39 @@ int main(int argc, char *argv[])
                                            {"Smooth", "Filter"}};
   ed.set_node_inventory(ni);
 
-  MyNode   node1("node1");
-  LongNode node2("node2");
-  MyNode   node3("node3");
+  auto  node1 = std::make_shared<MyNode>("node1");
+  auto *node1_proxy = new gngui::TypedNodeProxy<MyNode>(node1); // owned by GraphicsNode
+  auto *node1_widget = new MyNodeWidget(node1);                 // idem
 
-  ed.add_node(node1.get_proxy_ref(), QPointF(300, 300));
-  ed.add_node(node2.get_proxy_ref(), QPointF(500, 450));
-  ed.add_node(node3.get_proxy_ref(), QPointF(700, 250));
+  auto  node2 = std::make_shared<LongNode>("node2");
+  auto *node2_proxy = new gngui::TypedNodeProxy<LongNode>(node2);
+
+  auto  node3 = std::make_shared<MyNode>("node3");
+  auto *node3_proxy = new gngui::TypedNodeProxy<MyNode>(node3);
+  auto *node3_widget = new MyNodeWidget(node3);
+
+  std::string id1 = ed.add_node(QPointer(node1_proxy), QPointF(100, 300));
+  ed.get_graphics_node_by_id(id1)->set_widget(node1_widget, QSize(256, 256));
+
+  std::string id2 = ed.add_node(QPointer(node2_proxy), QPointF(500, 450));
+
+  std::string id3 = ed.add_node(QPointer(node3_proxy), QPointF(700, 250));
+  ed.get_graphics_node_by_id(id3)->set_widget(node3_widget); //, QSize(256, 256));
+
+  ed.add_link(id1, "out1", id2, "in1");
 
   ed.add_item(new gngui::GraphicsGroup(), QPointF(400, 300));
+
+  // node1.reset();
+  // gngui::Logger::log()->info("{}", node1.use_count());
 
   ed.zoom_to_content();
   ed.resize(1000, 800);
   ed.show();
 
-  ed.json_to();
+  // ed.json_to();
 
   return app.exec();
 }
+
+#include "main.moc" // <--- REQUIRED for moc on main.cpp

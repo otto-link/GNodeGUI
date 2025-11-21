@@ -78,14 +78,14 @@ void GraphViewer::add_link(const std::string &id_out,
                            const std::string &to_in,
                            const std::string &port_id_in)
 {
-  this->temp_link = new GraphicsLink(QColor(0, 0, 0, 0), this->current_link_type);
-  this->scene()->addItem(this->temp_link);
-
   GraphicsNode *from_node = this->get_graphics_node_by_id(id_out);
   GraphicsNode *to_node = this->get_graphics_node_by_id(to_in);
 
   if (from_node && to_node)
   {
+    this->temp_link = new GraphicsLink(QColor(0, 0, 0, 0), this->current_link_type);
+    this->scene()->addItem(this->temp_link);
+
     int port_from_index = from_node->get_port_index(port_id_out);
     int port_to_index = to_node->get_port_index(port_id_in);
 
@@ -437,7 +437,6 @@ void GraphViewer::delete_graphics_node(GraphicsNode *p_node)
   if (p_node)
   {
     const std::string deleted_id = p_node->get_id(); // bckp before delete...
-    p_node->prepare_for_delete();
     clean_delete_graphics_item(p_node);
 
     Q_EMIT this->node_deleted(deleted_id);
@@ -472,11 +471,6 @@ void GraphViewer::delete_selected_items()
       this->delete_graphics_link(p_link);
   }
 
-  // make sure all actions related to the links removal are done
-  // before continuing (to avoid that a Qt process removes a node
-  // before removing a link to that node)
-  QCoreApplication::processEvents();
-
   // nodes
   {
     auto items = scene->selectedItems();
@@ -509,8 +503,6 @@ void GraphViewer::delete_selected_items()
       }
     }
   }
-
-  QCoreApplication::processEvents();
 
   this->set_enabled(true);
 

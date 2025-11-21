@@ -36,7 +36,11 @@ GraphicsLink::~GraphicsLink()
       this->node_out ? this->node_out->get_port_id(this->port_out_index) : "NULL",
       this->node_in ? this->node_in->get_id() : "NULL",
       this->node_in ? this->node_in->get_port_id(this->port_in_index) : "NULL");
-  this->is_valid = false;
+
+  if (this->node_out)
+    this->node_out->set_is_port_connected(this->port_out_index, nullptr);
+  if (this->node_in)
+    this->node_in->set_is_port_connected(this->port_in_index, nullptr);
 }
 
 QRectF GraphicsLink::boundingRect() const
@@ -86,9 +90,6 @@ void GraphicsLink::paint(QPainter                       *painter,
 {
   Q_UNUSED(option);
   Q_UNUSED(widget);
-
-  if (!this->is_valid)
-    return;
 
   QColor pcolor = this->isSelected() ? GN_STYLE->link.color_selected : this->color;
   float  pwidth = this->is_link_hovered

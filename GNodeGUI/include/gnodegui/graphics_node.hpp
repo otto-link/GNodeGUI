@@ -8,6 +8,7 @@
 #include <QEvent>
 #include <QGraphicsRectItem>
 #include <QMouseEvent>
+#include <QPointer>
 #include <QWidget>
 
 #include "nlohmann/json.hpp"
@@ -25,7 +26,7 @@ class GraphicsLink; // forward decl
 class GraphicsNode : public QGraphicsRectItem
 {
 public:
-  GraphicsNode(NodeProxy *p_node_proxy, QGraphicsItem *parent = nullptr);
+  GraphicsNode(QPointer<NodeProxy> p_proxy, QGraphicsItem *parent = nullptr);
   ~GraphicsNode();
 
   // --- Serializzation
@@ -48,21 +49,20 @@ public:
   int                      get_port_index(const std::string &id) const;
   PortType                 get_port_type(int port_index) const;
   NodeProxy               *get_proxy_ref();
-  virtual QWidget         *get_qwidget_ref();
   bool                     is_port_available(int port_index);
 
   // --- Setters
 
   void set_is_node_pinned(bool new_state);
   void set_is_port_connected(int port_index, GraphicsLink *p_link);
-  void set_p_node_proxy(NodeProxy *new_p_node_proxy);
-  void set_qwidget_visibility(bool is_visible);
+  void set_p_proxy(QPointer<NodeProxy> new_p_proxy);
+
+  void set_widget(QWidget *new_widget, QSize widget_size = QSize());
+  void set_widget_visibility(bool is_visible);
 
   // --- UI
 
-  void prepare_for_delete();
-  void update_geometry(QSizeF widget_size = QSizeF(-1.f, -1.f));
-  void update_proxy_widget();
+  void update_geometry();
 
   // --- "slots" equivalent
   void on_compute_finished();
@@ -103,8 +103,9 @@ private:
 
   // --- Members
 
-  NodeProxy                  *p_node_proxy;
+  QPointer<NodeProxy>         p_proxy;
   GraphicsNodeGeometry        geometry;
+  std::string                 current_comment;
   bool                        is_node_dragged = false;
   bool                        is_node_hovered = false;
   bool                        is_node_pinned = false;
@@ -116,7 +117,6 @@ private:
   int                         port_index_from;
   std::string                 data_type_connecting = "";
   QGraphicsProxyWidget       *proxy_widget = nullptr;
-  bool                        is_valid = true;
 };
 
 } // namespace gngui

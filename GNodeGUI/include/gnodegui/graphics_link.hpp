@@ -86,7 +86,6 @@ private:
   int           port_out_index;
   GraphicsNode *node_in = nullptr;
   int           port_in_index;
-  bool          is_valid = true;
 };
 
 } // namespace gngui

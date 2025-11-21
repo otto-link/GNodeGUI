@@ -21,9 +21,15 @@
 namespace gngui
 {
 
-GraphicsNode::GraphicsNode(NodeProxy *p_node_proxy, QGraphicsItem *parent)
-    : QGraphicsRectItem(parent), p_node_proxy(p_node_proxy)
+GraphicsNode::GraphicsNode(QPointer<NodeProxy> p_proxy, QGraphicsItem *parent)
+    : QGraphicsRectItem(parent), p_proxy(p_proxy)
 {
+  if (!this->p_proxy)
+  {
+    Logger::log()->error("GraphicsNode::GraphicsNode: input p_proxy is nullptr");
+    return;
+  }
+
   // item flags
   this->setFlag(QGraphicsItem::ItemIsSelectable, true);
   this->setFlag(QGraphicsItem::ItemIsMovable, true);
@@ -36,7 +42,7 @@ GraphicsNode::GraphicsNode(NodeProxy *p_node_proxy, QGraphicsItem *parent)
   this->setZValue(0);
 
   // tooltip
-  const std::string tooltip = this->p_node_proxy->get_tool_tip_text();
+  const std::string tooltip = this->p_proxy->get_tool_tip_text();
   if (!tooltip.empty())
     this->setToolTip(QString::fromStdString(tooltip));
 
@@ -46,46 +52,40 @@ GraphicsNode::GraphicsNode(NodeProxy *p_node_proxy, QGraphicsItem *parent)
 
   // geometry
   this->update_geometry();
-
-  // add widget
-  this->update_proxy_widget();
 }
 
 GraphicsNode::~GraphicsNode()
 {
   Logger::log()->debug("GraphicsNode::~GraphicsNode: {}", this->get_id());
 
-  // --- safeguards added in the destructor to prevent any Qt lifetime
-  // --- mismatch...
-
-  this->is_valid = false; // avoid any paint attempts
-  this->p_node_proxy = nullptr;
-
-  // immediately disable interaction (non-reentrant simple ops)
+  // stop interactions
   this->setEnabled(false);
   this->setAcceptHoverEvents(false);
   this->setAcceptedMouseButtons(Qt::NoButton);
 
-  // disconnect all Qt signals
-  // remove
-  if (this->scene())
-    this->scene()->removeItem(this);
+  // destroy proxy widget safely
+  if (this->proxy_widget)
+  {
+    this->proxy_widget->setWidget(nullptr);
+    this->proxy_widget->deleteLater();
+    this->proxy_widget = nullptr;
+  }
 }
 
 std::string GraphicsNode::get_caption() const
 {
-  if (!this->p_node_proxy)
+  if (!this->p_proxy)
     return std::string();
 
-  return this->p_node_proxy->get_caption();
+  return this->p_proxy->get_caption();
 }
 
 std::string GraphicsNode::get_category() const
 {
-  if (!this->p_node_proxy)
+  if (!this->p_proxy)
     return std::string();
 
-  return this->p_node_proxy->get_category();
+  return this->p_proxy->get_category();
 }
 
 std::vector<std::string> GraphicsNode::get_category_splitted(char delimiter) const
@@ -95,10 +95,10 @@ std::vector<std::string> GraphicsNode::get_category_splitted(char delimiter) con
 
 std::string GraphicsNode::get_data_type(int port_index) const
 {
-  if (!this->p_node_proxy)
+  if (!this->p_proxy)
     return std::string();
 
-  return this->p_node_proxy->get_data_type(port_index);
+  return this->p_proxy->get_data_type(port_index);
 }
 
 GraphicsNodeGeometry *GraphicsNode::get_geometry_ref() { return &(this->geometry); }
@@ -119,10 +119,10 @@ int GraphicsNode::get_hovered_port_index() const
 
 std::string GraphicsNode::get_id() const
 {
-  if (!this->p_node_proxy)
+  if (!this->p_proxy)
     return std::string();
 
-  return this->p_node_proxy->get_id();
+  return this->p_proxy->get_id();
 }
 
 std::string GraphicsNode::get_main_category() const
@@ -134,26 +134,26 @@ std::string GraphicsNode::get_main_category() const
 
 int GraphicsNode::get_nports() const
 {
-  if (!this->p_node_proxy)
+  if (!this->p_proxy)
     return 0;
 
-  return this->p_node_proxy->get_nports();
+  return this->p_proxy->get_nports();
 }
 
 std::string GraphicsNode::get_port_caption(int port_index) const
 {
-  if (!this->p_node_proxy)
+  if (!this->p_proxy)
     return std::string();
 
-  return this->p_node_proxy->get_port_caption(port_index);
+  return this->p_proxy->get_port_caption(port_index);
 }
 
 std::string GraphicsNode::get_port_id(int port_index) const
 {
-  if (!this->p_node_proxy)
+  if (!this->p_proxy)
     return std::string();
 
-  return this->p_node_proxy->get_port_id(port_index);
+  return this->p_proxy->get_port_id(port_index);
 }
 
 int GraphicsNode::get_port_index(const std::string &id) const
@@ -167,21 +167,13 @@ int GraphicsNode::get_port_index(const std::string &id) const
 
 PortType GraphicsNode::get_port_type(int port_index) const
 {
-  if (!this->p_node_proxy)
+  if (!this->p_proxy)
     return PortType::OUT;
 
-  return this->p_node_proxy->get_port_type(port_index);
+  return this->p_proxy->get_port_type(port_index);
 }
 
-NodeProxy *GraphicsNode::get_proxy_ref() { return this->p_node_proxy; }
-
-QWidget *GraphicsNode::get_qwidget_ref()
-{
-  if (!this->p_node_proxy)
-    return nullptr;
-
-  return this->p_node_proxy->get_qwidget_ref();
-}
+NodeProxy *GraphicsNode::get_proxy_ref() { return this->p_proxy; }
 
 void GraphicsNode::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 {
@@ -237,12 +229,12 @@ QVariant GraphicsNode::itemChange(GraphicsItemChange change, const QVariant &val
 
 void GraphicsNode::json_from(nlohmann::json json)
 {
-  this->get_id() = json["id"];
-  this->get_caption() = json["caption"];
-  this->is_widget_visible = json["is_widget_visible"];
+  json_safe_get(json, "is_widget_visible", this->is_widget_visible);
 
-  float x = json["scene_position.x"];
-  float y = json["scene_position.y"];
+  float x = 0;
+  float y = 0;
+  json_safe_get(json, "scene_position.x", x);
+  json_safe_get(json, "scene_position.y", y);
   this->setPos(QPointF(x, y));
 }
 
@@ -250,11 +242,15 @@ nlohmann::json GraphicsNode::json_to() const
 {
   nlohmann::json json;
 
-  json["id"] = this->get_id();
-  json["caption"] = this->get_caption();
   json["is_widget_visible"] = this->is_widget_visible;
   json["scene_position.x"] = this->scenePos().x();
   json["scene_position.y"] = this->scenePos().y();
+
+  // for info only
+  {
+    json["id"] = this->get_id();
+    json["caption"] = this->get_caption();
+  }
 
   return json;
 }
@@ -306,8 +302,8 @@ void GraphicsNode::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     }
     else if (this->has_connection_started)
     {
-      QList<QGraphicsItem *> items_under_mouse = scene()->items(event->scenePos());
       bool                   is_dropped = true;
+      QList<QGraphicsItem *> items_under_mouse = scene()->items(event->scenePos());
 
       for (QGraphicsItem *item : items_under_mouse)
       {
@@ -389,7 +385,7 @@ void GraphicsNode::paint(QPainter *painter,
                          const QStyleOptionGraphicsItem * /* option */,
                          QWidget * /* widget */)
 {
-  if (!this->is_valid || !this->p_node_proxy)
+  if (!this->p_proxy)
     return;
 
   // --- Background rectangle
@@ -479,7 +475,7 @@ void GraphicsNode::paint(QPainter *painter,
 
   // --- Ports
 
-  for (int k = 0; k < this->p_node_proxy->get_nports(); k++)
+  for (int k = 0; k < this->p_proxy->get_nports(); k++)
   {
     // Set alignment based on port type (IN/OUT)
     int align_flag = (this->get_port_type(k) == PortType::IN) ? Qt::AlignLeft
@@ -518,35 +514,20 @@ void GraphicsNode::paint(QPainter *painter,
 
   // --- Comment
 
-  std::string comment = this->p_node_proxy->get_comment();
+  std::string comment = this->p_proxy->get_comment();
 
   if (!comment.empty())
   {
+    if (comment != this->current_comment)
+      this->update_geometry();
+
     painter->setPen(GN_STYLE->node.color_comment);
     painter->drawText(this->geometry.comment_rect,
                       Qt::TextWordWrap | Qt::AlignLeft | Qt::AlignTop,
                       comment.c_str());
+
+    this->current_comment = comment;
   }
-}
-
-void GraphicsNode::prepare_for_delete()
-{
-  this->is_valid = false;
-  this->setEnabled(false);
-  this->setAcceptHoverEvents(false);
-  this->setAcceptedMouseButtons(Qt::NoButton);
-
-  if (this->proxy_widget)
-  {
-    this->proxy_widget->setWidget(nullptr);
-    delete this->proxy_widget;
-    this->proxy_widget = nullptr;
-  }
-
-  this->update();
-
-  if (this->scene())
-    this->scene()->removeItem(this);
 }
 
 void GraphicsNode::set_is_node_pinned(bool new_state)
@@ -617,38 +598,78 @@ bool GraphicsNode::sceneEventFilter(QGraphicsItem *watched, QEvent *event)
   return QGraphicsRectItem::sceneEventFilter(watched, event);
 }
 
-void GraphicsNode::set_p_node_proxy(NodeProxy *new_p_node_proxy)
+void GraphicsNode::set_p_proxy(QPointer<NodeProxy> new_p_proxy)
 {
-  this->p_node_proxy = new_p_node_proxy;
-
-  if (this->p_node_proxy)
-    this->update_proxy_widget();
+  this->p_proxy = new_p_proxy;
 }
 
-void GraphicsNode::set_qwidget_visibility(bool is_visible)
+void GraphicsNode::set_widget(QWidget *new_widget, QSize new_widget_size)
 {
-  // recompute geometry based on widget visiblity status
-  QWidget *widget = this->get_qwidget_ref();
-  QSizeF   widget_size = QSizeF(-1.f, -1.f);
+  Logger::log()->debug("GraphicsNode::set_widget");
 
-  if (widget)
+  if (!this->p_proxy || !new_widget)
+    return;
+
+  // erase current parenting
+  if (new_widget->parentWidget())
+    new_widget->setParent(nullptr);
+
+  // clean-up existing container
+  if (this->proxy_widget)
   {
-    if (is_visible)
-      widget_size = widget->size();
-
-    widget->setVisible(is_visible);
+    QWidget *old = this->proxy_widget->widget();
+    this->proxy_widget->setWidget(nullptr);
+    if (old)
+      old->deleteLater();
+    this->proxy_widget->deleteLater();
   }
 
-  this->update_geometry(widget_size);
+  // eventually set widget
+  this->proxy_widget = new QGraphicsProxyWidget(this);
+  this->proxy_widget->setWidget(new_widget);
+
+  if (!new_widget_size.isValid())
+    new_widget_size = new_widget->sizeHint();
+  this->proxy_widget->resize(new_widget_size);
+
+  // update the geometry
+  this->update_geometry();
+  this->proxy_widget->setPos(this->geometry.widget_pos);
   this->update();
 }
 
-void GraphicsNode::update_geometry(QSizeF widget_size)
+void GraphicsNode::set_widget_visibility(bool is_visible)
 {
-  if (!this->p_node_proxy)
+  if (!this->proxy_widget)
     return;
 
-  this->geometry = GraphicsNodeGeometry(this->p_node_proxy, widget_size);
+  QWidget *widget = this->proxy_widget->widget();
+
+  if (!widget)
+    return;
+
+  widget->setVisible(is_visible);
+
+  this->update_geometry();
+  this->update();
+}
+
+void GraphicsNode::update_geometry()
+{
+  if (!this->p_proxy)
+    return;
+
+  // determine widget size (if any)
+  QSize widget_size = QSize();
+
+  if (this->proxy_widget)
+  {
+    if (QWidget *widget = this->proxy_widget->widget())
+      widget_size = widget->size();
+  }
+
+  // geometry
+  this->geometry = GraphicsNodeGeometry(this->p_proxy, widget_size);
   this->setRect(0.f, 0.f, this->geometry.full_width, this->geometry.full_height);
 }
 
@@ -672,30 +693,6 @@ bool GraphicsNode::update_is_port_hovered(QPointF item_pos)
     }
 
   return false;
-}
-
-void GraphicsNode::update_proxy_widget()
-{
-  Logger::log()->debug("GraphicsNode::update_proxy_widget");
-
-  if (!this->p_node_proxy)
-    return;
-
-  if (QWidget *widget = this->p_node_proxy->get_qwidget_ref())
-  {
-    // ensure it's a top-level widget
-    if (widget->parentWidget())
-      widget->setParent(nullptr);
-
-    this->proxy_widget = new QGraphicsProxyWidget(this);
-    this->proxy_widget->setWidget(widget);
-    this->proxy_widget->resize(this->p_node_proxy->get_qwidget_size());
-
-    // update the geometry
-    QSizeF widget_size = this->proxy_widget->size();
-    this->update_geometry(widget_size);
-    this->proxy_widget->setPos(this->geometry.widget_pos);
-  }
 }
 
 } // namespace gngui
