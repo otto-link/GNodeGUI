@@ -414,7 +414,7 @@ void GraphViewer::delete_graphics_node(GraphicsNode *p_node)
     if (GraphicsLink *p_link = dynamic_cast<GraphicsLink *>(item))
     {
       if (p_link->get_node_out() == p_node || p_link->get_node_in() == p_node)
-        delete_graphics_link(p_link, false);
+        this->delete_graphics_link(p_link, false);
     }
   }
 
@@ -428,63 +428,42 @@ void GraphViewer::delete_graphics_node(GraphicsNode *p_node)
 void GraphViewer::delete_selected_items()
 {
   QGraphicsScene *scene = this->scene();
-
   if (!scene)
     return;
 
   this->set_enabled(false);
 
-  // links
+  auto selected_items = scene->selectedItems();
+
+  std::vector<GraphicsLink *>  links_to_delete;
+  std::vector<GraphicsNode *>  nodes_to_delete;
+  std::vector<QGraphicsItem *> other_items;
+
+  // Separate items in a single pass
+  for (QGraphicsItem *item : selected_items)
   {
-    auto items = scene->selectedItems();
+    if (!scene->items().contains(item))
+      continue;
 
-    std::vector<GraphicsLink *> to_remove_links = {};
-
-    for (QGraphicsItem *item : items)
-    {
-      if (scene->items().contains(item))
-      {
-        if (GraphicsLink *p_link = dynamic_cast<GraphicsLink *>(item))
-          to_remove_links.push_back(p_link);
-      }
-    }
-
-    for (auto p_link : to_remove_links)
-      this->delete_graphics_link(p_link);
+    if (auto p_link = dynamic_cast<GraphicsLink *>(item))
+      links_to_delete.push_back(p_link);
+    else if (auto p_node = dynamic_cast<GraphicsNode *>(item))
+      nodes_to_delete.push_back(p_node);
+    else
+      other_items.push_back(item);
   }
 
-  // nodes
-  {
-    auto items = scene->selectedItems();
+  // Delete links first
+  for (auto p_link : links_to_delete)
+    this->delete_graphics_link(p_link);
 
-    std::vector<GraphicsNode *> to_remove_nodes = {};
+  // Then nodes
+  for (auto p_node : nodes_to_delete)
+    this->delete_graphics_node(p_node);
 
-    for (QGraphicsItem *item : items)
-    {
-      if (scene->items().contains(item))
-      {
-        if (GraphicsNode *p_node = dynamic_cast<GraphicsNode *>(item))
-          to_remove_nodes.push_back(p_node);
-      }
-    }
-
-    for (auto p_node : to_remove_nodes)
-      this->delete_graphics_node(p_node);
-  }
-
-  // reminder
-  {
-    auto items = scene->selectedItems();
-
-    for (QGraphicsItem *item : items)
-    {
-      if (scene->items().contains(item))
-      {
-        Logger::log()->trace("item removed");
-        clean_delete_graphics_item(item);
-      }
-    }
-  }
+  // Finally, any remaining items
+  for (auto item : other_items)
+    clean_delete_graphics_item(item);
 
   this->set_enabled(true);
 
