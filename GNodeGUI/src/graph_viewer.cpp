@@ -356,8 +356,6 @@ void GraphViewer::contextMenuEvent(QContextMenuEvent *event)
 
 void GraphViewer::delete_graphics_link(GraphicsLink *p_link, bool link_will_be_replaced)
 {
-  Logger::log()->trace("GraphicsLink removing");
-
   if (!p_link)
   {
     Logger::log()->error("GraphViewer::delete_graphics_link: invalid link provided.");
@@ -369,75 +367,62 @@ void GraphViewer::delete_graphics_link(GraphicsLink *p_link, bool link_will_be_r
   int           port_out = p_link->get_port_out_index();
   int           port_in = p_link->get_port_in_index();
 
-  std::string node_out_id = node_out ? node_out->get_id() : "";
-  std::string node_in_id = node_in ? node_in->get_id() : "";
-  std::string node_out_port_id = node_out ? node_out->get_port_id(port_out) : "";
-  std::string node_in_port_id = node_in ? node_in->get_port_id(port_in) : "";
+  const std::string node_out_id = node_out ? node_out->get_id() : "";
+  const std::string node_in_id = node_in ? node_in->get_id() : "";
+  const std::string node_out_port_id = node_out ? node_out->get_port_id(port_out) : "";
+  const std::string node_in_port_id = node_in ? node_in->get_port_id(port_in) : "";
 
-  Logger::log()->trace("GraphViewer::delete_graphics_link, {}:{} -> {}:{}",
+  Logger::log()->trace("Deleting link: {}:{} -> {}:{}, will_be_replaced={}",
                        node_out_id,
                        node_out_port_id,
                        node_in_id,
-                       node_in_port_id);
-
-  Logger::log()->trace("GraphViewer::delete_graphics_link: link_will_be_replaced = {}",
+                       node_in_port_id,
                        link_will_be_replaced ? "T" : "F");
 
-  // disconnect nodes safely
+  // Disconnect nodes safely
   if (node_out)
     node_out->set_is_port_connected(port_out, nullptr);
   if (node_in)
     node_in->set_is_port_connected(port_in, nullptr);
 
-  // delete the link
+  // Delete the link
   clean_delete_graphics_item(p_link);
 
-  // emit signal using stored data, not pointers...
+  // Emit signal
   if (node_out && node_in)
-    Q_EMIT this->connection_deleted(node_out_id,
-                                    node_out_port_id,
-                                    node_in_id,
-                                    node_in_port_id,
-                                    link_will_be_replaced);
+    Q_EMIT connection_deleted(node_out_id,
+                              node_out_port_id,
+                              node_in_id,
+                              node_in_port_id,
+                              link_will_be_replaced);
 }
 
 void GraphViewer::delete_graphics_node(GraphicsNode *p_node)
 {
-  Logger::log()->trace("GraphicsNode removing, id: {}", p_node->get_id());
-
   if (!p_node)
   {
     Logger::log()->error("GraphViewer::delete_graphics_node: invalid node provided.");
     return;
   }
-  Logger::log()->trace("GraphicsNode removing, id: {}",
-                       p_node ? p_node->get_id() : "null");
 
-  // First, remove any connected links
-  QList<QGraphicsItem *> items_copy = scene()->items(); // copy to avoid iterator issues
+  Logger::log()->trace("GraphicsNode removing, id: {}", p_node->get_id());
 
+  // Remove any connected links
+  QList<QGraphicsItem *> items_copy = scene()->items();
   for (QGraphicsItem *item : items_copy)
   {
     if (GraphicsLink *p_link = dynamic_cast<GraphicsLink *>(item))
     {
-      GraphicsNode *p_link_out = p_link->get_node_out();
-      GraphicsNode *p_link_in = p_link->get_node_in();
-
-      if ((p_link_out && p_link_out == p_node) || (p_link_in && p_link_in == p_node))
-      {
-        // safely delete link
+      if (p_link->get_node_out() == p_node || p_link->get_node_in() == p_node)
         delete_graphics_link(p_link, false);
-      }
     }
   }
 
-  if (p_node)
-  {
-    const std::string deleted_id = p_node->get_id(); // bckp before delete...
-    clean_delete_graphics_item(p_node);
+  // Delete node
+  const std::string deleted_id = p_node->get_id();
+  clean_delete_graphics_item(p_node);
 
-    Q_EMIT this->node_deleted(deleted_id);
-  }
+  Q_EMIT node_deleted(deleted_id);
 }
 
 void GraphViewer::delete_selected_items()

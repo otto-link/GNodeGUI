@@ -23,20 +23,20 @@ void clean_delete_graphics_item(QGraphicsItem *item)
   if (!item)
     return;
 
-  // disable interaction immediately so Qt stops querying it
+  // Disable interaction immediately
   item->setEnabled(false);
   item->setAcceptHoverEvents(false);
   item->setAcceptedMouseButtons(Qt::NoButton);
   item->setFlag(QGraphicsItem::ItemIsMovable, false);
   item->setFlag(QGraphicsItem::ItemIsSelectable, false);
-  item->setFlag(QGraphicsItem::ItemHasNoContents, true); // prevent paint()
+  item->setFlag(QGraphicsItem::ItemHasNoContents, true);
 
-  // remove from scene now to stop further scene iteration referencing it
+  // Remove from scene to prevent further scene references
   if (item->scene())
     item->scene()->removeItem(item);
 
+  // Delete
   delete item;
-  item = nullptr;
 }
 
 QRectF compute_bounding_rect(const std::vector<QGraphicsItem *> &items)

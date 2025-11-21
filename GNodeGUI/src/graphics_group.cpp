@@ -296,11 +296,6 @@ void GraphicsGroup::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
       break;
     }
 
-    // new_rect = new_rect.normalized();
-    // new_rect.setWidth(std::max(float(new_rect.width()),
-    // GN_STYLE->group.default_width)); new_rect.setHeight(
-    //     std::max(float(new_rect.height()), GN_STYLE->group.default_height));
-
     this->setRect(new_rect);
     this->resize_start_pos = event->pos();
 

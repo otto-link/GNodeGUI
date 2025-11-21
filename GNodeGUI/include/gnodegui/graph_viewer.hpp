@@ -182,7 +182,7 @@ private:
 
   std::string id;
 
-  std::vector<QGraphicsItem *> static_items;
+  std::vector<QGraphicsItem *> static_items; // owned by this
   std::vector<QPoint>          static_items_positions;
 
   // all nodes available store as a map of (node type, node category)
