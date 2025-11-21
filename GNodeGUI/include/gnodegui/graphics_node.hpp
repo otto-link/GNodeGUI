@@ -31,7 +31,7 @@ public:
 
   // --- Serializzation
 
-  void           json_from(nlohmann::json json);
+  void           json_from(const nlohmann::json &json);
   nlohmann::json json_to() const;
 
   // --- Getters
@@ -111,13 +111,13 @@ private:
   bool                        is_node_hovered = false;
   bool                        is_node_pinned = false;
   std::vector<bool>           is_port_hovered;
-  std::vector<GraphicsLink *> connected_link_ref;
+  std::vector<GraphicsLink *> connected_link_ref; // owned by GraphViewer
   bool                        is_node_computing = false;
   bool                        is_widget_visible = true;
   bool                        has_connection_started = false;
   int                         port_index_from;
   std::string                 data_type_connecting = "";
-  QGraphicsProxyWidget       *proxy_widget = nullptr;
+  QGraphicsProxyWidget       *proxy_widget = nullptr; // owned by this
 };
 
 // --- helper

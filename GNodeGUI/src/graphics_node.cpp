@@ -228,7 +228,7 @@ QVariant GraphicsNode::itemChange(GraphicsItemChange change, const QVariant &val
   return QGraphicsItem::itemChange(change, value);
 }
 
-void GraphicsNode::json_from(nlohmann::json json)
+void GraphicsNode::json_from(const nlohmann::json &json)
 {
   json_safe_get(json, "is_widget_visible", this->is_widget_visible);
 

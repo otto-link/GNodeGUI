@@ -9,6 +9,7 @@
 #include "gnodegui/graphics_link.hpp"
 #include "gnodegui/logger.hpp"
 #include "gnodegui/style.hpp"
+#include "gnodegui/utils.hpp"
 
 namespace gngui
 {
