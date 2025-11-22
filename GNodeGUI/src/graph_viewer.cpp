@@ -94,6 +94,10 @@ void GraphViewer::add_link(const std::string &id_out,
     p_new_link->set_endnodes(from_node, port_from_index, to_node, port_to_index);
     p_new_link->update_path();
 
+    // mark those ports as connected
+    from_node->set_is_port_connected(port_from_index, p_new_link);
+    to_node->set_is_port_connected(port_to_index, p_new_link);
+
     this->scene()->addItem(p_new_link);
   }
   else
