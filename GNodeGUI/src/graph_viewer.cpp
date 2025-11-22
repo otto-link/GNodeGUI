@@ -322,20 +322,8 @@ void GraphViewer::add_toolbar(QPoint window_pos)
 
 void GraphViewer::clear()
 {
-  std::vector<QGraphicsItem *> items_to_delete = {};
-
-  for (QGraphicsItem *item : this->scene()->items())
-    if (!this->is_item_static(item))
-    {
-      item->setSelected(false);
-      this->scene()->removeItem(item);
-      items_to_delete.push_back(item);
-    }
-
-  this->viewport()->update();
-
-  for (auto item : items_to_delete)
-    clean_delete_graphics_item(item);
+  this->select_all();
+  this->delete_selected_items();
 
   Q_EMIT this->selection_has_changed();
 }
