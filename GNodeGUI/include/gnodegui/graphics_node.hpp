@@ -127,5 +127,6 @@ private:
 // --- helper
 
 bool is_valid(GraphicsNode *node);
+bool is_valid(GraphicsLink *link);
 
 } // namespace gngui

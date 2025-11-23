@@ -20,7 +20,7 @@ namespace gngui
 
 void clean_delete_graphics_item(QGraphicsItem *item)
 {
-  if (!item)
+  if (!item || !item->scene())
     return;
 
   // Disable interaction immediately

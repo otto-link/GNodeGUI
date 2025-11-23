@@ -735,4 +735,6 @@ void GraphicsNode::update_links()
 
 bool is_valid(GraphicsNode *node) { return node && node->scene() != nullptr; }
 
+bool is_valid(GraphicsLink *link) { return link && link->scene() != nullptr; }
+
 } // namespace gngui

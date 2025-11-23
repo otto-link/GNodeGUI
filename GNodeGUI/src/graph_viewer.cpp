@@ -322,8 +322,20 @@ void GraphViewer::add_toolbar(QPoint window_pos)
 
 void GraphViewer::clear()
 {
-  this->select_all();
-  this->delete_selected_items();
+  std::vector<QGraphicsItem *> items_to_delete = {};
+
+  for (QGraphicsItem *item : this->scene()->items())
+    if (!this->is_item_static(item))
+    {
+      item->setSelected(false);
+      this->scene()->removeItem(item);
+      items_to_delete.push_back(item);
+    }
+
+  this->viewport()->update();
+
+  for (auto item : items_to_delete)
+    clean_delete_graphics_item(item);
 
   Q_EMIT this->selection_has_changed();
 }
@@ -349,7 +361,7 @@ void GraphViewer::contextMenuEvent(QContextMenuEvent *event)
 
 void GraphViewer::delete_graphics_link(GraphicsLink *p_link, bool link_will_be_replaced)
 {
-  if (!p_link)
+  if (!is_valid(p_link))
   {
     Logger::log()->error("GraphViewer::delete_graphics_link: invalid link provided.");
     return;
@@ -392,7 +404,7 @@ void GraphViewer::delete_graphics_link(GraphicsLink *p_link, bool link_will_be_r
 
 void GraphViewer::delete_graphics_node(GraphicsNode *p_node)
 {
-  if (!p_node)
+  if (!is_valid(p_node))
   {
     Logger::log()->error("GraphViewer::delete_graphics_node: invalid node provided.");
     return;
