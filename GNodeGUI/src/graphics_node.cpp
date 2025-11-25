@@ -36,6 +36,7 @@ GraphicsNode::GraphicsNode(QPointer<NodeProxy> p_proxy, QGraphicsItem *parent)
   this->setFlag(QGraphicsItem::ItemDoesntPropagateOpacityToChildren, false);
   this->setFlag(QGraphicsItem::ItemIsFocusable, true);
   this->setFlag(QGraphicsItem::ItemClipsChildrenToShape, false);
+  this->setFlag(QGraphicsItem::ItemSendsScenePositionChanges, true);
 
   this->setAcceptHoverEvents(true);
   this->setOpacity(1.f);
@@ -238,6 +239,11 @@ QVariant GraphicsNode::itemChange(GraphicsItemChange change, const QVariant &val
     }
   }
 
+  if (change == QGraphicsItem::ItemPositionHasChanged)
+  {
+    this->update_links();
+  }
+
   return QGraphicsItem::itemChange(change, value);
 }
 
@@ -271,10 +277,6 @@ nlohmann::json GraphicsNode::json_to() const
 
 void GraphicsNode::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
-  // update the links connected to this node
-  if (this->is_node_dragged)
-    this->update_links();
-
   // let the base class handle normal movement
   QGraphicsItem::mouseMoveEvent(event);
 }
@@ -323,7 +325,6 @@ void GraphicsNode::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     if (this->is_node_dragged)
     {
       this->is_node_dragged = false;
-      this->update_links();
     }
     else if (this->has_connection_started)
     {
@@ -723,6 +724,9 @@ bool GraphicsNode::update_is_port_hovered(QPointF item_pos)
 
 void GraphicsNode::update_links()
 {
+  if (!this->scene())
+    return;
+
   for (QGraphicsItem *item : this->scene()->items())
     if (GraphicsLink *p_link = dynamic_cast<GraphicsLink *>(item))
     {
