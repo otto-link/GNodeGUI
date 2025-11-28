@@ -234,7 +234,10 @@ QVariant GraphicsNode::itemChange(GraphicsItemChange change, const QVariant &val
     {
       if (this->selected)
         this->selected(this->get_id());
-      else if (this->deselected)
+    }
+    else
+    {
+      if (this->deselected)
         this->deselected(this->get_id());
     }
   }
