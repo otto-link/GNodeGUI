@@ -503,6 +503,9 @@ bool GraphViewer::execute_new_node_context_menu()
 {
   QMenu *menu = new QMenu(this);
 
+  // backup mouse position
+  QPointF mouse_scene_pos = this->get_mouse_scene_pos();
+
   // add filterbox to the context menu
   QLineEdit *text_box = new QLineEdit(menu);
   text_box->setPlaceholderText(QStringLiteral("Filter or [SPACE]"));
@@ -613,8 +616,7 @@ bool GraphViewer::execute_new_node_context_menu()
 
   if (selected_action)
   {
-    Q_EMIT this->new_node_request(selected_action->text().toStdString(),
-                                  this->get_mouse_scene_pos());
+    Q_EMIT this->new_node_request(selected_action->text().toStdString(), mouse_scene_pos);
     return true;
   }
   else
