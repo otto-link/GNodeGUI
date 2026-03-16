@@ -769,6 +769,25 @@ void GraphViewer::json_from(nlohmann::json json, bool clear_existing_content)
   {
     for (auto &json_node : json["nodes"])
     {
+      // failsafe
+      if (!json_node.contains("id") || !json_node.contains("scene_position.x") ||
+          !json_node.contains("scene_position.y"))
+      {
+        Logger::log()->error(
+            "Invalid node entry in JSON (missing required fields). Entry:\n{}",
+            json_node.dump(4));
+        continue;
+      }
+
+      if (!json_node["id"].is_string() || !json_node["scene_position.x"].is_number() ||
+          !json_node["scene_position.y"].is_number())
+      {
+        Logger::log()->error("Invalid node entry in JSON (wrong field types). Entry:\n{}",
+                             json_node.dump(4));
+        continue;
+      }
+
+      // load
       std::string nid = json_node["id"].get<std::string>();
 
       float x = json_node["scene_position.x"];
@@ -789,18 +808,28 @@ void GraphViewer::json_from(nlohmann::json json, bool clear_existing_content)
   {
     for (auto &json_link : json["links"])
     {
+      // failsafe
+      if (!json_link.contains("node_out_id") || !json_link.contains("node_in_id") ||
+          !json_link.contains("port_out_id") || !json_link.contains("port_in_id") ||
+          json_link["node_out_id"].is_null() || json_link["node_in_id"].is_null() ||
+          json_link["port_out_id"].is_null() || json_link["port_in_id"].is_null())
+      {
+        Logger::log()->error(
+            "GraphViewer::json_from: Invalid link entry in JSON (missing or null "
+            "fields). Graphic link cannot be created. Entry:\n{}",
+            json_link.dump(4));
+        continue;
+      }
+
+      // load
       std::string node_out_id = json_link.value("node_out_id", "");
       std::string node_in_id = json_link.value("node_in_id", "");
       std::string port_out_id = json_link.value("port_out_id", "");
       std::string port_in_id = json_link.value("port_in_id", "");
 
-      if (!node_out_id.empty() && !node_in_id.empty() && !port_out_id.empty() &&
-          !port_in_id.empty())
-      {
-        // the graphic links are generated (but the model connections
-        // itself are outsourced to the outter headless nodes manager)
-        this->add_link(node_out_id, port_out_id, node_in_id, port_in_id);
-      }
+      // the graphic links are generated (but the model connections
+      // itself are outsourced to the outter headless nodes manager)
+      this->add_link(node_out_id, port_out_id, node_in_id, port_in_id);
     }
   }
 }
