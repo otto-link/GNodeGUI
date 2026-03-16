@@ -789,14 +789,18 @@ void GraphViewer::json_from(nlohmann::json json, bool clear_existing_content)
   {
     for (auto &json_link : json["links"])
     {
-      std::string node_out_id = json_link["node_out_id"].get<std::string>();
-      std::string node_in_id = json_link["node_in_id"].get<std::string>();
-      std::string port_out_id = json_link["port_out_id"];
-      std::string port_in_id = json_link["port_in_id"];
+      std::string node_out_id = json_link.value("node_out_id", "");
+      std::string node_in_id = json_link.value("node_in_id", "");
+      std::string port_out_id = json_link.value("port_out_id", "");
+      std::string port_in_id = json_link.value("port_in_id", "");
 
-      // the graphic links are generated (but the model connections
-      // itself are outsourced to the outter headless nodes manager)
-      this->add_link(node_out_id, port_out_id, node_in_id, port_in_id);
+      if (!node_out_id.empty() && !node_in_id.empty() && !port_out_id.empty() &&
+          !port_in_id.empty())
+      {
+        // the graphic links are generated (but the model connections
+        // itself are outsourced to the outter headless nodes manager)
+        this->add_link(node_out_id, port_out_id, node_in_id, port_in_id);
+      }
     }
   }
 }
