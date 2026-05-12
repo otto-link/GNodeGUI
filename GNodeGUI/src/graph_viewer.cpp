@@ -576,7 +576,6 @@ bool GraphViewer::execute_new_node_context_menu()
 
           submenu_active = false;
         }
-
         // add everything
         if (!filtering_active)
         {
@@ -1206,10 +1205,16 @@ void GraphViewer::remove_node(const std::string &node_id)
 {
   auto items = scene()->items();
 
+  // in 2 steps, do not temper "items" while looping...
+  std::vector<GraphicsNode *> to_remove = {};
+
   for (QGraphicsItem *item : items)
     if (GraphicsNode *p_node = dynamic_cast<GraphicsNode *>(item))
       if (p_node->get_id() == node_id)
-        this->delete_graphics_node(p_node);
+        to_remove.push_back(p_node);
+
+  for (const auto p_node : to_remove)
+    this->delete_graphics_node(p_node);
 }
 
 void GraphViewer::resizeEvent(QResizeEvent *event)
