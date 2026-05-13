@@ -44,6 +44,11 @@ public:
   // --- Remove
 
   void clear();
+  void remove_link(const std::string &node_out_id,
+                   int                port_out,
+                   const std::string &node_in_id,
+                   int                port_in,
+                   bool               link_will_be_replaced = false);
   void remove_node(const std::string &node_id);
 
   // --- Editing
@@ -64,10 +69,12 @@ public:
 
   // --- Getters
 
-  QRectF        get_bounding_box();
-  GraphicsNode *get_graphics_node_by_id(const std::string &node_id);
-  std::string   get_id() const;
-  QPointF       get_mouse_scene_pos();
+  QRectF                      get_bounding_box() const;
+  QPointF                     get_center() const;
+  GraphicsNode               *get_graphics_node_by_id(const std::string &node_id);
+  std::string                 get_id() const;
+  std::vector<GraphicsLink *> get_links() const;
+  QPointF                     get_mouse_scene_pos() const;
 
   // --- Setters
 
@@ -174,9 +181,9 @@ private Q_SLOTS:
   void on_connection_started(GraphicsNode *from_node, int port_index);
 
 private:
-  void delete_graphics_link(GraphicsLink *, bool prevent_graph_update = false);
+  void delete_graphics_link(GraphicsLink *, bool link_will_be_replaced = false);
   void delete_graphics_node(GraphicsNode *p_node);
-  bool is_item_static(QGraphicsItem *item);
+  bool is_item_static(QGraphicsItem *item) const;
 
   // --- Members
 

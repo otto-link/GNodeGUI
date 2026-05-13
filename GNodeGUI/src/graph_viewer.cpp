@@ -659,6 +659,14 @@ void GraphViewer::export_to_graphviz(const std::string &fname)
   file << "}\n";
 }
 
+QPointF GraphViewer::get_center() const
+{
+  if (!this->viewport())
+    return QPointF();
+
+  return this->mapToScene(this->viewport()->rect().center());
+}
+
 GraphicsNode *GraphViewer::get_graphics_node_by_id(const std::string &node_id)
 {
   auto items = scene()->items();
@@ -671,7 +679,7 @@ GraphicsNode *GraphViewer::get_graphics_node_by_id(const std::string &node_id)
   return nullptr;
 }
 
-QRectF GraphViewer::get_bounding_box()
+QRectF GraphViewer::get_bounding_box() const
 {
   QRectF bbox;
 
@@ -700,7 +708,20 @@ QRectF GraphViewer::get_bounding_box()
 
 std::string GraphViewer::get_id() const { return this->id; }
 
-QPointF GraphViewer::get_mouse_scene_pos()
+std::vector<GraphicsLink *> GraphViewer::get_links() const
+{
+  std::vector<GraphicsLink *> links;
+
+  for (QGraphicsItem *item : this->scene()->items())
+  {
+    if (GraphicsLink *p_link = dynamic_cast<GraphicsLink *>(item))
+      links.push_back(p_link);
+  }
+
+  return links;
+}
+
+QPointF GraphViewer::get_mouse_scene_pos() const
 {
   QPoint  global_pos = QCursor::pos();
   QPoint  local_pos = this->mapFromGlobal(global_pos);
@@ -728,7 +749,7 @@ std::vector<std::string> GraphViewer::get_selected_node_ids(
   return ids;
 }
 
-bool GraphViewer::is_item_static(QGraphicsItem *item)
+bool GraphViewer::is_item_static(QGraphicsItem *item) const
 {
   return !(std::find(this->static_items.begin(), this->static_items.end(), item) ==
            this->static_items.end());
@@ -1199,6 +1220,39 @@ void GraphViewer::on_update_started()
 
   if (GN_STYLE->viewer.disable_during_update)
     this->set_enabled(false);
+}
+
+void GraphViewer::remove_link(const std::string &node_out_id,
+                              int                port_out,
+                              const std::string &node_in_id,
+                              int                port_in,
+                              bool               link_will_be_replaced)
+{
+  std::vector<GraphicsLink *> links = this->get_links();
+  GraphicsLink               *p_link_to_remove = nullptr;
+
+  for (const auto p_link : links)
+  {
+    GraphicsNode *p_node_out = p_link->get_node_out();
+    GraphicsNode *p_node_in = p_link->get_node_in();
+
+    if (!p_node_out || !p_node_in)
+      continue;
+
+    std::string c_out_id = p_node_out->get_id();
+    std::string c_in_id = p_node_in->get_id();
+    int         c_port_out = p_link->get_port_out_index();
+    int         c_port_in = p_link->get_port_in_index();
+
+    if (node_out_id == c_out_id && node_in_id == c_in_id && port_out == c_port_out &&
+        port_in == c_port_in)
+    {
+      p_link_to_remove = p_link;
+    }
+  }
+
+  if (p_link_to_remove)
+    delete_graphics_link(p_link_to_remove, link_will_be_replaced);
 }
 
 void GraphViewer::remove_node(const std::string &node_id)
