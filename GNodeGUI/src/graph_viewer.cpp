@@ -8,6 +8,7 @@
 #include <QKeyEvent>
 #include <QLineEdit>
 #include <QMenu>
+#include <QMimeData>
 #include <QTimer>
 #include <QToolTip>
 #include <QWidgetAction>
@@ -47,6 +48,7 @@ GraphViewer::GraphViewer(std::string id, QWidget *parent) : QGraphicsView(parent
   this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   this->setDragMode(QGraphicsView::NoDrag);
   this->setFocusPolicy(Qt::StrongFocus);
+  this->setAcceptDrops(true);
 
   this->setScene(new QGraphicsScene());
   this->scene()->setSceneRect(-MAX_SIZE, -MAX_SIZE, (MAX_SIZE * 2), (MAX_SIZE * 2));
@@ -486,6 +488,22 @@ void GraphViewer::deselect_all()
   Q_EMIT this->selection_has_changed();
 }
 
+void GraphViewer::dragEnterEvent(QDragEnterEvent *event)
+{
+  if (event->mimeData()->hasText())
+    event->acceptProposedAction();
+  else
+    event->ignore();
+}
+
+void GraphViewer::dragMoveEvent(QDragMoveEvent *event)
+{
+  if (event->mimeData()->hasText())
+    event->acceptProposedAction();
+  else
+    event->ignore();
+}
+
 void GraphViewer::drawForeground(QPainter *painter, const QRectF &rect)
 {
   QGraphicsView::drawForeground(painter, rect);
@@ -497,6 +515,21 @@ void GraphViewer::drawForeground(QPainter *painter, const QRectF &rect)
                                          this->static_items_positions[k]);
     this->static_items[k]->setPos(scene_pos);
   }
+}
+
+void GraphViewer::dropEvent(QDropEvent *event)
+{
+  if (!event->mimeData()->hasText())
+    return;
+
+  std::string node_type = event->mimeData()->text().toStdString();
+
+  // convert drop position to scene coordinates
+  QPointF scene_pos = this->mapToScene(event->position().toPoint());
+
+  Q_EMIT this->node_type_dropped(node_type, scene_pos);
+  Q_EMIT this->new_node_request(node_type, scene_pos);
+  event->acceptProposedAction();
 }
 
 bool GraphViewer::execute_new_node_context_menu()

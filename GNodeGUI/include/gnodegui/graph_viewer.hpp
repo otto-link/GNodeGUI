@@ -141,6 +141,7 @@ Q_SIGNALS:
   void node_selected(const std::string &node_id);
   void node_settings_request(const std::string &node_id);
   void node_right_clicked(const std::string &node_id, QPointF scene_pos);
+  void node_type_dropped(const std::string &node_type, QPointF scene_pos);
   void nodes_copy_request(const std::vector<std::string> &id_list,
                           const std::vector<QPointF>     &scene_pos_list);
   void nodes_duplicate_request(const std::vector<std::string> &id_list,
@@ -168,6 +169,10 @@ protected:
   void mouseReleaseEvent(QMouseEvent *event) override;
   void resizeEvent(QResizeEvent *event) override;
   void wheelEvent(QWheelEvent *event) override;
+
+  void dragEnterEvent(QDragEnterEvent *event) override;
+  void dragMoveEvent(QDragMoveEvent *event) override;
+  void dropEvent(QDropEvent *event) override;
 
 private Q_SLOTS:
   void on_connection_dropped(GraphicsNode *from, int port_index, QPointF scene_pos);
