@@ -290,7 +290,7 @@ void GraphicsNode::mousePressEvent(QGraphicsSceneMouseEvent *event)
   {
     int hovered_port_index = this->get_hovered_port_index();
 
-    if (hovered_port_index >= 0)
+    if (hovered_port_index >= 0 && this->is_port_available(hovered_port_index))
     {
       Logger::log()->trace("GraphicsNode::mousePressEvent: connection_started {}:{}",
                            this->get_id(),
