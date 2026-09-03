@@ -90,6 +90,19 @@ void GraphViewer::add_link(const std::string &id_out,
     int port_from_index = from_node->get_port_index(port_id_out);
     int port_to_index = to_node->get_port_index(port_id_in);
 
+    // failsafe: an unknown port id (e.g. stale data from an older file) must
+    // degrade to a missing link, not crash the port index lookups below
+    if (port_from_index < 0 || port_to_index < 0)
+    {
+      Logger::log()->error(
+          "GraphViewer::add_link, unknown port id, link skipped: {}/{} => {}/{}",
+          id_out,
+          port_id_out,
+          to_in,
+          port_id_in);
+      return;
+    }
+
     QColor color = get_color_from_data_type(from_node->get_data_type(port_from_index));
 
     GraphicsLink *p_new_link = new GraphicsLink(color, this->current_link_type);
