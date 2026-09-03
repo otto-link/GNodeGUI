@@ -11,9 +11,11 @@
 #include <QMimeData>
 #include <QTimer>
 #include <QToolTip>
+#include <QVBoxLayout>
 #include <QWidgetAction>
 
 #include "gnodegui/graph_viewer.hpp"
+#include "gnodegui/icon_button.hpp"
 #include "gnodegui/graphics_comment.hpp"
 #include "gnodegui/graphics_group.hpp"
 #include "gnodegui/logger.hpp"
@@ -88,6 +90,19 @@ void GraphViewer::add_link(const std::string &id_out,
     int port_from_index = from_node->get_port_index(port_id_out);
     int port_to_index = to_node->get_port_index(port_id_in);
 
+    // failsafe: an unknown port id (e.g. stale data from an older file) must
+    // degrade to a missing link, not crash the port index lookups below
+    if (port_from_index < 0 || port_to_index < 0)
+    {
+      Logger::log()->error(
+          "GraphViewer::add_link, unknown port id, link skipped: {}/{} => {}/{}",
+          id_out,
+          port_id_out,
+          to_in,
+          port_id_in);
+      return;
+    }
+
     QColor color = get_color_from_data_type(from_node->get_data_type(port_from_index));
 
     GraphicsLink *p_new_link = new GraphicsLink(color, this->current_link_type);
@@ -152,174 +167,154 @@ std::string GraphViewer::add_node(NodeProxy         *p_node_proxy,
   return nid;
 }
 
-void GraphViewer::add_static_item(QGraphicsItem *item, QPoint window_pos, float z_value)
-{
-  item->setFlag(QGraphicsItem::ItemIgnoresTransformations, true);
-  item->setFlag(QGraphicsItem::ItemIsMovable, false);
-  item->setZValue(z_value);
-
-  this->add_item(item);
-  this->static_items.push_back(item);
-  this->static_items_positions.push_back(window_pos);
-}
-
 void GraphViewer::add_toolbar(QPoint window_pos)
 {
   const float  width = GN_STYLE->viewer.toolbar_width;
   const QColor color = GN_STYLE->viewer.color_toolbar;
   const qreal  pen_width = 1.f;
   const int    padding = (int)(0.2f * width);
-  const int    dy = width + padding;
-  const float  z_value = 1.f;
 
-  int x = window_pos.x();
-  int y = window_pos.y();
+  if (this->toolbar_widget)
+    delete this->toolbar_widget;
 
-  auto group_icon = new GroupIcon(width, color, pen_width);
+  // the toolbar is made of real widgets parented to the view itself: they take
+  // no part in the scene transform, so they cannot drift during pan/zoom. The
+  // parent must NOT be the viewport — QGraphicsView scrolls by shifting the
+  // viewport's children, which would drag the toolbar along with the canvas.
+  this->toolbar_widget = new QWidget(this);
+  this->toolbar_widget->setAutoFillBackground(true);
+  this->toolbar_widget->setContextMenuPolicy(Qt::PreventContextMenu);
+
+  QPalette palette = this->toolbar_widget->palette();
+  palette.setColor(QPalette::Window, QColor(21, 21, 21, 255));
+  this->toolbar_widget->setPalette(palette);
+
+  QVBoxLayout *layout = new QVBoxLayout(this->toolbar_widget);
+  layout->setContentsMargins(padding, padding, padding, padding);
+  layout->setSpacing(padding);
+
+  auto add_icon_button = [this, layout](AbstractIcon *icon) -> IconButton *
+  {
+    IconButton *button = new IconButton(icon, this->toolbar_widget);
+    layout->addWidget(button);
+    return button;
+  };
+
   if (GN_STYLE->viewer.add_group)
   {
-    this->add_static_item(group_icon, QPoint(x, y), z_value);
-    y += dy;
-  }
-
-  auto link_type_icon = new LinkTypeIcon(width, color, pen_width);
-  this->add_static_item(link_type_icon, QPoint(x, y), z_value);
-  y += dy;
-
-  auto reload_icon = new ReloadIcon(width, color, pen_width);
-  this->add_static_item(reload_icon, QPoint(x, y), z_value);
-  y += dy;
-
-  auto fit_content_icon = new FitContentIcon(width, color, pen_width);
-  this->add_static_item(fit_content_icon, QPoint(x, y), z_value);
-  y += dy;
-
-  auto screenshot_icon = new ScreenshotIcon(width, color, pen_width);
-  this->add_static_item(screenshot_icon, QPoint(x, y), z_value);
-  y += dy;
-
-  auto select_all_icon = new SelectAllIcon(width, color, pen_width);
-  this->add_static_item(select_all_icon, QPoint(x, y), z_value);
-  y += dy;
-
-  auto clear_all_icon = new ClearAllIcon(width, color, pen_width);
-  this->add_static_item(clear_all_icon, QPoint(x, y), z_value);
-  y += dy;
-
-  auto new_icon = new NewIcon(width, color, pen_width);
-  if (GN_STYLE->viewer.add_new_icon)
-  {
-    y += 2.f * padding;
-    this->add_static_item(new_icon, QPoint(x, y), z_value);
-    y += dy;
-  }
-
-  auto load_icon = new LoadIcon(width, color, pen_width);
-  auto save_icon = new SaveIcon(width, color, pen_width);
-  if (GN_STYLE->viewer.add_load_save_icons)
-  {
-    this->add_static_item(load_icon, QPoint(x, y), z_value);
-    y += dy;
-
-    this->add_static_item(save_icon, QPoint(x, y), z_value);
-    y += dy;
-  }
-
-  auto import_icon = new ImportIcon(width, color, pen_width);
-  if (GN_STYLE->viewer.add_import_icon)
-  {
-    this->add_static_item(import_icon, QPoint(x, y), z_value);
-    y += dy;
-  }
-
-  auto dots_icon = new DotsIcon(width, color, pen_width);
-  this->add_static_item(dots_icon, QPoint(x, y), z_value);
-  y += dy;
-
-  auto viewport_icon = new ViewportIcon(width, color, pen_width);
-  if (GN_STYLE->viewer.add_viewport_icon)
-  {
-    y += 2.f * padding;
-    this->add_static_item(viewport_icon, QPoint(x, y), z_value);
-    y += dy;
-  }
-
-  // add background
-  QGraphicsRectItem *background = new QGraphicsRectItem(0.f,
-                                                        0.f,
-                                                        width + 2.f * padding,
-                                                        y - dy + padding);
-  background->setPen(QPen(QColor(0, 0, 0, 0)));
-  background->setBrush(QBrush(QColor(21, 21, 21, 255)));
-
-  QPoint pos = QPoint(window_pos.x() - padding, window_pos.y() - padding);
-  this->add_static_item(background, pos, z_value - 0.001f);
-
-  // add connections
-  if (GN_STYLE->viewer.add_group)
-  {
-    this->connect(group_icon,
-                  &AbstractIcon::hit_icon,
+    IconButton *group_button = add_icon_button(new GroupIcon(width,
+                                                             color,
+                                                             pen_width));
+    this->connect(group_button,
+                  &IconButton::clicked,
                   [this]()
                   { this->add_item(new GraphicsGroup(), this->get_mouse_scene_pos()); });
   }
 
-  this->connect(reload_icon,
-                &AbstractIcon::hit_icon,
-                [this]() { Q_EMIT this->graph_reload_request(); });
-
-  this->connect(link_type_icon,
-                &AbstractIcon::hit_icon,
+  IconButton *link_type_button = add_icon_button(new LinkTypeIcon(width,
+                                                                  color,
+                                                                  pen_width));
+  this->connect(link_type_button,
+                &IconButton::clicked,
                 [this]() { this->toggle_link_type(); });
 
-  this->connect(fit_content_icon,
-                &AbstractIcon::hit_icon,
+  IconButton *reload_button = add_icon_button(new ReloadIcon(width,
+                                                             color,
+                                                             pen_width));
+  this->connect(reload_button,
+                &IconButton::clicked,
+                [this]() { Q_EMIT this->graph_reload_request(); });
+
+  IconButton *fit_content_button = add_icon_button(new FitContentIcon(width,
+                                                                      color,
+                                                                      pen_width));
+  this->connect(fit_content_button,
+                &IconButton::clicked,
                 [this]() { this->zoom_to_content(); });
 
-  this->connect(screenshot_icon,
-                &AbstractIcon::hit_icon,
+  IconButton *screenshot_button = add_icon_button(new ScreenshotIcon(width,
+                                                                     color,
+                                                                     pen_width));
+  this->connect(screenshot_button,
+                &IconButton::clicked,
                 [this]() { this->save_screenshot(); });
 
-  this->connect(select_all_icon,
-                &AbstractIcon::hit_icon,
+  IconButton *select_all_button = add_icon_button(new SelectAllIcon(width,
+                                                                    color,
+                                                                    pen_width));
+  this->connect(select_all_button,
+                &IconButton::clicked,
                 [this]() { this->select_all(); });
 
-  this->connect(clear_all_icon,
-                &AbstractIcon::hit_icon,
+  IconButton *clear_all_button = add_icon_button(new ClearAllIcon(width,
+                                                                  color,
+                                                                  pen_width));
+  this->connect(clear_all_button,
+                &IconButton::clicked,
                 [this]() { Q_EMIT this->graph_clear_request(); });
 
-  this->connect(new_icon,
-                &AbstractIcon::hit_icon,
-                [this]() { Q_EMIT this->graph_new_request(); });
+  if (GN_STYLE->viewer.add_new_icon)
+  {
+    layout->addSpacing(2 * padding);
+
+    IconButton *new_button = add_icon_button(new NewIcon(width,
+                                                         color,
+                                                         pen_width));
+    this->connect(new_button,
+                  &IconButton::clicked,
+                  [this]() { Q_EMIT this->graph_new_request(); });
+  }
 
   if (GN_STYLE->viewer.add_load_save_icons)
   {
-    this->connect(load_icon,
-                  &AbstractIcon::hit_icon,
+    IconButton *load_button = add_icon_button(new LoadIcon(width,
+                                                           color,
+                                                           pen_width));
+    this->connect(load_button,
+                  &IconButton::clicked,
                   [this]() { Q_EMIT this->graph_load_request(); });
 
-    this->connect(save_icon,
-                  &AbstractIcon::hit_icon,
+    IconButton *save_button = add_icon_button(new SaveIcon(width,
+                                                           color,
+                                                           pen_width));
+    this->connect(save_button,
+                  &IconButton::clicked,
                   [this]() { Q_EMIT this->graph_save_as_request(); });
   }
 
   if (GN_STYLE->viewer.add_import_icon)
   {
-    this->connect(import_icon,
-                  &AbstractIcon::hit_icon,
+    IconButton *import_button = add_icon_button(new ImportIcon(width,
+                                                               color,
+                                                               pen_width));
+    this->connect(import_button,
+                  &IconButton::clicked,
                   [this]() { Q_EMIT this->graph_import_request(); });
   }
 
-  this->connect(dots_icon,
-                &AbstractIcon::hit_icon,
+  IconButton *dots_button = add_icon_button(new DotsIcon(width,
+                                                         color,
+                                                         pen_width));
+  this->connect(dots_button,
+                &IconButton::clicked,
                 [this]() { Q_EMIT this->graph_settings_request(); });
 
   if (GN_STYLE->viewer.add_viewport_icon)
   {
-    this->connect(viewport_icon,
-                  &AbstractIcon::hit_icon,
+    layout->addSpacing(2 * padding);
+
+    IconButton *viewport_button = add_icon_button(new ViewportIcon(width,
+                                                                   color,
+                                                                   pen_width));
+    this->connect(viewport_button,
+                  &IconButton::clicked,
                   [this]() { Q_EMIT this->viewport_request(); });
   }
+
+  this->toolbar_widget->move(window_pos - QPoint(padding, padding));
+  this->toolbar_widget->adjustSize();
+  this->toolbar_widget->raise();
+  this->toolbar_widget->show();
 }
 
 void GraphViewer::clear()
@@ -327,12 +322,11 @@ void GraphViewer::clear()
   std::vector<QGraphicsItem *> items_to_delete = {};
 
   for (QGraphicsItem *item : this->scene()->items())
-    if (!this->is_item_static(item))
-    {
-      item->setSelected(false);
-      this->scene()->removeItem(item);
-      items_to_delete.push_back(item);
-    }
+  {
+    item->setSelected(false);
+    this->scene()->removeItem(item);
+    items_to_delete.push_back(item);
+  }
 
   this->viewport()->update();
 
@@ -482,8 +476,7 @@ void GraphViewer::deselect_all()
   auto items = scene()->items();
 
   for (QGraphicsItem *item : items)
-    if (!is_item_static(item))
-      item->setSelected(false);
+    item->setSelected(false);
 
   Q_EMIT this->selection_has_changed();
 }
@@ -502,19 +495,6 @@ void GraphViewer::dragMoveEvent(QDragMoveEvent *event)
     event->acceptProposedAction();
   else
     event->ignore();
-}
-
-void GraphViewer::drawForeground(QPainter *painter, const QRectF &rect)
-{
-  QGraphicsView::drawForeground(painter, rect);
-
-  for (size_t k = 0; k < this->static_items.size(); k++)
-  {
-    // Keep the static item at a fixed position
-    QPointF scene_pos = this->mapToScene(this->viewport()->rect().topLeft() +
-                                         this->static_items_positions[k]);
-    this->static_items[k]->setPos(scene_pos);
-  }
 }
 
 void GraphViewer::dropEvent(QDropEvent *event)
@@ -714,29 +694,7 @@ GraphicsNode *GraphViewer::get_graphics_node_by_id(const std::string &node_id)
 
 QRectF GraphViewer::get_bounding_box() const
 {
-  QRectF bbox;
-
-  // if there are no static items, the built-in scene bounding
-  // rectangle is used. If not, the bounding box is recomputed with the
-  // static items excluded
-  if (this->static_items.empty())
-    bbox = this->scene()->itemsBoundingRect();
-  else
-  {
-    std::vector<QGraphicsItem *> items_not_static;
-
-    auto items = scene()->items();
-
-    for (QGraphicsItem *item : items)
-    {
-      if (!this->is_item_static(item))
-        items_not_static.push_back(item);
-
-      bbox = compute_bounding_rect(items_not_static);
-    }
-  }
-
-  return bbox;
+  return this->scene()->itemsBoundingRect();
 }
 
 std::string GraphViewer::get_id() const { return this->id; }
@@ -780,12 +738,6 @@ std::vector<std::string> GraphViewer::get_selected_node_ids(
       }
 
   return ids;
-}
-
-bool GraphViewer::is_item_static(QGraphicsItem *item) const
-{
-  return !(std::find(this->static_items.begin(), this->static_items.end(), item) ==
-           this->static_items.end());
 }
 
 void GraphViewer::json_from(nlohmann::json json, bool clear_existing_content)
@@ -1304,20 +1256,6 @@ void GraphViewer::remove_node(const std::string &node_id)
     this->delete_graphics_node(p_node);
 }
 
-void GraphViewer::resizeEvent(QResizeEvent *event)
-{
-  QGraphicsView::resizeEvent(event);
-
-  for (size_t k = 0; k < this->static_items.size(); k++)
-  {
-    // Map the desired position in the view to the scene coordinates
-    // and set the position relative to the view
-    QPointF scene_pos = this->mapToScene(this->viewport()->rect().topLeft() +
-                                         this->static_items_positions[k]);
-    this->static_items[k]->setPos(scene_pos);
-  }
-}
-
 void GraphViewer::save_screenshot(const std::string &fname)
 {
   QPixmap pixMap = this->grab();
@@ -1327,8 +1265,7 @@ void GraphViewer::save_screenshot(const std::string &fname)
 void GraphViewer::select_all()
 {
   for (QGraphicsItem *item : this->scene()->items())
-    if (!is_item_static(item))
-      item->setSelected(true);
+    item->setSelected(true);
 
   Q_EMIT this->selection_has_changed();
 }

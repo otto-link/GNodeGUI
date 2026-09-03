@@ -39,7 +39,6 @@ public:
   std::string add_node(NodeProxy         *p_node_proxy,
                        QPointF            scene_pos,
                        const std::string &node_id = "");
-  void add_static_item(QGraphicsItem *item, QPoint window_pos, float z_value = 0.f);
 
   // --- Remove
 
@@ -161,13 +160,11 @@ protected:
 
   void contextMenuEvent(QContextMenuEvent *event) override;
   void delete_selected_items();
-  void drawForeground(QPainter *painter, const QRectF &rect) override;
   void keyPressEvent(QKeyEvent *event) override;
   void keyReleaseEvent(QKeyEvent *event) override;
   void mouseMoveEvent(QMouseEvent *event) override;
   void mousePressEvent(QMouseEvent *event) override;
   void mouseReleaseEvent(QMouseEvent *event) override;
-  void resizeEvent(QResizeEvent *event) override;
   void wheelEvent(QWheelEvent *event) override;
 
   void dragEnterEvent(QDragEnterEvent *event) override;
@@ -188,14 +185,13 @@ private Q_SLOTS:
 private:
   void delete_graphics_link(GraphicsLink *, bool link_will_be_replaced = false);
   void delete_graphics_node(GraphicsNode *p_node);
-  bool is_item_static(QGraphicsItem *item) const;
 
   // --- Members
 
   std::string id;
 
-  std::vector<QGraphicsItem *> static_items; // owned by this
-  std::vector<QPoint>          static_items_positions;
+  // toolbar overlay, parented to the view (not part of the scene)
+  QWidget *toolbar_widget = nullptr;
 
   // all nodes available store as a map of (node type, node category)
   std::map<std::string, std::string> node_inventory;

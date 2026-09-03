@@ -64,6 +64,20 @@ public:
    */
   void set_tooltip(QString new_tooltip) { this->tooltip = new_tooltip; }
 
+  /**
+   * @brief Returns the tooltip text of the icon.
+   *
+   * @return The tooltip text.
+   */
+  QString get_tooltip() const { return this->tooltip; }
+
+  /**
+   * @brief Returns the width of the icon.
+   *
+   * @return The icon width.
+   */
+  float get_width() const { return this->width; }
+
 Q_SIGNALS:
   /**
    * @brief Signal emitted when the icon is clicked.
