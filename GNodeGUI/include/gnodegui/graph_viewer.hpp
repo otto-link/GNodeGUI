@@ -102,21 +102,23 @@ public Q_SLOTS:
 
 Q_SIGNALS:
 
+  // NB - signal arguments are passed by value on purpose: a reference is only
+  // valid for the duration of the emit and can dangle when the slot runs later
+  // (queued connection) or when an earlier slot destroys the referenced object
+
   // --- Link signals
 
-  void connection_deleted(const std::string &id_out,
-                          const std::string &port_id_out,
-                          const std::string &to_in,
-                          const std::string &port_id_in,
-                          bool               link_will_be_replaced);
-  void connection_dropped(const std::string &node_id,
-                          const std::string &port_id,
-                          QPointF            scene_pos);
-  void connection_finished(const std::string &id_out,
-                           const std::string &port_id_out,
-                           const std::string &to_in,
-                           const std::string &port_id_in);
-  void connection_started(const std::string &id_from, const std::string &port_id_from);
+  void connection_deleted(std::string id_out,
+                          std::string port_id_out,
+                          std::string to_in,
+                          std::string port_id_in,
+                          bool        link_will_be_replaced);
+  void connection_dropped(std::string node_id, std::string port_id, QPointF scene_pos);
+  void connection_finished(std::string id_out,
+                           std::string port_id_out,
+                           std::string to_in,
+                           std::string port_id_in);
+  void connection_started(std::string id_from, std::string port_id_from);
 
   // --- Graph signals
 
@@ -132,19 +134,19 @@ Q_SIGNALS:
 
   // --- Node signals
 
-  void new_graphics_node_request(const std::string &node_id, QPointF scene_pos);
-  void new_node_request(const std::string &type, QPointF scene_pos);
-  void node_deleted(const std::string &node_id);
-  void node_deselected(const std::string &node_id);
-  void node_reload_request(const std::string &node_id);
-  void node_selected(const std::string &node_id);
-  void node_settings_request(const std::string &node_id);
-  void node_right_clicked(const std::string &node_id, QPointF scene_pos);
-  void node_type_dropped(const std::string &node_type, QPointF scene_pos);
-  void nodes_copy_request(const std::vector<std::string> &id_list,
-                          const std::vector<QPointF>     &scene_pos_list);
-  void nodes_duplicate_request(const std::vector<std::string> &id_list,
-                               const std::vector<QPointF>     &scene_pos_list);
+  void new_graphics_node_request(std::string node_id, QPointF scene_pos);
+  void new_node_request(std::string type, QPointF scene_pos);
+  void node_deleted(std::string node_id);
+  void node_deselected(std::string node_id);
+  void node_reload_request(std::string node_id);
+  void node_selected(std::string node_id);
+  void node_settings_request(std::string node_id);
+  void node_right_clicked(std::string node_id, QPointF scene_pos);
+  void node_type_dropped(std::string node_type, QPointF scene_pos);
+  void nodes_copy_request(std::vector<std::string> id_list,
+                          std::vector<QPointF>     scene_pos_list);
+  void nodes_duplicate_request(std::vector<std::string> id_list,
+                               std::vector<QPointF>     scene_pos_list);
   void nodes_paste_request();
 
   // --- Global signals
