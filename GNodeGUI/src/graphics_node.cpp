@@ -491,6 +491,48 @@ void GraphicsNode::paint(QPainter *painter,
 
   painter->drawPath(path);
 
+  // --- Optional inset bevel, kept inside the card and its state border
+
+  if (GN_STYLE->node.bevel_width > 0.f)
+  {
+    const qreal width = GN_STYLE->node.bevel_width;
+    const qreal border_width = this->isSelected()
+                                   ? GN_STYLE->node.pen_width_selected
+                                   : (this->is_node_hovered
+                                          ? GN_STYLE->node.pen_width_hovered
+                                          : GN_STYLE->node.pen_width);
+    const qreal inset = 0.5 * (border_width + width);
+    const QRectF bevel_rect = this->geometry.body_rect.adjusted(
+        inset, inset, -inset, -inset);
+    if (!bevel_rect.isEmpty())
+    {
+      const qreal bevel_radius = std::max<qreal>(
+          0.0, GN_STYLE->node.rounding_radius - inset);
+      QPainterPath bevel;
+      bevel.addRoundedRect(bevel_rect, bevel_radius, bevel_radius);
+
+      // Split the same outline at its vertical midpoint, so both halves meet
+      // without changing the silhouette or painting over child content.
+      const QRectF body = this->geometry.body_rect;
+      const qreal middle = body.center().y();
+      painter->save();
+      painter->setBrush(Qt::NoBrush);
+      painter->setClipRect(QRectF(body.left(), body.top(), body.width(),
+                                  middle - body.top()), Qt::IntersectClip);
+      painter->setPen(QPen(GN_STYLE->node.color_bevel_top, width));
+      painter->drawPath(bevel);
+      painter->restore();
+
+      painter->save();
+      painter->setBrush(Qt::NoBrush);
+      painter->setClipRect(QRectF(body.left(), middle, body.width(),
+                                  body.bottom() - middle), Qt::IntersectClip);
+      painter->setPen(QPen(GN_STYLE->node.color_bevel_bottom, width));
+      painter->drawPath(bevel);
+      painter->restore();
+    }
+  }
+
   // --- Border
 
   painter->setBrush(Qt::NoBrush);
@@ -516,7 +558,7 @@ void GraphicsNode::paint(QPainter *painter,
                                                               : Qt::AlignRight;
 
     // Draw port labels
-    painter->setPen(Qt::white); // Assuming labels are always white
+    painter->setPen(GN_STYLE->node.color_port_caption);
     painter->drawText(this->geometry.port_label_rects[k],
                       align_flag,
                       this->get_port_caption(k).c_str());

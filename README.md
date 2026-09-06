@@ -25,6 +25,26 @@ This library is currently used in the [Hesiod](https://github.com/otto-link/Hesi
    make
    ```
 
+## Optional node chrome
+
+`GN_STYLE->node.bevel_width` enables an inset bevel when greater than zero,
+using `color_bevel_top` and `color_bevel_bottom` for the upper and lower halves
+of the card outline. Width is in scene units and scales with canvas zoom.
+The bevel stays inside the outer hover/selection border. Set these fields
+before creating the graph, using colours from the host application's theme.
+
+`color_port_caption` controls port-label ink independently of the node title.
+The defaults preserve flat cards and white port labels: bevel width is zero,
+both bevel colours are transparent, and port-caption colour is white.
+
+`rounding_radius` continues to define the shared header/body card silhouette.
+Embedded controls own their own radii. Slider-thumb gradients belong to the
+embedded widget renderer; GNodeGUI does not draw slider thumbs.
+
+With `GNODEGUI_ENABLE_TESTS=ON`, build `node_style_test` and run
+`bin/node_style_test -platform offscreen` for pixel checks of disabled bevels,
+bevel bounds and colours, selection visibility, and port-label ink isolation.
+
 ## License
 
 This project is licensed under the GPL-3.0 license.
