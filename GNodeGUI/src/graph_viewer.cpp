@@ -15,9 +15,9 @@
 #include <QWidgetAction>
 
 #include "gnodegui/graph_viewer.hpp"
-#include "gnodegui/icon_button.hpp"
 #include "gnodegui/graphics_comment.hpp"
 #include "gnodegui/graphics_group.hpp"
+#include "gnodegui/icon_button.hpp"
 #include "gnodegui/logger.hpp"
 #include "gnodegui/style.hpp"
 #include "gnodegui/utils.hpp"
@@ -202,53 +202,44 @@ void GraphViewer::add_toolbar(QPoint window_pos)
 
   if (GN_STYLE->viewer.add_group)
   {
-    IconButton *group_button = add_icon_button(new GroupIcon(width,
-                                                             color,
-                                                             pen_width));
+    IconButton *group_button = add_icon_button(new GroupIcon(width, color, pen_width));
     this->connect(group_button,
                   &IconButton::clicked,
                   [this]()
                   { this->add_item(new GraphicsGroup(), this->get_mouse_scene_pos()); });
   }
 
-  IconButton *link_type_button = add_icon_button(new LinkTypeIcon(width,
-                                                                  color,
-                                                                  pen_width));
+  IconButton *link_type_button = add_icon_button(
+      new LinkTypeIcon(width, color, pen_width));
   this->connect(link_type_button,
                 &IconButton::clicked,
                 [this]() { this->toggle_link_type(); });
 
-  IconButton *reload_button = add_icon_button(new ReloadIcon(width,
-                                                             color,
-                                                             pen_width));
+  IconButton *reload_button = add_icon_button(new ReloadIcon(width, color, pen_width));
   this->connect(reload_button,
                 &IconButton::clicked,
                 [this]() { Q_EMIT this->graph_reload_request(); });
 
-  IconButton *fit_content_button = add_icon_button(new FitContentIcon(width,
-                                                                      color,
-                                                                      pen_width));
+  IconButton *fit_content_button = add_icon_button(
+      new FitContentIcon(width, color, pen_width));
   this->connect(fit_content_button,
                 &IconButton::clicked,
                 [this]() { this->zoom_to_content(); });
 
-  IconButton *screenshot_button = add_icon_button(new ScreenshotIcon(width,
-                                                                     color,
-                                                                     pen_width));
+  IconButton *screenshot_button = add_icon_button(
+      new ScreenshotIcon(width, color, pen_width));
   this->connect(screenshot_button,
                 &IconButton::clicked,
                 [this]() { this->save_screenshot(); });
 
-  IconButton *select_all_button = add_icon_button(new SelectAllIcon(width,
-                                                                    color,
-                                                                    pen_width));
+  IconButton *select_all_button = add_icon_button(
+      new SelectAllIcon(width, color, pen_width));
   this->connect(select_all_button,
                 &IconButton::clicked,
                 [this]() { this->select_all(); });
 
-  IconButton *clear_all_button = add_icon_button(new ClearAllIcon(width,
-                                                                  color,
-                                                                  pen_width));
+  IconButton *clear_all_button = add_icon_button(
+      new ClearAllIcon(width, color, pen_width));
   this->connect(clear_all_button,
                 &IconButton::clicked,
                 [this]() { Q_EMIT this->graph_clear_request(); });
@@ -257,9 +248,7 @@ void GraphViewer::add_toolbar(QPoint window_pos)
   {
     layout->addSpacing(2 * padding);
 
-    IconButton *new_button = add_icon_button(new NewIcon(width,
-                                                         color,
-                                                         pen_width));
+    IconButton *new_button = add_icon_button(new NewIcon(width, color, pen_width));
     this->connect(new_button,
                   &IconButton::clicked,
                   [this]() { Q_EMIT this->graph_new_request(); });
@@ -267,16 +256,12 @@ void GraphViewer::add_toolbar(QPoint window_pos)
 
   if (GN_STYLE->viewer.add_load_save_icons)
   {
-    IconButton *load_button = add_icon_button(new LoadIcon(width,
-                                                           color,
-                                                           pen_width));
+    IconButton *load_button = add_icon_button(new LoadIcon(width, color, pen_width));
     this->connect(load_button,
                   &IconButton::clicked,
                   [this]() { Q_EMIT this->graph_load_request(); });
 
-    IconButton *save_button = add_icon_button(new SaveIcon(width,
-                                                           color,
-                                                           pen_width));
+    IconButton *save_button = add_icon_button(new SaveIcon(width, color, pen_width));
     this->connect(save_button,
                   &IconButton::clicked,
                   [this]() { Q_EMIT this->graph_save_as_request(); });
@@ -284,17 +269,13 @@ void GraphViewer::add_toolbar(QPoint window_pos)
 
   if (GN_STYLE->viewer.add_import_icon)
   {
-    IconButton *import_button = add_icon_button(new ImportIcon(width,
-                                                               color,
-                                                               pen_width));
+    IconButton *import_button = add_icon_button(new ImportIcon(width, color, pen_width));
     this->connect(import_button,
                   &IconButton::clicked,
                   [this]() { Q_EMIT this->graph_import_request(); });
   }
 
-  IconButton *dots_button = add_icon_button(new DotsIcon(width,
-                                                         color,
-                                                         pen_width));
+  IconButton *dots_button = add_icon_button(new DotsIcon(width, color, pen_width));
   this->connect(dots_button,
                 &IconButton::clicked,
                 [this]() { Q_EMIT this->graph_settings_request(); });
@@ -303,9 +284,8 @@ void GraphViewer::add_toolbar(QPoint window_pos)
   {
     layout->addSpacing(2 * padding);
 
-    IconButton *viewport_button = add_icon_button(new ViewportIcon(width,
-                                                                   color,
-                                                                   pen_width));
+    IconButton *viewport_button = add_icon_button(
+        new ViewportIcon(width, color, pen_width));
     this->connect(viewport_button,
                   &IconButton::clicked,
                   [this]() { Q_EMIT this->viewport_request(); });
@@ -483,7 +463,7 @@ void GraphViewer::deselect_all()
 
 void GraphViewer::dragEnterEvent(QDragEnterEvent *event)
 {
-  if (event->mimeData()->hasText())
+  if (!event->mimeData()->hasUrls() && event->mimeData()->hasText())
     event->acceptProposedAction();
   else
     event->ignore();
@@ -491,7 +471,7 @@ void GraphViewer::dragEnterEvent(QDragEnterEvent *event)
 
 void GraphViewer::dragMoveEvent(QDragMoveEvent *event)
 {
-  if (event->mimeData()->hasText())
+  if (!event->mimeData()->hasUrls() && event->mimeData()->hasText())
     event->acceptProposedAction();
   else
     event->ignore();
@@ -499,8 +479,11 @@ void GraphViewer::dragMoveEvent(QDragMoveEvent *event)
 
 void GraphViewer::dropEvent(QDropEvent *event)
 {
-  if (!event->mimeData()->hasText())
+  if (event->mimeData()->hasUrls() || !event->mimeData()->hasText())
+  {
+    event->ignore();
     return;
+  }
 
   std::string node_type = event->mimeData()->text().toStdString();
 
