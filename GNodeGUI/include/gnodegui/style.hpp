@@ -81,6 +81,14 @@ public:
 
     std::map<std::string, QColor> color_port_data = {};
     std::map<std::string, QColor> color_category = {};
+
+    // Optional inset card bevel, in scene units. Zero preserves the original
+    // flat rendering. The outer border still carries hover/selection state.
+    float  bevel_width = 0.f;
+    QColor color_bevel_top = Qt::transparent;
+    QColor color_bevel_bottom = Qt::transparent;
+
+    QColor color_port_caption = Qt::white;
   } node;
 
   struct Link
